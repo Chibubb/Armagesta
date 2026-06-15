@@ -8,4 +8,5 @@ include_directories(.)
 add_executable(Armagesta
         Encounter.h
         main.cpp
-        randomness.h)
+        randomness.h
+        Event.h)

@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 #include "randomness.h"
+#include <memory>
 
 using namespace std;
 
@@ -19,10 +20,11 @@ private:
     string name;
     vector<string> actionNames;
     vector<int> actionChances;
+    unique_ptr<int> playerIP;
     //Action types do different kinds of things, and will call a different function below depending on what they do.
 protected:
-    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances)
-    : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)) {};
+    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, unique_ptr<int> playerData)
+    : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(std::move(playerData)) {};
     virtual ~Encounter() = default;
 public:
     int virtual getAction() {
@@ -51,14 +53,18 @@ public:
     int getHealth() const {
         return health;
     }
+    unique_ptr<int>& getPlayerIP() {
+        return playerIP;
+    }
 };
 
 class NewEncounterTemplate : public Encounter {
 private:
-    NewEncounterTemplate()
-    : Encounter(7, "Skeleton", {"Stab", "Clamber"}, {60, 20}) {};
+public:
+    explicit NewEncounterTemplate(unique_ptr<int> &playerData)
+    : Encounter(7, "Skeleton", {"Stab", "Clamber"}, {60, 20}, std::move(playerData)) {};
 
-    void doAction() {
+    void virtual doAction() {
         const int x = getAction();
         const string nameOfAction = getActionName(x);
         if (nameOfAction == "Action") {
