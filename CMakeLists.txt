@@ -9,4 +9,5 @@ add_executable(Armagesta
         Encounter.h
         main.cpp
         randomness.h
-        Event.h)
+        Event.h
+        EventDatabase.h)
