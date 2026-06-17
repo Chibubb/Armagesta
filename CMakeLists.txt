@@ -10,4 +10,5 @@ add_executable(Armagesta
         main.cpp
         randomness.h
         Event.h
-        EventDatabase.h)
+        EventDatabase.h
+        PlayerDatabase.h)

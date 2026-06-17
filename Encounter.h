@@ -10,6 +10,8 @@
 #include <utility>
 #include "randomness.h"
 #include <memory>
+#include <vector>
+#include "PlayerDatabase.h"
 
 using namespace std;
 
@@ -22,7 +24,7 @@ private:
     vector<int> actionChances;
     //Action types do different kinds of things, and will call a different function below depending on what they do.
 protected:
-    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, shared_ptr<int> playerData)
+    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, shared_ptr<Player> playerData)
     : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(std::move(playerData)) {};
     virtual ~Encounter() = default;
 public:
@@ -52,17 +54,17 @@ public:
     int getHealth() const {
         return health;
     }
-    shared_ptr<int>& getPlayerIP() {
+    shared_ptr<Player>& getPlayerIP() {
         return playerIP;
     }
-    shared_ptr<int> playerIP;
+    shared_ptr<Player> playerIP;
 };
 
 class Slime : public Encounter {
 private:
 public:
-    explicit Slime(shared_ptr<int> playerData)
-    : Encounter(15, "Slime", {"Slap", "Goo"}, {80, 20}, playerData) {};
+    explicit Slime(shared_ptr<Player> playerData)
+    : Encounter(15, "Slime", {"Slap", "Goo"}, {80, 20}, std::move(playerData)) {};
 
     void virtual doAction() {
         const int x = getAction();
@@ -78,8 +80,8 @@ public:
 class NewEncounterTemplate : public Encounter {
 private:
 public:
-    explicit NewEncounterTemplate(shared_ptr<int> playerData)
-    : Encounter(7, "Skeleton", {"Stab", "Clamber"}, {60, 20}, playerData) {};
+    explicit NewEncounterTemplate(shared_ptr<Player> playerData)
+    : Encounter(7, "Skeleton", {"Stab", "Clamber"}, {60, 20}, std::move(playerData)) {};
 
     void virtual doAction() {
         const int x = getAction();

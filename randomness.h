@@ -4,6 +4,7 @@
 
 #ifndef ARMAGESTA_RANDOMNESS_H
 #define ARMAGESTA_RANDOMNESS_H
+#include <vector>
 #include <random>
 
 inline int randomNum(const int min, const int max) {

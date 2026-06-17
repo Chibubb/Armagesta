@@ -4,21 +4,11 @@
 #include <iostream>
 #include "randomness.h"
 #include <memory>
-#include <EventDatabase.h>
+#include "EventDatabase.h"
+#include <vector>
+#include "PlayerDatabase.h"
 
 using namespace std;
-
-struct Player {
-    int health = 100;
-    int maxHealth = 100;
-    int mana = 10;
-    int maxMana = 10;
-    vector<int> currentPosition = {5, 5};
-    vector<vector<string>> actions = {
-        {}
-    };
-    vector<string> actionCategories = {};
-};
 
 int main() {
     vector<vector<char>> map = {
