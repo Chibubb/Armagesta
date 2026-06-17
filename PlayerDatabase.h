@@ -13,7 +13,8 @@
 
 using namespace std;
 
-struct Player {
+class Player {
+private:
     int health = 100;
     int maxHealth = 100;
     int mana = 10;
@@ -23,6 +24,9 @@ struct Player {
         {}
     };
     vector<string> actionCategories = {};
+
+public:
+    void heal()
 };
 
 #endif //ARMAGESTA_PLAYERDATABASE_H
