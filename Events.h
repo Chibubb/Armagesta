@@ -15,6 +15,8 @@
 
 using namespace std;
 
+
+
 class BiomeEventDatabase {
 protected:
     Player& playerIP;
@@ -183,5 +185,6 @@ public:
 };
 
 // Template for Biomes
+
 
 #endif //ARMAGESTA_EVENTDATABASE_H

@@ -10,22 +10,30 @@
 
 using namespace std;
 
+void interactWithWorld(const char BiomeType, Player& player) {
+    if (BiomeType == 'F') {
+        auto Event = make_unique<Forest>(player);
+    }
+}
+
 int main() {
-    vector<vector<char>> map = {
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'H', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
-        {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'}
-    }; // 0 - 10 on both dimensions
+
+
 
     auto player = make_unique<Player>();
+
+    cout << "Welcome to the Game!" << endl << endl;
+    bool gameEnds = false;
+
+
+     while (gameEnds == false) {
+         player->printActions();
+         string chosenAction  = player->getAction();
+         if (chosenAction == "Move") {
+             interactWithWorld(player->move(player->getAChosenDirection()), *player);
+         }
+     }
+
 
 
     return 0;
