@@ -88,7 +88,7 @@ public:
     void printActions() const {
         cout << "Possible Actions:" << endl;
         for (int i = 0; i < actions.size(); i++) {
-            cout << i << ": " << actions[i] << "  ";
+            cout << i + 1 << ": " << actions[i] << "  ";
         }
         cout << endl << endl;
     }

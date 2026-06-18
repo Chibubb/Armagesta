@@ -74,14 +74,21 @@ protected:
                 j += 1;
             }
             cout << endl;
-            int z = 0;
-            while (z < 1 || z > eventChoices[REI].size()) {
-                cin >> z;
-                if (z < 1 || z > eventChoices[REI].size()) {
-                    cout << endl << "Invalid Input, Try Again" << endl;
-                    continue;
+            bool eventChoiceCorrectlyChosen = false;
+            string triedChoice;
+            while (eventChoiceCorrectlyChosen == false) {
+                cin >> triedChoice;
+                int k = 0;
+                for (k = 0; k < eventChoices[REI].size(); k++) {
+                    if (eventChoices[REI][k] == triedChoice) {
+                        eventChoiceCorrectlyChosen = true;
+                    }
                 }
-                ChosenChoice = z;
+                if (eventChoiceCorrectlyChosen == false) {
+                    cout << "Invalid input, try again..." << endl;
+                } else {
+                    ChosenChoice = k + 1;
+                }
             }
         } else {
             ChosenChoice = 1;

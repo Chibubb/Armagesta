@@ -28,7 +28,7 @@ int main() {
 
      while (gameEnds == false) {
          player->printActions();
-         string chosenAction  = player->getAction();
+         string chosenAction = player->getAction();
          if (chosenAction == "Move") {
              interactWithWorld(player->move(player->getAChosenDirection()), *player);
          }
