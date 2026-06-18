@@ -26,7 +26,15 @@ private:
     vector<string> actionCategories = {};
 
 public:
-    void heal()
+
+    void heal(const int healAmount) {
+        health += healAmount;
+    }
+
+    void move(string direction) {
+        if ()
+    }
+
 };
 
 #endif //ARMAGESTA_PLAYERDATABASE_H
