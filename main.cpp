@@ -14,6 +14,9 @@ void interactWithWorld(const char BiomeType, Player& player) {
     if (BiomeType == 'F') {
         auto Event = make_unique<Forest>(player);
     }
+    if (BiomeType == 'X') {
+        cout << "You are at the edge of the map, you may not travel any farther in that direction..." << endl;
+    }
 }
 
 int main() {

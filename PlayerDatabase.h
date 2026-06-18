@@ -50,21 +50,26 @@ public:
         if (direction == "west" || direction == "West") {
             if (currentPosition[1] != 0) {
                 currentPosition[1] -= 1;
+                return map[currentPosition[0]][currentPosition[1]];
             }
         }else if (direction == "east" || direction == "East") {
             if (currentPosition[1] != 10) {
                 currentPosition[1] += 1;
+                return map[currentPosition[0]][currentPosition[1]];
             }
         }else if (direction == "north" || direction == "North") {
             if (currentPosition[0] != 0) {
                 currentPosition[0] -= 1;
+                return map[currentPosition[0]][currentPosition[1]];
             }
         }else if (direction == "south" || direction == "South") {
             if (currentPosition[0] != 10) {
                 currentPosition[0] += 1;
+                return map[currentPosition[0]][currentPosition[1]];
             }
+        }else {
+            return 'X';
         }
-        return map[currentPosition[0]][currentPosition[1]];
     }
 
     string getAChosenDirection() {
