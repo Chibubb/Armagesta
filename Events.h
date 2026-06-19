@@ -32,7 +32,7 @@ protected:
 
 class Forest : public BiomeEventDatabase {
 private:
-    vector<int> eventChances = {10, 90};
+    vector<int> eventChances = {60, 40};
     vector<string> eventNames = {"Bright Forest", "Dark Forest"};
     vector<string> eventFlavorText = {
         "Light shines through the trees, illuminating the leafy forest floor",
