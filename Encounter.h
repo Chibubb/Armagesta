@@ -77,6 +77,7 @@ public:
             cout << "The Enemy has " << health << " Health remaining" << endl << endl;
         }
         cout << "The Monster Died!" << endl << endl;
+        playerIP.temporaryDamageModifier = 0;
     }
 
     void virtual printIntent(const int indexOfIntent) const {
