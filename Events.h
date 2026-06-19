@@ -32,7 +32,7 @@ protected:
 
 class Forest : public BiomeEventDatabase {
 private:
-    vector<int> eventChances = {70, 30};
+    vector<int> eventChances = {10, 90};
     vector<string> eventNames = {"Bright Forest", "Dark Forest"};
     vector<string> eventFlavorText = {
         "Light shines through the trees, illuminating the leafy forest floor",
@@ -78,24 +78,33 @@ protected:
             cout << endl;
             bool eventChoiceCorrectlyChosen = false;
             string triedChoice;
-            while (eventChoiceCorrectlyChosen == false) {
-                cin >> triedChoice;
+            bool firstTime = true;
+            while (true) {
+                getline(cin, triedChoice);
                 int k = 0;
                 for (k = 0; k < eventChoices[REI].size(); k++) {
                     if (eventChoices[REI][k] == triedChoice) {
                         eventChoiceCorrectlyChosen = true;
+                        ChosenChoice = k;
                     }
                 }
-                if (eventChoiceCorrectlyChosen == false) {
-                    cout << "Invalid input, try again..." << endl;
-                } else {
-                    ChosenChoice = k + 1;
+
+                if (eventChoiceCorrectlyChosen == true) {
+                    break;
                 }
+
+                if (firstTime == false) {
+                    cout << "Invalid input, try again..." << endl;
+                }
+
+                firstTime = false;
+
             }
         } else {
-            ChosenChoice = 1;
+            ChosenChoice = 0;
         }
-        ChoiceName = eventChoices[REI][ChosenChoice - 1];
+
+        ChoiceName = eventChoices[REI][ChosenChoice];
 
         ResolveChoice();
 

@@ -17,6 +17,7 @@ using namespace std;
 
 inline void encounterSlime(Player& playerIP) {
     unique_ptr<Encounter> encounter = make_unique<Slime>(playerIP);
+    encounter->haveCombat();
 }
 
 #endif //ARMAGESTA_MONSTERCALLING_H

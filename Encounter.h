@@ -42,19 +42,19 @@ public:
             totalChance += chance;
         }
         const int choice = randomNum(1, totalChance);
-        int y = actionChances.at(0);
+        int y = 0;
         for (int i = 0; i < actionChances.size(); i++) {
+            y = y + actionChances[i];
             if (choice <= y) {
                 x = i;
-            } else {
-                y = y + actionChances.at(i + 1);
+                break;
             }
         }
         return x;
     };
 
     string getActionName(const int x) const {
-        return actionNames.at(x);
+        return actionNames[x];
     }
     string getName() const {
         return name;
@@ -71,14 +71,16 @@ public:
     void haveCombat() {
         while (health > 0) {
             doAction();
-            cout << "You have " << playerIP.health << " remaining" << endl;
-            cout << "The Enemy has " << health << " remaining" << endl;
+            makeZeroIfNegative(playerIP.health);
+            makeZeroIfNegative(health);
+            cout << "You have " << playerIP.health << " Health remaining" << endl;
+            cout << "The Enemy has " << health << " Health remaining" << endl << endl;
         }
         cout << "The Monster Died!" << endl << endl;
     }
 
-    void printIntent(const int indexOfIntent) const {
-        cout << actionIntents.at(indexOfIntent) << endl;
+    void virtual printIntent(const int indexOfIntent) const {
+        cout << actionIntents[indexOfIntent] << endl << endl;
     }
 
 
@@ -132,30 +134,32 @@ private:
 public:
     explicit Slime(Player& playerData)
     : Encounter(15, "Slime", {"Slap", "Goo"}, {80, 20}
-        , {"", ""}, playerData) {};
+        , {"The Slime starts to bounce around...", "The Slime undulates and vibrates..."}, playerData) {};
 
     void doAction() override {
         const int x = getAction();
         const string nameOfAction = getActionName(x);
+
         printIntent(x);
 
         string playerActionType = doPlayerTurn_AndGetPlayerActionType();
-
-        if (nameOfAction == "Slap") {
-            if (playerActionType != "CRITICAL HIT") {
-                int damageDealt = randomNum(3, 5);
-                makeZeroIfNegative(damageDealt);
-                playerIP.health -= damageDealt;
-                cout << "The Slime did " << damageDealt << " damage!" << endl;
-            } else {
-                cout << "Your Critical Hit canceled the enemies Attack!" << endl;
-            }
-        }else if (nameOfAction == "Goo") {
-            playerIP.temporaryDamageModifier -= 2;
-            if (playerActionType == "MISSED HIT") {
+        if (getHealth() > 0) {
+            if (nameOfAction == "Slap") {
+                if (playerActionType != "CRITICAL HIT") {
+                    int damageDealt = randomNum(3, 5);
+                    makeZeroIfNegative(damageDealt);
+                    playerIP.health -= damageDealt;
+                    cout << "The Slime slapped you, and did " << damageDealt << " damage!" << endl;
+                } else {
+                    cout << "Your Critical Hit canceled the enemies Attack!" << endl;
+                }
+            }else if (nameOfAction == "Goo") {
                 playerIP.temporaryDamageModifier -= 2;
+                if (playerActionType == "MISSED HIT") {
+                    playerIP.temporaryDamageModifier -= 2;
+                }
+                cout << "The Slime threw Goo at you! Your attack has decreased..." << endl;
             }
-            cout << "The Slime threw Goo at you! Your attack has decreased..." << endl;
         }
     }
 };
@@ -178,12 +182,14 @@ public:
     void doAction() override {
         const int x = getAction();
         const string nameOfAction = getActionName(x);
+
         printIntent(x);
 
         string playerActionType = doPlayerTurn_AndGetPlayerActionType();
+        if (getHealth() > 0) {
+            if (nameOfAction == "Action") {
 
-        if (nameOfAction == "Action") {
-
+            }
         }
     }
 };
