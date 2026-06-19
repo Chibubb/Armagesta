@@ -11,4 +11,5 @@ add_executable(Armagesta
         randomness.h
         Events.h
         PlayerDatabase.h
-        rulesForImplementation.h)
+        rulesForImplementation.h
+        MonsterCalling.h)

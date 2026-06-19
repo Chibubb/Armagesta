@@ -35,6 +35,15 @@ int main() {
          if (chosenAction == "Move") {
              interactWithWorld(player->move(player->getAChosenDirection()), *player);
          }
+         if (chosenAction == "Assess") {
+             player->assess();
+         }
+         cout << endl;
+
+         //Check if player is dead
+         if (player->health <= 0) {
+             cout << "You fall to the floor, breathless. You have died" << endl;
+         }
      }
 
 

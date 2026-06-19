@@ -14,4 +14,13 @@ inline int randomNum(const int min, const int max) {
     std::uniform_int_distribution<> dist(min, max);
     return dist(gen);
 }
+
+inline void makeZeroIfNegative(int& value) {
+    if (value < 0) {
+        value = 0;
+    }
+}
+
+
+
 #endif //ARMAGESTA_RANDOMNESS_H

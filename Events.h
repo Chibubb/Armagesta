@@ -10,6 +10,7 @@
 #include "randomness.h"
 #include <memory>
 #include <vector>
+#include "MonsterCalling.h"
 
 #include "PlayerDatabase.h"
 
@@ -26,6 +27,7 @@ protected:
     int virtual getChoice() = 0;
     void virtual doEvent() = 0;
     void virtual ResolveChoice() = 0;
+
 };
 
 class Forest : public BiomeEventDatabase {
@@ -102,6 +104,15 @@ protected:
     void ResolveChoice() override {
         if (ChoiceName == "Rest") {
             playerIP.heal(2);
+            cout << "You have rested back 2 Health!" << endl;
+        } else if (ChoiceName == "Confront") {
+            cout << "A Slime appears!" << endl;
+            encounterSlime(playerIP);
+        } else if (ChoiceName == "Run Away") {
+            playerIP.health -= 10;
+            cout << "You successfully get away, but are wounded in your escape" << endl;
+        } else if (ChoiceName == "Scavenge") {
+            cout << "You have gained a resource!" << endl;
         }
     }
 

@@ -16,6 +16,8 @@ using namespace std;
 
 class Player {
 private:
+public:
+
     vector<vector<char>> map = {
         {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
         {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'},
@@ -30,19 +32,25 @@ private:
         {'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'}
     }; // 0 - 10 on both dimensions
     int health = 100;
+    int critChance = 5;
+    int accuracy = 80;
+    int permanentDamageModifier = 0;
+    int temporaryDamageModifier = 0;
     int maxHealth = 100;
-    int mana = 10;
+    int soul = 10;
     int maxSoul = 10;
     vector<int> currentPosition = {5, 5};
 
-public:
-
     vector<string> actions = {"Move"};
+    vector<string> combatActions = {"Slash"};
 
     Player() = default;
 
     void heal(const int healAmount) {
         health += healAmount;
+        if (health > maxHealth) {
+            health = maxHealth;
+        }
     }
 
     char move(const string& direction) {
@@ -78,6 +86,15 @@ public:
         }
     }
 
+    void assess() const {
+        cout << "Health: " << health << endl;
+        cout << "Luck: " << critChance << endl;
+        cout << "Accuracy: " << accuracy << endl;
+        cout << "Soul: " << soul << endl;
+        cout << "Bodily State: " << health << endl;
+
+    }
+
     string getAChosenDirection() {
         string chosenDirection;
         bool directionChosenCorrectly = false;
@@ -104,6 +121,7 @@ public:
         cout << endl << endl;
     }
 
+    //Map Action NOTE
     string getAction() const {
         bool x = true;
         string chosenAction;
@@ -122,6 +140,31 @@ public:
         return chosenAction;
 
     }
+
+    string getCombatAction() const {
+        bool x = true;
+        string chosenAction;
+        while (x == true) {
+            cout << "Possible Combat Actions:" << endl;
+            for (int i = 0; i < combatActions.size(); i++) {
+                cout << i + 1 << ": " << combatActions[i] << "  ";
+            }
+            cout << endl << endl;
+            cin >> chosenAction;
+            for (const auto & action : combatActions) {
+                if (chosenAction == action) {
+                    x = false;
+                }
+            }
+            if (x == true) {
+                cout << "Not A Possible Action..." << endl;
+            }
+        }
+
+        return chosenAction;
+    }
+
+
 
 };
 
