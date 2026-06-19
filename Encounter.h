@@ -112,7 +112,7 @@ public:
 
             return "ATTACK";
         }
-
+        return "NO TYPE";
     }
 
     //Possible Player Actions and what they do

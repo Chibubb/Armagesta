@@ -84,6 +84,7 @@ public:
                 return 'X';
             }
         }
+        return 'X';
     }
 
     void assess() const {
