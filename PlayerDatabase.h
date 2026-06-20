@@ -43,7 +43,7 @@ public:
     vector<int> currentPosition = {5, 5};
 
     vector<string> actions = {"Move", "Assess"};
-    vector<string> combatActions = {"Slash"};
+    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Counter"};
 
     Player() = default;
 

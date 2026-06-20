@@ -16,6 +16,7 @@
 //Make the ability to call it in MONSTERCALLING.H
 
 //Implementing A new player Combat Action
+//Adding the name in PLAYERDATABASE.H
 //Make a new else if statement in doPlayerTurn_AndGetPlayerActionType in ENCOUNTER.H
 
 #endif //ARMAGESTA_RULESFORIMPLEMENTATION_H
