@@ -42,6 +42,9 @@ public:
         int danger = 0;
     };
 
+    playerState PS;
+    monsterState MS;
+
     int virtual getAction() {
         int x = -1;
         int totalChance = 0;
@@ -80,8 +83,8 @@ public:
             doAction();
             makeZeroIfNegative(playerIP.health);
             makeZeroIfNegative(health);
-            cout << "You have " << playerIP.health << " Health remaining" << endl;
-            cout << "The Enemy has " << health << " Health remaining" << endl << endl;
+            cout << "You have " << playerIP.health << " Health remaining, and " << PS.momentum << " Momentum" << endl;
+            cout << "The Enemy has " << health << " Health remaining, and " << MS.danger << " Danger" << endl << endl;
         }
         cout << "The " << name << " Died! "<< endl << endl;
         playerIP.temporaryDamageModifier = 0;
