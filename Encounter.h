@@ -35,7 +35,7 @@ public:
     Player& playerIP;
 
     struct playerState {
-        int momentum = 0;
+        int momentum;
     };
 
     struct monsterState {
@@ -79,6 +79,7 @@ public:
     void virtual doAction() = 0;
 
     void haveCombat() {
+        PS.momentum = playerIP.permanentMomentum;
         while (health > 0) {
             doAction();
             makeZeroIfNegative(playerIP.health);

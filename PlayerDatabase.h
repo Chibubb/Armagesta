@@ -36,6 +36,7 @@ public:
     int accuracy = 80;
     int permanentDamageModifier = 0;
     int temporaryDamageModifier = 0;
+    int permanentMomentum = 2;
     int maxHealth = 100;
     int soul = 10;
     int maxSoul = 10;
