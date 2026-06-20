@@ -196,9 +196,10 @@ public:
 
         printIntent(x);
 
-        PAD playerActionType = doPlayerTurn_AndGetPlayerActionType();
         if (getHealth() > 0) {
             if (nameOfAction == "Action") {
+                MAD MAD;
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
 
             }
         }

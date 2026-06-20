@@ -126,7 +126,7 @@ public:
         bool x = true;
         string chosenAction;
         while (x == true) {
-            cin >> chosenAction;
+            getline(cin, chosenAction);
             for (const auto & action : actions) {
                 if (chosenAction == action) {
                     x = false;
@@ -150,7 +150,7 @@ public:
                 cout << i + 1 << ": " << combatActions[i] << "  ";
             }
             cout << endl << endl;
-            cin >> chosenAction;
+            getline(cin, chosenAction);
             for (const auto & action : combatActions) {
                 if (chosenAction == action) {
                     x = false;
