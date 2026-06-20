@@ -42,7 +42,7 @@ public:
     int maxSoul = 10;
     vector<int> currentPosition = {5, 5};
 
-    vector<string> actions = {"Move", "Self Assess"};
+    vector<string> actions = {"Move", "Self Assess", "Understand Powers"};
     vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte"
         , "Weaken", "Soul Burst"};
     vector<string> combatActionsDescriptions = {"Use your sword on the enemy, like you have done so many times before"
