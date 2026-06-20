@@ -25,7 +25,6 @@ private:
     vector<int> actionChances;
 
 
-
     //Action types do different kinds of things, and will call a different function below depending on what they do.
 
 public:
@@ -34,6 +33,14 @@ public:
     virtual ~Encounter() = default;
 
     Player& playerIP;
+
+    struct playerState {
+
+    };
+
+    struct monsterState {
+
+    };
 
     int virtual getAction() {
         int x = -1;
@@ -76,7 +83,7 @@ public:
             cout << "You have " << playerIP.health << " Health remaining" << endl;
             cout << "The Enemy has " << health << " Health remaining" << endl << endl;
         }
-        cout << "The Monster Died!" << endl << endl;
+        cout << "The " << name << " Died! "<< endl << endl;
         playerIP.temporaryDamageModifier = 0;
     }
 

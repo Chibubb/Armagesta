@@ -41,7 +41,7 @@ public:
     int maxSoul = 10;
     vector<int> currentPosition = {5, 5};
 
-    vector<string> actions = {"Move"};
+    vector<string> actions = {"Move", "Assess"};
     vector<string> combatActions = {"Slash"};
 
     Player() = default;
@@ -88,12 +88,11 @@ public:
     }
 
     void assess() const {
-        cout << "Health: " << health << endl;
+        cout << "Health Remaining: " << health << endl;
         cout << "Luck: " << critChance << endl;
         cout << "Accuracy: " << accuracy << endl;
         cout << "Soul: " << soul << endl;
-        cout << "Bodily State: " << health << endl;
-
+        cout << "Unnatural Power: " << permanentDamageModifier << endl;
     }
 
     string getAChosenDirection() {
