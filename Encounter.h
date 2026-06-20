@@ -35,11 +35,11 @@ public:
     Player& playerIP;
 
     struct playerState {
-
+        int momentum = 0;
     };
 
     struct monsterState {
-
+        int danger = 0;
     };
 
     int virtual getAction() {
@@ -95,34 +95,34 @@ public:
 
     //Possible Player Actions and what they do
 
-    string doPlayerTurn_AndGetPlayerActionType() {
+    PAD doPlayerTurn_AndGetPlayerActionType(MAD MAD) {
         const string playerAction = playerIP.getCombatAction();
 
+        PAD PAD;
         const int roll = randomNum(1, 100);
 
         if (playerAction == "Slash") {
 
             if (roll < 100 - playerIP.accuracy) {
                 cout << "You MISSED!" << endl;
-                return "MISSED HIT";
+                PAD.type = "MISSED HIT";
             } else if (roll > 100 - playerIP.critChance) {
-                int damageDealt = randomNum(10, 14) + playerIP.permanentDamageModifier + playerIP.temporaryDamageModifier;
+                int damageDealt = randomNum(10, 14) + playerIP.permanentDamageModifier + playerIP.temporaryDamageModifier - MAD.defenceValue;
                 makeZeroIfNegative(damageDealt);
                 health -= damageDealt;
                 cout << "CRITICAL Slash Hit!" << endl;
                 cout << "You dealt " << damageDealt << " damage!" << endl;
-                return "CRITICAL HIT";
+                PAD.type = "CRITICAL HIT";
             } else {
-                int damageDealt = randomNum(6, 9) + playerIP.permanentDamageModifier + playerIP.temporaryDamageModifier;
+                int damageDealt = randomNum(6, 9) + playerIP.permanentDamageModifier + playerIP.temporaryDamageModifier - MAD.defenceValue;
                 makeZeroIfNegative(damageDealt);
                 health -= damageDealt;
                 cout << "You Slashed the Enemy" << endl;
                 cout << "You dealt " << damageDealt << " damage!" << endl;
+                PAD.type = "ATTACK";
             }
-
-            return "ATTACK";
         }
-        return "NO TYPE";
+        return PAD;
     }
 
     //Possible Player Actions and what they do
@@ -150,10 +150,11 @@ public:
 
         printIntent(x);
 
-        string playerActionType = doPlayerTurn_AndGetPlayerActionType();
         if (getHealth() > 0) {
             if (nameOfAction == "Slap") {
-                if (playerActionType != "CRITICAL HIT") {
+                MAD MAD;
+                PAD playerActionDetails = doPlayerTurn_AndGetPlayerActionType(MAD);
+                if (playerActionDetails.type != "CRITICAL HIT") {
                     int damageDealt = randomNum(3, 5);
                     makeZeroIfNegative(damageDealt);
                     playerIP.health -= damageDealt;
@@ -162,8 +163,10 @@ public:
                     cout << "Your Critical Hit canceled the enemies Attack!" << endl;
                 }
             }else if (nameOfAction == "Goo") {
+                MAD MAD;
+                PAD playerActionDetails = doPlayerTurn_AndGetPlayerActionType(MAD);
                 playerIP.temporaryDamageModifier -= 2;
-                if (playerActionType == "MISSED HIT") {
+                if (playerActionDetails.type == "MISSED HIT") {
                     playerIP.temporaryDamageModifier -= 2;
                 }
                 cout << "The Slime threw Goo at you! Your attack has decreased..." << endl;
@@ -193,7 +196,7 @@ public:
 
         printIntent(x);
 
-        string playerActionType = doPlayerTurn_AndGetPlayerActionType();
+        PAD playerActionType = doPlayerTurn_AndGetPlayerActionType();
         if (getHealth() > 0) {
             if (nameOfAction == "Action") {
 

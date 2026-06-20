@@ -7,6 +7,8 @@
 #include <vector>
 #include <random>
 
+using namespace std;
+
 inline int randomNum(const int min, const int max) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -21,6 +23,13 @@ inline void makeZeroIfNegative(int& value) {
     }
 }
 
+struct PAD {
+    string type;
+    int defenceValue = 0;
+};
 
+struct MAD {
+    int defenceValue = 0;
+};
 
 #endif //ARMAGESTA_RANDOMNESS_H
