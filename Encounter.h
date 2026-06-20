@@ -153,8 +153,8 @@ public:
         if (getHealth() > 0) {
             if (nameOfAction == "Slap") {
                 MAD MAD;
-                PAD playerActionDetails = doPlayerTurn_AndGetPlayerActionType(MAD);
-                if (playerActionDetails.type != "CRITICAL HIT") {
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
+                if (PAD.type != "CRITICAL HIT") {
                     int damageDealt = randomNum(3, 5);
                     makeZeroIfNegative(damageDealt);
                     playerIP.health -= damageDealt;
@@ -164,9 +164,9 @@ public:
                 }
             }else if (nameOfAction == "Goo") {
                 MAD MAD;
-                PAD playerActionDetails = doPlayerTurn_AndGetPlayerActionType(MAD);
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
                 playerIP.temporaryDamageModifier -= 2;
-                if (playerActionDetails.type == "MISSED HIT") {
+                if (PAD.type == "MISSED HIT") {
                     playerIP.temporaryDamageModifier -= 2;
                 }
                 cout << "The Slime threw Goo at you! Your attack has decreased..." << endl;
