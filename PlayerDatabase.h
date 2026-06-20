@@ -34,6 +34,7 @@ public:
     int health = 100;
     int critChance = 5;
     int accuracy = 80;
+    int hardiness = 0;
     int permanentDamageModifier = 0;
     int permanentMomentum = 2;
     int maxHealth = 100;
@@ -42,8 +43,16 @@ public:
     vector<int> currentPosition = {5, 5};
 
     vector<string> actions = {"Move", "Self Assess"};
-    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Counter"
+    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte"
         , "Weaken", "Soul Burst"};
+    vector<string> combatActionsDescriptions = {"Use your sword on the enemy, like you have done so many times before"
+        , "Make the enemy's innards outards, requires a large amount of Momentum"
+        , "Try to dodge you enemy's attack by rolling, requires miniscule Momentum"
+        , "Block incoming damage using known battle stances"
+        , "Take a moment of respite, and assess the situation around you, gains you Momentum"
+        , "Parry an enemy who is choosing to attack you, dealing damage, acquiring defense, and gaining Momentum"
+        , "Caste a weakening curse on your enemy, immediately enacting bodily distrophy on them, requires a small amount of souls"
+        , "Unleash the power of stolen souls on the currently living enemy in front of you, dealing a large amount of damage, requires a decent amount of souls"};
 
     Player() = default;
 
@@ -51,6 +60,13 @@ public:
         health += healAmount;
         if (health > maxHealth) {
             health = maxHealth;
+        }
+    }
+
+    void gainSoul(const int soulAmount) {
+        soul += soulAmount;
+        if (soul > maxSoul) {
+            soul = maxSoul;
         }
     }
 
@@ -89,11 +105,19 @@ public:
     }
 
     void assess() const {
-        cout << "Health Remaining: " << health << endl;
+        cout << "Health Remaining: " << health << " / " << maxHealth << endl;
         cout << "Luck: " << critChance << endl;
         cout << "Accuracy: " << accuracy << endl;
-        cout << "Soul: " << soul << endl;
-        cout << "Unnatural Power: " << permanentDamageModifier << endl;
+        cout << "Souls: " << soul << " / " << maxSoul << endl;
+        cout << "Hardiness: " << hardiness << endl;
+        cout << "Strength: " << permanentDamageModifier << endl;
+    }
+
+    void understandPowers() {
+        for (int i = 0; i < combatActions.size(); i++) {
+            cout << i + 1 << ": " << combatActions[i] << endl;
+            cout << combatActionsDescriptions[i] << endl << endl;
+        }
     }
 
     string getAChosenDirection() {

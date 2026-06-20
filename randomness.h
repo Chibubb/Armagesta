@@ -27,12 +27,15 @@ inline void makeZeroIfNegative(int& value) {
 //attackSpeed can either be "Quick" "Normal" "Slow"
 
 struct PAD {
+    //Can be "MISSED HIT", "CRITICAL HIT", "ATTACK", "DEFENSE", "DODGE", "CHARGE", "PARRY", "MAGIC", or "NO TYPE"
     string type;
     string attackSpeed = "Normal";
     int defenceValue = 0;
 };
 
 struct MAD {
+    //Can be "ATTACK" or "NO TYPE"
+    string type = "NO TYPE";
     string attackSpeed = "Normal";
     int defenceValue = 0;
 };

@@ -38,6 +38,9 @@ int main() {
          if (chosenAction == "Self Assess") {
              player->assess();
          }
+         if (chosenAction == "Understand Powers") {
+             player->understandPowers();
+         }
          cout << endl;
 
          //Check if player is dead
