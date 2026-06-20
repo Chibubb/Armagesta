@@ -35,15 +35,15 @@ public:
     int critChance = 5;
     int accuracy = 80;
     int permanentDamageModifier = 0;
-    int temporaryDamageModifier = 0;
     int permanentMomentum = 2;
     int maxHealth = 100;
     int soul = 10;
     int maxSoul = 10;
     vector<int> currentPosition = {5, 5};
 
-    vector<string> actions = {"Move", "Assess"};
-    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Counter"};
+    vector<string> actions = {"Move", "Self Assess"};
+    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Counter"
+        , "Weaken", "Soul Burst"};
 
     Player() = default;
 

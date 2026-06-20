@@ -35,10 +35,12 @@ public:
     Player& playerIP;
 
     struct playerState {
+        int temporaryDamageModifier = 0;
         int momentum;
     };
 
     struct monsterState {
+        int temporaryDamageModifier = 0;
         int danger = 0;
     };
 
@@ -88,7 +90,6 @@ public:
             cout << "The Enemy has " << health << " Health remaining, and " << MS.danger << " Danger" << endl << endl;
         }
         cout << "The " << name << " Died! "<< endl << endl;
-        playerIP.temporaryDamageModifier = 0;
     }
 
     void virtual printIntent(const int indexOfIntent) const {
@@ -111,19 +112,60 @@ public:
                 cout << "You MISSED!" << endl;
                 PAD.type = "MISSED HIT";
             } else if (roll > 100 - playerIP.critChance) {
-                int damageDealt = randomNum(10, 14) + playerIP.permanentDamageModifier + playerIP.temporaryDamageModifier - MAD.defenceValue;
+                int damageDealt = randomNum(10, 14) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
                 makeZeroIfNegative(damageDealt);
                 health -= damageDealt;
                 cout << "CRITICAL Slash Hit!" << endl;
                 cout << "You dealt " << damageDealt << " damage!" << endl;
                 PAD.type = "CRITICAL HIT";
             } else {
-                int damageDealt = randomNum(6, 9) + playerIP.permanentDamageModifier + playerIP.temporaryDamageModifier - MAD.defenceValue;
+                int damageDealt = randomNum(6, 9) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
                 makeZeroIfNegative(damageDealt);
                 health -= damageDealt;
                 cout << "You Slashed the Enemy" << endl;
                 cout << "You dealt " << damageDealt << " damage!" << endl;
                 PAD.type = "ATTACK";
+            }
+        } else if (playerAction == "Eviscerate") {
+
+            if (PS.momentum >= 5){
+                PS.momentum -= 5;
+                if (roll < 90 - playerIP.accuracy) {
+                    cout << "You MISSED!" << endl;
+                    PAD.type = "MISSED HIT";
+                } else if (roll > 100 - playerIP.critChance) {
+                    int damageDealt = randomNum(25, 30) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
+                    makeZeroIfNegative(damageDealt);
+                    health -= damageDealt;
+                    cout << "CRITICAL Evisceration!" << endl;
+                    cout << "You dealt " << damageDealt << " damage!" << endl;
+                    PAD.type = "CRITICAL HIT";
+                } else {
+                    int damageDealt = randomNum(17, 20) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
+                    makeZeroIfNegative(damageDealt);
+                    health -= damageDealt;
+                    cout << "You Eviscerated the Enemy" << endl;
+                    cout << "You dealt " << damageDealt << " damage!" << endl;
+                    PAD.type = "ATTACK";
+                }
+            } else {
+                cout << "You did not have the Momentum required to Eviscerate!" << endl;
+                PAD.type = "NO TYPE";
+            }
+        } else if (playerAction == "Roll") {
+
+            if (PS.momentum >= 1){
+                if (roll < 20 * PS.momentum) {
+                    PAD.defenceValue += 10000;
+                    cout << "You Rolled and completely avoided the enemies attack!" << endl;
+                } else {
+                    cout << "Your Roll failed!" << endl;
+                }
+                PS.momentum -= 1;
+                PAD.type = "DODGE";
+            } else {
+                cout << "You did not have the Momentum required to Roll!" << endl;
+                PAD.type = "NO TYPE";
             }
         }
         return PAD;
@@ -169,9 +211,9 @@ public:
             }else if (nameOfAction == "Goo") {
                 MAD MAD;
                 PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
-                playerIP.temporaryDamageModifier -= 2;
+                PS.temporaryDamageModifier -= 2;
                 if (PAD.type == "MISSED HIT") {
-                    playerIP.temporaryDamageModifier -= 2;
+                    PS.temporaryDamageModifier -= 2;
                 }
                 cout << "The Slime threw Goo at you! Your attack has decreased..." << endl;
             }

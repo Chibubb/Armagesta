@@ -35,7 +35,7 @@ int main() {
          if (chosenAction == "Move") {
              interactWithWorld(player->move(player->getAChosenDirection()), *player);
          }
-         if (chosenAction == "Assess") {
+         if (chosenAction == "Self Assess") {
              player->assess();
          }
          cout << endl;
