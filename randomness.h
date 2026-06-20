@@ -23,12 +23,17 @@ inline void makeZeroIfNegative(int& value) {
     }
 }
 
+
+//attackSpeed can either be "Quick" "Normal" "Slow"
+
 struct PAD {
     string type;
+    string attackSpeed = "Normal";
     int defenceValue = 0;
 };
 
 struct MAD {
+    string attackSpeed = "Normal";
     int defenceValue = 0;
 };
 
