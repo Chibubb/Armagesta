@@ -18,7 +18,7 @@ using namespace std;
 
 inline void encounterSlime(Player& playerIP, BackgroundMusicManager& musicManager) {
     musicManager.changeMusicWithFade("assets/music/Action 2.mp3");
-    unique_ptr<Encounter> encounter = make_unique<Slime>(playerIP);
+    unique_ptr<Encounter> encounter = make_unique<Slime>(playerIP, musicManager);
     encounter->haveCombat();
 }
 
