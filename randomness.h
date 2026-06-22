@@ -6,6 +6,10 @@
 #define ARMAGESTA_RANDOMNESS_H
 #include <vector>
 #include <random>
+#include <SFML/Audio.hpp>
+#include <iostream>
+#include <optional>
+#include <string>
 
 using namespace std;
 
@@ -21,6 +25,30 @@ inline void makeZeroIfNegative(int& value) {
     if (value < 0) {
         value = 0;
     }
+}
+
+inline bool playSoundEffect(const std::string& filePath) {
+    static sf::SoundBuffer buffer;
+    static std::optional<sf::Sound> sound;
+
+    // Stop the previous sound effect if one is already playing
+    if (sound.has_value()) {
+        sound->stop();
+        sound.reset();
+    }
+
+    // Load the sound file
+    if (!buffer.loadFromFile(filePath)) {
+        std::cout << "Failed to load sound effect: " << filePath << std::endl;
+        return false;
+    }
+
+    // Create and play the sound
+    sound.emplace(buffer);
+    sound->setVolume(75.0f);
+    sound->play();
+
+    return true;
 }
 
 

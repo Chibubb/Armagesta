@@ -7,6 +7,7 @@
 #include "Events.h"
 #include <vector>
 #include "PlayerDatabase.h"
+#include "BackgroundMusicManager.h"
 
 using namespace std;
 
@@ -21,11 +22,13 @@ void interactWithWorld(const char BiomeType, Player& player) {
 
 int main() {
 
+    BackgroundMusicManager musicManager;
 
+    musicManager.changeMusicWithFade();
 
     auto player = make_unique<Player>();
 
-    cout << "Welcome to the Game!" << endl << endl;
+    cout << "Welcome to Armagesta!" << endl << endl;
     bool gameEnds = false;
 
 
@@ -46,6 +49,7 @@ int main() {
          //Check if player is dead
          if (player->health <= 0) {
              cout << "You fall to the floor, breathless. You have died" << endl;
+             gameEnds = true;
          }
      }
 

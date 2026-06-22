@@ -26,6 +26,7 @@ add_executable(Armagesta
         PlayerDatabase.h
         rulesForImplementation.h
         MonsterCalling.h
+        BackgroundMusicManager.h
 )
 
 target_link_libraries(Armagesta PRIVATE

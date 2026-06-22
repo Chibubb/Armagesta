@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include "PlayerDatabase.h"
+#include "BackgroundMusicManager.h"
 
 using namespace std;
 

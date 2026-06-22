@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 #include "MonsterCalling.h"
-
+#include "BackgroundMusicManager.h"
 #include "PlayerDatabase.h"
 
 using namespace std;

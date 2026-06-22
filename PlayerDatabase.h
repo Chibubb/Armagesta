@@ -11,6 +11,7 @@
 #include "Events.h"
 #include <memory>
 #include <vector>
+#include "BackgroundMusicManager.h"
 
 using namespace std;
 
