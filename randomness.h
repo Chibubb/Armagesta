@@ -27,7 +27,7 @@ inline void makeZeroIfNegative(int& value) {
     }
 }
 
-inline bool playSoundEffect(const std::string& filePath) {
+inline bool playSoundEffect(const std::string& filePath1, const std::string& filePath2, const std::string& filePath3) {
     static sf::SoundBuffer buffer;
     static std::optional<sf::Sound> sound;
 
@@ -38,9 +38,27 @@ inline bool playSoundEffect(const std::string& filePath) {
     }
 
     // Load the sound file
-    if (!buffer.loadFromFile(filePath)) {
-        std::cout << "Failed to load sound effect: " << filePath << std::endl;
-        return false;
+    int randTrack = randomNum(1, 3);
+
+    switch (randTrack) {
+        case 1:
+            if (!buffer.loadFromFile(filePath1)) {
+                std::cout << "Failed to load sound effect: " << filePath1 << std::endl;
+                return false;
+            }
+            break;
+        case 2:
+            if (!buffer.loadFromFile(filePath2)) {
+                std::cout << "Failed to load sound effect: " << filePath2 << std::endl;
+                return false;
+            }
+            break;
+        case 3:
+            if (!buffer.loadFromFile(filePath3)) {
+                std::cout << "Failed to load sound effect: " << filePath3 << std::endl;
+                return false;
+            }
+            break;
     }
 
     // Create and play the sound
