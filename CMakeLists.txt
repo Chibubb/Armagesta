@@ -32,3 +32,5 @@ add_executable(Armagesta
 target_link_libraries(Armagesta PRIVATE
         SFML::Audio
 )
+
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
