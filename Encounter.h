@@ -36,7 +36,7 @@ public:
 
     struct playerState {
         int temporaryDamageModifier = 0;
-        int momentum;
+        int momentum = 0;
     };
 
     struct monsterState {
