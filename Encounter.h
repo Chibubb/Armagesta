@@ -29,7 +29,7 @@ private:
     //Action types do different kinds of things, and will call a different function below depending on what they do.
 
 public:
-    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, vector<string> Intents, Player& playerData, BackgroundMusicManager& musicManager) :
+    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, vector<string> Intents, Player& playerData, BackgroundMusicManager& musicManager)
     : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(playerData), actionIntents(std::move(Intents)), musicManager(musicManager) {};
     virtual ~Encounter() = default;
 
@@ -92,7 +92,7 @@ public:
             cout << "The Enemy has " << health << " Health remaining, and " << MS.danger << " Danger" << endl << endl;
         }
         playerIP.gainSoul(1);
-        musicManager
+        musicManager.stopMusicWithFade();
         cout << "The " << name << " Died! You gained 1 Soul!"<< endl << endl;
     }
 
@@ -306,9 +306,9 @@ public:
 class NewEncounterTemplate : public Encounter {
 private:
 public:
-    explicit NewEncounterTemplate(Player& playerData)
+    explicit NewEncounterTemplate(Player& playerData, BackgroundMusicManager& musicManager)
     : Encounter(7, "Skeleton", {"Stab", "Clamber"}, {60, 20}
-        ,{"", ""}, playerData) {};
+        ,{"", ""}, playerData, musicManager) {};
 
     void doAction() override {
         const int x = getAction();
