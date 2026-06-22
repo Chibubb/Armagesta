@@ -41,6 +41,7 @@ public:
     int maxHealth = 100;
     int soul = 10;
     int maxSoul = 10;
+    int currentScrapMetal = 0;
     vector<int> currentPosition = {5, 5};
 
     vector<string> actions = {"Move", "Self Assess", "Understand Powers"};

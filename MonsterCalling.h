@@ -22,4 +22,10 @@ inline void encounterSlime(Player& playerIP, BackgroundMusicManager& musicManage
     encounter->haveCombat();
 }
 
+inline void encounterSkeleton(Player& playerIP, BackgroundMusicManager& musicManager) {
+    musicManager.changeMusicWithFade("assets/music/Action 2.mp3");
+    unique_ptr<Encounter> encounter = make_unique<Skeleton>(playerIP, musicManager);
+    encounter->haveCombat();
+}
+
 #endif //ARMAGESTA_MONSTERCALLING_H

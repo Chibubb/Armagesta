@@ -33,15 +33,19 @@ protected:
 
 class Forest : public BiomeEventDatabase {
 private:
-    vector<int> eventChances = {60, 40};
-    vector<string> eventNames = {"Bright Forest", "Dark Forest"};
+    vector<int> eventChances = {60, 40, 5, 5};
+    vector<string> eventNames = {"Bright Forest", "Dark Brush", "Hidden Cathedral", "Grand Tree"};
     vector<string> eventFlavorText = {
         "Light shines through the trees, illuminating the leafy forest floor",
-        "Whispers flow through the trees, making it clear you are not alone"
+        "Whispers flow through the trees, making it clear you are not alone",
+        "A tall Cathedral hidden in he trees stands before you, covered in vines, and clearly deteriorated over many decades",
+        "A tree is rooted in front of you, standing at least three times as tall as any other that you have seen in the forest"
     };
     vector<vector<string>> eventChoices = {
         {"Rest", "Scavenge"},
-        {"Confront", "Run Away"}
+        {"Confront", "Run Away"},
+        {"Explore the Basement", "Appreciate the Stained Glass Artwork", "Pray at the Altar", "Move On"},
+        {"Talk to the Tree", "Climb the Tree", "Carve into the Tree", "Move On"}
     };
 
     string ChoiceName;
@@ -119,10 +123,44 @@ protected:
             cout << "A Slime appears!" << endl;
             encounterSlime(playerIP, musicManager);
         } else if (ChoiceName == "Run Away") {
-            playerIP.health -= 10;
-            cout << "You successfully get away, but are wounded in your escape" << endl;
+            const int n = randomNum(1, 10);
+            if (n <= 5) {
+                playerIP.health -= 10;
+                cout << "You successfully get away, but are wounded in your escape" << endl;
+            } else {
+                cout << "You got away without getting wounded!" << endl;
+            }
         } else if (ChoiceName == "Scavenge") {
-            cout << "You have gained a resource!" << endl;
+            const int n = randomNum(1, 10);
+            if (n <= 6) {
+                cout << "You have found nothing..." << endl;
+            } else if (n <= 8) {
+                cout << "You have found a piece of Scrap Metal" << endl;
+                playerIP.currentScrapMetal += 1;
+            } else if (n <= 9) {
+                cout << "You have found a juicy Plum! You have healed 10 Health!" << endl;
+                playerIP.heal(10);
+            } else if (n <= 10) {
+                cout << "You have found a Hearty Salmon! After some light cooking, it has become quite the meal!" << endl;
+                playerIP.maxHealth += 5;
+            }
+        } else if (ChoiceName == "Explore the Basement") {
+            const int n = randomNum(1, 10);
+            if (n <= 7) {
+                cout << "A Skeleton appears!" << endl;
+                encounterSkeleton(playerIP, musicManager);
+            }
+            if (n <= 2) {
+                cout << "Another Skeleton appears!" << endl;
+                encounterSkeleton(playerIP, musicManager);
+            }
+            cout << "You find a strange amulet, with a silver rim, and a central Sapphire" << endl;
+            playerIP.maxSoul += 1;
+            playerIP.combatActions.emplace_back("Break Sapphire Amulet");
+            playerIP.combatActionsDescriptions.emplace_back("It looks like tiny wisps flow and spin inside the Sapphire, I wonder what breaking it would do?");
+        } else if (ChoiceName == "Appreciate the Stained Glass Artwork") {
+            cout << "The stained glass artwork fills you with determination! You feel a power flow within you, and a pane of glass depicting a floral sword shatters" << endl;
+            playerIP.permanentDamageModifier += 1;
         }
     }
 

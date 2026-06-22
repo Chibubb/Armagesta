@@ -105,7 +105,7 @@ public:
     //Possible Player Actions and what they do
 
     PAD doPlayerTurn_AndGetPlayerActionType(const MAD& MAD) {
-        const string playerAction = playerIP.getCombatAction();
+        string playerAction = playerIP.getCombatAction();
 
         PAD PAD;
         const int roll = randomNum(1, 100);
@@ -184,7 +184,7 @@ public:
             cout << "You took a moment to assess the situation and look for an opening, and gained 2 Momentum!" << endl;
             PAD.type = "CHARGE";
         } else if (playerAction == "Riposte") {
-            if (MAD.type == "ATTACK" && MAD.attackSpeed != "Quick") {
+            if (MAD.type == "M-ATTACK" && MAD.attackSpeed != "Quick") {
                 if (roll <= 100 - playerIP.accuracy) {
                     int damageDealt = randomNum(4, 7) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
                     makeZeroIfNegative(damageDealt);
@@ -199,10 +199,13 @@ public:
                     cout << "You tried to Parry, but Missed!" << endl;
                     PAD.type = "MISSED HIT";
                 }
-            } else if (MAD.type == "ATTACK" && MAD.attackSpeed == "Quick") {
+            } else if (MAD.type == "M-ATTACK" && MAD.attackSpeed == "Quick") {
                 cout << "You Parried, but the Enemy Attacked too quick to Parry!" << endl;
                 PAD.type = "MISSED HIT";
-            }else {
+            }else if (MAD.type == "R-ATTACK"){
+                cout << "You Parried, but the Enemy was not using a Melee Attack!" << endl;
+                PAD.type = "NO TYPE";
+            } else {
                 cout << "You Parried, but the Enemy was not Attacking!" << endl;
                 PAD.type = "NO TYPE";
             }
@@ -217,6 +220,14 @@ public:
                 cout << "You tried to use Weaken, but didn't have enough Souls!" << endl;
                 PAD.type = "NO TYPE";
             }
+        } else if (playerAction == "Break Sapphire Amulet") {
+
+            cout << "The now freed souls flow into you! You have regained souls to your max potential!" << endl;
+            playerIP.soul = playerIP.maxSoul;
+            int damageDealt = randomNum(13, 17);
+            health -= damageDealt;
+            cout << "The amulet breaking activated a Soul Burst! You dealt " << damageDealt << " Magical damage to the Enemy!" << endl;
+            PAD.type = "MAGIC";
         } else if (playerAction == "Soul Burst") {
 
             if (playerIP.soul >= 4) {
@@ -261,7 +272,7 @@ public:
         if (getHealth() > 0) {
             if (nameOfAction == "Slap") {
                 MAD MAD;
-                MAD.type = "ATTACK";
+                MAD.type = "M-ATTACK";
                 PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
                 if (PAD.type != "CRITICAL HIT" && PAD.type != "PARRY") {
                     int damageDealt = randomNum(3, 5) - PAD.defenceValue;
@@ -290,6 +301,31 @@ public:
                 MAD MAD;
                 PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
                 cout << "The Slime does practically nothing, except sit there and Wiggle!" << endl;
+            }
+        }
+    }
+};
+
+class Skeleton : public Encounter {
+private:
+public:
+    explicit Skeleton(Player& playerData, BackgroundMusicManager& musicManager)
+    : Encounter(35, "Skeleton", {"Stab", "Clamber", "Bow", "Put Back Together"}, {40, 15, 20, 20}
+        ,{"The Skeleton lunges at you with a knife...", "The Skeleton begins to jitter and shake...",
+            "The Skeleton draws its Bow...", "The Skeleton scrambles to pick up its detached pieces"}, playerData, musicManager) {};
+
+    void doAction() override {
+        const int x = getAction();
+        const string nameOfAction = getActionName(x);
+
+        printIntent(x);
+
+        if (getHealth() > 0) {
+            if (nameOfAction == "Stab") {
+                MAD MAD;
+                MAD.type = "M-ATTACK";
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
+
             }
         }
     }

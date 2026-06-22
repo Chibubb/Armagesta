@@ -80,7 +80,7 @@ struct PAD {
 };
 
 struct MAD {
-    //Can be "ATTACK" or "NO TYPE"
+    //Can be "M-ATTACK", "R-ATTACK", or "NO TYPE"
     string type = "NO TYPE";
     string attackSpeed = "Normal";
     int defenceValue = 0;
