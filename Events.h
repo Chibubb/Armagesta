@@ -20,8 +20,9 @@ using namespace std;
 
 class BiomeEventDatabase {
 protected:
+    BackgroundMusicManager& musicManager;
     Player& playerIP;
-    explicit BiomeEventDatabase(Player& playerIP) : playerIP(playerIP) {};
+    explicit BiomeEventDatabase(Player& playerIP, BackgroundMusicManager& musicManager) : playerIP(playerIP), musicManager(musicManager) {};
     virtual ~BiomeEventDatabase() = default;
 
     int virtual getChoice() = 0;
@@ -116,7 +117,7 @@ protected:
             cout << "You have rested back 2 Health!" << endl;
         } else if (ChoiceName == "Confront") {
             cout << "A Slime appears!" << endl;
-            encounterSlime(playerIP);
+            encounterSlime(playerIP, musicManager);
         } else if (ChoiceName == "Run Away") {
             playerIP.health -= 10;
             cout << "You successfully get away, but are wounded in your escape" << endl;
@@ -126,7 +127,7 @@ protected:
     }
 
 public:
-    explicit Forest(Player& PlayerIP) : BiomeEventDatabase(PlayerIP) {
+    explicit Forest(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
         REI = Forest::getChoice();
         Forest::doEvent();
     }
@@ -205,7 +206,7 @@ protected:
     }
 
 public:
-    explicit NEWBIOMENAME(Player& PlayerIP) : BiomeEventDatabase(PlayerIP) {
+    explicit NEWBIOMENAME(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
         REI = NEWBIOMENAME::getChoice();
         NEWBIOMENAME::doEvent();
     }

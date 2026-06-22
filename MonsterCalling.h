@@ -12,10 +12,12 @@
 #include <vector>
 #include "Encounter.h"
 #include "PlayerDatabase.h"
+#include "BackgroundMusicManager.h"
 
 using namespace std;
 
-inline void encounterSlime(Player& playerIP) {
+inline void encounterSlime(Player& playerIP, BackgroundMusicManager& musicManager) {
+    musicManager.changeMusicWithFade("assets/music/Action 2.mp3");
     unique_ptr<Encounter> encounter = make_unique<Slime>(playerIP);
     encounter->haveCombat();
 }

@@ -11,9 +11,10 @@
 
 using namespace std;
 
-void interactWithWorld(const char BiomeType, Player& player) {
+void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicManager& musicManager) {
     if (BiomeType == 'F') {
-        auto Event = make_unique<Forest>(player);
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Forest>(player, musicManager);
     }
     if (BiomeType == 'X') {
         cout << "You are at the edge of the map, you may not travel any farther in that direction..." << endl;
@@ -24,7 +25,7 @@ int main() {
 
     BackgroundMusicManager musicManager;
 
-    musicManager.changeMusicWithFade();
+    musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
 
     auto player = make_unique<Player>();
 
@@ -36,7 +37,7 @@ int main() {
          player->printActions();
          string chosenAction = player->getAction();
          if (chosenAction == "Move") {
-             interactWithWorld(player->move(player->getAChosenDirection()), *player);
+             interactWithWorld(player->move(player->getAChosenDirection()), *player, musicManager);
          }
          if (chosenAction == "Self Assess") {
              player->assess();
