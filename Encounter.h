@@ -29,11 +29,12 @@ private:
     //Action types do different kinds of things, and will call a different function below depending on what they do.
 
 public:
-    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, vector<string> Intents, Player& playerData)
-    : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(playerData), actionIntents(std::move(Intents)) {};
+    explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, vector<string> Intents, Player& playerData, BackgroundMusicManager& musicManager) :
+    : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(playerData), actionIntents(std::move(Intents)), musicManager(musicManager) {};
     virtual ~Encounter() = default;
 
     Player& playerIP;
+    BackgroundMusicManager& musicManager;
 
     struct playerState {
         int temporaryDamageModifier = 0;
@@ -91,6 +92,7 @@ public:
             cout << "The Enemy has " << health << " Health remaining, and " << MS.danger << " Danger" << endl << endl;
         }
         playerIP.gainSoul(1);
+        musicManager
         cout << "The " << name << " Died! You gained 1 Soul!"<< endl << endl;
     }
 
@@ -246,9 +248,9 @@ public:
 class Slime : public Encounter {
 private:
 public:
-    explicit Slime(Player& playerData)
+    explicit Slime(Player& playerData, BackgroundMusicManager& musicManager)
     : Encounter(15, "Slime", {"Slap", "Goo", "Wiggle"}, {60, 20, 20}
-        , {"The Slime starts to bounce around...", "The Slime undulates and vibrates...", "The Slime sits and starts to shift and jiggle..."}, playerData) {};
+        , {"The Slime starts to bounce around...", "The Slime undulates and vibrates...", "The Slime sits and starts to shift and jiggle..."}, playerData, musicManager) {};
 
     void doAction() override {
         const int x = getAction();
@@ -272,6 +274,7 @@ public:
                     playerIP.health -= damageDealt;
                     MS.temporaryDamageModifier -= 1;
                     cout << "Your Parry Hit split a part off the Slime! It's attack has Weakened!" << endl;
+                    cout << "The Slime has nonetheless slapped you, and done " << damageDealt << " damage!" << endl;
                 } else {
                     cout << "Your Critical Hit canceled the enemies Attack!" << endl;
                 }
