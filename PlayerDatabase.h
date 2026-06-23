@@ -191,7 +191,14 @@ public:
         return chosenAction;
     }
 
-
+    void printMap() const {
+        for (int i = 0; i < map.size(); i++) {
+            for (int j = 0; j < map[i].size(); j++) {
+                cout << map[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
 
 };
 

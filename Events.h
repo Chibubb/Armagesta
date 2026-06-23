@@ -194,6 +194,36 @@ protected:
                 playerIP.combatActions.emplace_back("Ent Wand");
                 playerIP.combatActionsDescriptions.emplace_back("This wand is a classic Ent trick, bring up roots to stab the enemy, as well as binding its movement, this requires a large amount of souls");
             }
+        } else if (ChoiceName == "Climb the Tree") {
+            cout << "How many meters do you want to climb?" << endl;
+            int x;
+            cin >> x;
+            while (x <= 0 || x > 100) {
+                cout << "You can't even climb that high..." << endl;
+                cin >> x;
+            }
+            const int n = randomNum(1, x);
+            if (n <= 10) {
+                cout << "You found an orange!" << endl;
+                playerIP.heal(5);
+            } else if (n <= 30) {
+                cout << "You found a large Blood Orange!" << endl;
+                playerIP.maxHealth += 5;
+                playerIP.heal(15);
+            } else if (n <= 90) {
+                cout << "You fell quite high from the Tree!" << endl;
+                const int y = randomNum(1, 30);
+                cout << "You took " << y << " damage!" << endl;
+            } else if (n <= 100) {
+                cout << "At the top of the tree, it feels like you can see the entire world!" << endl;
+                playerIP.printMap();
+            }
+        } else if (ChoiceName == "Carve into the Tree") {
+            cout << "The Tree awakens, and seems very angry!" << endl;
+            encounterEnt(playerIP, musicManager);
+            cout << "From the corpse of the ent is a large piece of unbreakable bark, you grab it, and it melds to your arm...";
+            playerIP.hardiness += 5;
+            playerIP.heal(30);
         }
     }
 
