@@ -161,6 +161,39 @@ protected:
         } else if (ChoiceName == "Appreciate the Stained Glass Artwork") {
             cout << "The stained glass artwork fills you with determination! You feel a power flow within you, and a pane of glass depicting a floral sword shatters" << endl;
             playerIP.permanentDamageModifier += 1;
+        } else if (ChoiceName == "Pray at the Altar") {
+            const int n = randomNum(1, 10);
+            cout << "There is a large brown book on the alter..." << endl;
+            if (n <= 7) {
+                cout << "Out of the book comes a warm familiar soul, you absorb it. You have gained 5 souls, and your soul capacity feels bigger!" << endl;
+                playerIP.maxSoul += 2;
+                playerIP.gainSoul(5);
+            } else {
+                cout << "A large soul with demonic energy radiating from it emerges from the book, it pounces at you, dissipating into your chest..." << endl;
+                playerIP.maxSoul += 2;
+                playerIP.maxHealth -= 5;
+                if (playerIP.maxHealth > playerIP.health) {
+                    playerIP.health = playerIP.maxHealth;
+                }
+            }
+        } else if (ChoiceName == "Move On") {
+            cout << "Best leave that for another day..." << endl;
+            cout << "You feel slightly better knowing that this is YOUR choice";
+            playerIP.heal(3);
+        } else if (ChoiceName == "Talk to the Tree") {
+            const int n = randomNum(1, 10);
+            cout << "The Tree talks back!" << endl;
+            if (n <= 5) {
+                cout << "Although the tree doesn't seem to want to talk much, but it does drop a couple apple's for you!" << endl;
+                playerIP.heal(5);
+            } else if (n <= 7) {
+                cout << "The Tree seems irrationally angry, it bumps you away like a bug" << endl;
+                playerIP.health -= 5;
+            } else if (n <= 10) {
+                cout << "The Tree describes itself as an Ent, and says it has been here for centuries. It gives you a Hardwood stick from the top of its head and bids you off..." << endl;
+                playerIP.combatActions.emplace_back("Ent Wand");
+                playerIP.combatActionsDescriptions.emplace_back("This wand is a classic Ent trick, bring up roots to stab the enemy, as well as binding its movement, this requires a large amount of souls");
+            }
         }
     }
 

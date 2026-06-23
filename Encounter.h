@@ -19,7 +19,6 @@ using namespace std;
 
 class Encounter {
 private:
-    int health;
     string name;
     vector<string> actionNames;
     vector<string> actionIntents;
@@ -33,6 +32,7 @@ public:
     : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(playerData), actionIntents(std::move(Intents)), musicManager(musicManager) {};
     virtual ~Encounter() = default;
 
+    int health;
     Player& playerIP;
     BackgroundMusicManager& musicManager;
 
@@ -126,7 +126,7 @@ public:
                 int damageDealt = randomNum(6, 9) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
                 makeZeroIfNegative(damageDealt);
                 health -= damageDealt;
-                cout << "You Slashed the Enemy" << endl;
+                cout << "You Slashed the " << name << "!" << endl;
                 cout << "You dealt " << damageDealt << " damage!" << endl;
                 PAD.type = "ATTACK";
             }
@@ -148,7 +148,7 @@ public:
                     int damageDealt = randomNum(17, 20) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
                     makeZeroIfNegative(damageDealt);
                     health -= damageDealt;
-                    cout << "You Eviscerated the Enemy" << endl;
+                    cout << "You Eviscerated the " << name << "!" << endl;
                     cout << "You dealt " << damageDealt << " damage!" << endl;
                     PAD.type = "ATTACK";
                 }
@@ -161,7 +161,7 @@ public:
             if (PS.momentum >= 1){
                 if (roll < 20 * PS.momentum) {
                     PAD.defenceValue += 10000;
-                    cout << "You Rolled and completely avoided the Enemy's attack!" << endl;
+                    cout << "You Rolled and completely avoided the " << name << "'s attack!" << endl;
                 } else {
                     cout << "Your Roll failed!" << endl;
                 }
@@ -193,20 +193,20 @@ public:
                     makeZeroIfNegative(defenceGain);
                     PAD.defenceValue += defenceGain;
                     PS.momentum += 1;
-                    cout << "You Parried the Enemy's Attack! You dealt " << damageDealt << " damage, gained " << defenceGain << " defence, and gained 1 Momentum!" << endl;
+                    cout << "You Parried the " << name << "'s Attack! You dealt " << damageDealt << " damage, gained " << defenceGain << " defence, and gained 1 Momentum!" << endl;
                     PAD.type = "PARRY";
                 } else {
                     cout << "You tried to Parry, but Missed!" << endl;
                     PAD.type = "MISSED HIT";
                 }
             } else if (MAD.type == "M-ATTACK" && MAD.attackSpeed == "Quick") {
-                cout << "You Parried, but the Enemy Attacked too quick to Parry!" << endl;
+                cout << "You Parried, but the " << name << " Attacked too quick to Parry!" << endl;
                 PAD.type = "MISSED HIT";
             }else if (MAD.type == "R-ATTACK"){
-                cout << "You Parried, but the Enemy was not using a Melee Attack!" << endl;
+                cout << "You Parried, but the " << name << " was not using a Melee Attack!" << endl;
                 PAD.type = "NO TYPE";
             } else {
-                cout << "You Parried, but the Enemy was not Attacking!" << endl;
+                cout << "You Parried, but the " << name << " was not Attacking!" << endl;
                 PAD.type = "NO TYPE";
             }
         } else if (playerAction == "Weaken") {
@@ -214,7 +214,7 @@ public:
             if (playerIP.soul >= 2) {
                 playerIP.soul -= 2;
                 MS.temporaryDamageModifier -= 2;
-                cout << "You spent 2 Souls and used Weaken! The Enemy's strength went down by 2!" << endl;
+                cout << "You spent 2 Souls and used Weaken! The " << name << " strength went down by 2!" << endl;
                 PAD.type = "MAGIC";
             } else {
                 cout << "You tried to use Weaken, but didn't have enough Souls!" << endl;
@@ -226,7 +226,7 @@ public:
             playerIP.soul = playerIP.maxSoul;
             int damageDealt = randomNum(13, 17);
             health -= damageDealt;
-            cout << "The amulet breaking activated a Soul Burst! You dealt " << damageDealt << " Magical damage to the Enemy!" << endl;
+            cout << "The amulet breaking activated a Soul Burst! You dealt " << damageDealt << " Magical damage to the " << name << "!" << endl;
             PAD.type = "MAGIC";
         } else if (playerAction == "Soul Burst") {
 
@@ -234,11 +234,23 @@ public:
                 playerIP.soul -= 4;
                 int damageDealt = randomNum(13, 17);
                 health -= damageDealt;
-                cout << "You spent 4 Souls and used Soul Burst! You dealt " << damageDealt << " Magical damage to the Enemy!" << endl;
+                cout << "You spent 4 Souls and used Soul Burst! You dealt " << damageDealt << " Magical damage to the " << name << "!" << endl;
                 PAD.type = "MAGIC";
             } else {
                 cout << "You tried to use Soul Burst, but didn't have enough Souls!" << endl;
                 PAD.type = "NO TYPE";
+            }
+        } else if (playerAction == "Ent Wand") {
+
+            if (playerIP.soul >= 5) {
+                playerIP.soul -= 5;
+                int damageDealt = randomNum(15, 18);
+                health -= damageDealt;
+                PAD.defenceValue = 10;
+                MS.temporaryDamageModifier -= 2;
+                cout << "Roots come up all over the place! They simultaneously block the " << name << " attack and splinter its ligaments!" << endl;
+                cout << "You dealt " << damageDealt << " damage to the " << name << "!" << endl;
+                PAD.type = "MAGIC";
             }
         }
         return PAD;
@@ -312,7 +324,7 @@ public:
     explicit Skeleton(Player& playerData, BackgroundMusicManager& musicManager)
     : Encounter(35, "Skeleton", {"Stab", "Clamber", "Bow", "Put Back Together"}, {40, 15, 20, 20}
         ,{"The Skeleton lunges at you with a knife...", "The Skeleton begins to jitter and shake...",
-            "The Skeleton draws its Bow...", "The Skeleton scrambles to pick up its detached pieces"}, playerData, musicManager) {};
+            "The Skeleton draws its Bow...", "The Skeleton scrambles to pick up its detached pieces..."}, playerData, musicManager) {};
 
     void doAction() override {
         const int x = getAction();
@@ -325,7 +337,66 @@ public:
                 MAD MAD;
                 MAD.type = "M-ATTACK";
                 PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
-
+                if (PAD.type == "CHARGE") {
+                    int damageDealt = randomNum(20, 24) - PAD.defenceValue;
+                    makeZeroIfNegative(damageDealt);
+                    playerIP.health -= damageDealt;
+                    cout << "The Skeleton takes advantage of your vulnerable state and slices at you three times, dealing " << damageDealt << " damage!" << endl;
+                } else {
+                    int damageDealt = randomNum(9, 11) - PAD.defenceValue;
+                    makeZeroIfNegative(damageDealt);
+                    playerIP.health -= damageDealt;
+                }
+            } else if (nameOfAction == "Clamber") {
+                MAD MAD;
+                MAD.defenceValue = randomNum(10, 12);
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
+                if (PAD.type == "MISSED HIT" || PAD.type == "ATTACK" || PAD.type == "CRITICAL HIT") {
+                    cout << "You fell for the Skeleton's trap!" << endl;
+                    int damageDealt = randomNum(15, 17) - PAD.defenceValue;
+                    makeZeroIfNegative(damageDealt);
+                    playerIP.health -= damageDealt;
+                    PS.temporaryDamageModifier -= 1;
+                    cout << "It grabs your incoming attack, dislodges your elbow, and bites the SHIT out of your shoulder!" << endl;
+                } else {
+                    cout << "You avoided the Skeleton's lure..." << endl;
+                }
+            } else if (nameOfAction == "Bow") {
+                MAD MAD;
+                MAD.type = "R-ATTACK";
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
+                if (PAD.type == "CHARGE") {
+                    int damageDealt = randomNum(15, 17) - PAD.defenceValue;
+                    makeZeroIfNegative(damageDealt);
+                    playerIP.health -= damageDealt;
+                    PS.temporaryDamageModifier -= 3;
+                    PS.momentum = 0;
+                    cout << "The Skeleton takes advantage of your vulnerable position and shoots an arrow straight to your lung, weakening your breathing, and dealing " << damageDealt << " damage!" << endl;
+                } else {
+                    int n = randomNum(1, 10);
+                    if (n <= 7 || PAD.type == "DEFENSE") {
+                        int damageDealt = randomNum(7, 9) - PAD.defenceValue;
+                        makeZeroIfNegative(damageDealt);
+                        playerIP.health -= damageDealt;
+                        PS.temporaryDamageModifier -= 1;
+                        cout << "The arrow hits your kneecap!" << endl;
+                    } else {
+                        cout << "The arrow missed you!" << endl;
+                    }
+                }
+            } else if (nameOfAction == "Put Back Together") {
+                MAD MAD;
+                PAD PAD = doPlayerTurn_AndGetPlayerActionType(MAD);
+                if (PAD.type == "CRITICAL HIT") {
+                    cout << "Your attack was powerful enough that the Skeleton was interrupted while trying to put itself back together!" << endl;
+                    MS.temporaryDamageModifier -= 2;
+                } else if (PAD.type == "MAGIC") {
+                    cout << "The pure magic from what you did interrupted the Skeleton putting itself back together!" << endl;
+                    MS.temporaryDamageModifier -= 1;
+                } else {
+                    cout << "The Skeleton picks up some of its pieces, CHINKING them back onto its body" << endl;
+                    health += 10;
+                }
             }
         }
     }
