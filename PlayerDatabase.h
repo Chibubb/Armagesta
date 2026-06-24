@@ -12,6 +12,11 @@
 #include <memory>
 #include <vector>
 #include "BackgroundMusicManager.h"
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <limits>
+#include <algorithm>
 
 using namespace std;
 
@@ -74,6 +79,17 @@ public:
         {'Y', 'Y', 'Y', 'B', 'B', 'B', 'B', 'I', 'I', 'I', 'I'}
     }; // 0 - 10 on both dimensions
     vector<vector<bool>> exploredMap;
+
+    vector<string> activeQuests;
+    vector<string> completedQuests;
+    vector<string> discoveredLandmarks;
+    vector<string> storyFlags;
+
+    bool mainQuestStarted = false;
+    bool dragonDefeated = false;
+    bool throneClaimed = false;
+    bool gameWon = false;
+
     int health = 100;
     int critChance = 5;
     int accuracy = 80;
@@ -99,8 +115,18 @@ public:
         , "Unleash the power of stolen souls on the currently living enemy in front of you, dealing a large amount of damage, requires a decent amount of souls"};
 
     Player() {
-        exploredMap = vector<vector<bool>>(map.size(), vector<bool>(map[0].size(), false));
-        markCurrentSpaceExplored(); // Starting tile begins explored
+        if (exploredMap.empty()) {
+            exploredMap = vector<vector<bool>>(map.size(), vector<bool>(map[0].size(), false));
+        }
+
+        markCurrentSpaceExplored();
+
+        unlockWorldAction("Map");
+        unlockWorldAction("Quest Log");
+        unlockWorldAction("Save Game");
+        unlockWorldAction("Load Game");
+
+        initializeMainQuest();
     }
 
     void heal(const int healAmount) {
@@ -255,6 +281,298 @@ public:
 
         cout << endl;
     }
+
+    bool vectorContains(const vector<string>& values, const string& target) const {
+    return find(values.begin(), values.end(), target) != values.end();
+}
+
+void eraseFromVector(vector<string>& values, const string& target) {
+    values.erase(remove(values.begin(), values.end(), target), values.end());
+}
+
+bool hasWorldAction(const string& actionName) const {
+    return vectorContains(actions, actionName);
+}
+
+void unlockWorldAction(const string& actionName) {
+    if (!hasWorldAction(actionName)) {
+        actions.emplace_back(actionName);
+    }
+}
+
+bool hasCombatAction(const string& actionName) const {
+    return vectorContains(combatActions, actionName);
+}
+
+void unlockCombatAction(const string& actionName, const string& description) {
+    if (hasCombatAction(actionName)) {
+        cout << "You already know " << actionName << "." << endl;
+        return;
+    }
+
+    combatActions.emplace_back(actionName);
+    combatActionsDescriptions.emplace_back(description);
+    cout << "NEW COMBAT ACTION UNLOCKED: " << actionName << endl;
+    cout << description << endl;
+}
+
+bool hasStoryFlag(const string& flagName) const {
+    return vectorContains(storyFlags, flagName);
+}
+
+void addStoryFlag(const string& flagName) {
+    if (!hasStoryFlag(flagName)) {
+        storyFlags.emplace_back(flagName);
+    }
+}
+
+bool hasActiveQuest(const string& questName) const {
+    return vectorContains(activeQuests, questName);
+}
+
+bool hasCompletedQuest(const string& questName) const {
+    return vectorContains(completedQuests, questName);
+}
+
+void addQuest(const string& questName) {
+    if (hasActiveQuest(questName) || hasCompletedQuest(questName)) {
+        return;
+    }
+
+    activeQuests.emplace_back(questName);
+    cout << endl << "NEW OBJECTIVE: " << questName << endl;
+}
+
+void completeQuest(const string& questName) {
+    if (hasCompletedQuest(questName)) {
+        return;
+    }
+
+    eraseFromVector(activeQuests, questName);
+    completedQuests.emplace_back(questName);
+    cout << endl << "OBJECTIVE COMPLETE: " << questName << endl;
+}
+
+void initializeMainQuest() {
+    if (mainQuestStarted) {
+        return;
+    }
+
+    mainQuestStarted = true;
+    addQuest("Find the seven named places of Armagesta");
+    addQuest("Find The Throne");
+    addQuest("Find Dragon's Lair");
+}
+
+bool hasDiscoveredLandmark(const string& landmarkName) const {
+    return vectorContains(discoveredLandmarks, landmarkName);
+}
+
+void discoverLandmark(const string& landmarkName) {
+    if (hasDiscoveredLandmark(landmarkName)) {
+        return;
+    }
+
+    discoveredLandmarks.emplace_back(landmarkName);
+    cout << endl << "LANDMARK DISCOVERED: " << landmarkName << endl;
+
+    if (landmarkName == "The Throne") {
+        completeQuest("Find The Throne");
+    }
+
+    if (landmarkName == "Dragon's Lair") {
+        completeQuest("Find Dragon's Lair");
+        addQuest("Defeat the Cinder Dragon");
+    }
+
+    if (discoveredLandmarks.size() >= 7) {
+        completeQuest("Find the seven named places of Armagesta");
+    }
+}
+
+void markDragonDefeated() {
+    if (dragonDefeated) {
+        return;
+    }
+
+    dragonDefeated = true;
+    addStoryFlag("Cinder Dragon Defeated");
+    completeQuest("Defeat the Cinder Dragon");
+    addQuest("Return to The Throne and claim Armagesta");
+}
+
+void claimThrone() {
+    throneClaimed = true;
+    addStoryFlag("Throne Claimed");
+
+    if (dragonDefeated) {
+        completeQuest("Return to The Throne and claim Armagesta");
+        gameWon = true;
+        cout << endl;
+        cout << "The Throne accepts you." << endl;
+        cout << "The Dragon is dead, the seven places have spoken, and Armagesta finally has a will again." << endl;
+    } else {
+        cout << endl;
+        cout << "The Throne burns cold beneath you. It will not fully accept a ruler while the Cinder Dragon still owns the mountain's heart." << endl;
+        addQuest("Defeat the Cinder Dragon");
+    }
+}
+
+void printQuestLog() const {
+    cout << endl << "===== QUEST LOG =====" << endl;
+
+    if (activeQuests.empty()) {
+        cout << "No active objectives." << endl;
+    } else {
+        cout << "Active Objectives:" << endl;
+        for (int i = 0; i < activeQuests.size(); i++) {
+            cout << "  " << i + 1 << ". " << activeQuests[i] << endl;
+        }
+    }
+
+    cout << endl << "Completed Objectives:" << endl;
+    if (completedQuests.empty()) {
+        cout << "  None yet." << endl;
+    } else {
+        for (const auto& quest : completedQuests) {
+            cout << "  - " << quest << endl;
+        }
+    }
+
+    cout << endl << "Discovered Major Places: " << discoveredLandmarks.size() << " / 7" << endl;
+    if (discoveredLandmarks.empty()) {
+        cout << "  None yet." << endl;
+    } else {
+        for (const auto& landmark : discoveredLandmarks) {
+            cout << "  - " << landmark << endl;
+        }
+    }
+
+    cout << endl;
+}
+
+    void saveStringVector(ofstream& out, const vector<string>& values) const {
+    out << values.size() << endl;
+    for (const auto& value : values) {
+        out << quoted(value) << endl;
+    }
+}
+
+bool loadStringVector(ifstream& in, vector<string>& values) {
+    int count = 0;
+    in >> count;
+    in.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    if (count < 0) {
+        return false;
+    }
+
+    values.clear();
+    for (int i = 0; i < count; i++) {
+        string line;
+        string value;
+        getline(in, line);
+        istringstream reader(line);
+        reader >> quoted(value);
+        values.emplace_back(value);
+    }
+
+    return true;
+}
+
+bool saveGame(const string& fileName = "armagesta_save.txt") const {
+    ofstream out(fileName);
+    if (!out) {
+        cout << "Could not create save file." << endl;
+        return false;
+    }
+
+    out << "ARMAGESTA_SAVE_V1" << endl;
+
+    out << health << ' ' << maxHealth << ' ' << critChance << ' ' << accuracy << ' '
+        << hardiness << ' ' << permanentDamageModifier << ' ' << permanentMomentum << ' '
+        << soul << ' ' << maxSoul << ' ' << currentScrapMetal << endl;
+
+    out << currentPosition[0] << ' ' << currentPosition[1] << endl;
+
+    out << mainQuestStarted << ' ' << dragonDefeated << ' ' << throneClaimed << ' ' << gameWon << endl;
+
+    saveStringVector(out, actions);
+    saveStringVector(out, combatActions);
+    saveStringVector(out, combatActionsDescriptions);
+    saveStringVector(out, activeQuests);
+    saveStringVector(out, completedQuests);
+    saveStringVector(out, discoveredLandmarks);
+    saveStringVector(out, storyFlags);
+
+    out << exploredMap.size() << ' ' << exploredMap[0].size() << endl;
+    for (const auto& row : exploredMap) {
+        for (bool explored : row) {
+            out << (explored ? '1' : '0');
+        }
+        out << endl;
+    }
+
+    cout << "Game saved to " << fileName << "." << endl;
+    return true;
+}
+
+bool loadGame(const string& fileName = "armagesta_save.txt") {
+    ifstream in(fileName);
+    if (!in) {
+        cout << "No save file found named " << fileName << "." << endl;
+        return false;
+    }
+
+    string magic;
+    getline(in, magic);
+    if (magic != "ARMAGESTA_SAVE_V1") {
+        cout << "This save file is not compatible with this version of Armagesta." << endl;
+        return false;
+    }
+
+    in >> health >> maxHealth >> critChance >> accuracy
+       >> hardiness >> permanentDamageModifier >> permanentMomentum
+       >> soul >> maxSoul >> currentScrapMetal;
+
+    if (currentPosition.size() < 2) {
+        currentPosition = {5, 5};
+    }
+    in >> currentPosition[0] >> currentPosition[1];
+    in >> mainQuestStarted >> dragonDefeated >> throneClaimed >> gameWon;
+    in.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    if (!loadStringVector(in, actions)) return false;
+    if (!loadStringVector(in, combatActions)) return false;
+    if (!loadStringVector(in, combatActionsDescriptions)) return false;
+    if (!loadStringVector(in, activeQuests)) return false;
+    if (!loadStringVector(in, completedQuests)) return false;
+    if (!loadStringVector(in, discoveredLandmarks)) return false;
+    if (!loadStringVector(in, storyFlags)) return false;
+
+    int rows = 0;
+    int columns = 0;
+    in >> rows >> columns;
+    in.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    if (rows <= 0 || columns <= 0) {
+        cout << "Save file has invalid explored-map size." << endl;
+        return false;
+    }
+
+    exploredMap = vector<vector<bool>>(rows, vector<bool>(columns, false));
+    for (int i = 0; i < rows; i++) {
+        string row;
+        getline(in, row);
+        for (int j = 0; j < columns && j < row.size(); j++) {
+            exploredMap[i][j] = row[j] == '1';
+        }
+    }
+
+    cout << "Game loaded from " << fileName << "." << endl;
+    cout << "You are at: " << getCurrentBiomeName() << endl;
+    return true;
+}
 
 };
 

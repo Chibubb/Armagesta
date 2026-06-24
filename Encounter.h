@@ -82,18 +82,52 @@ public:
 
     void virtual doAction() = 0;
 
+    void printCombatStatus() const {
+        cout << endl;
+        cout << "===== COMBAT STATUS =====" << endl;
+        cout << "You: " << playerIP.health << " / " << playerIP.maxHealth << " Health"
+             << " | Souls: " << playerIP.soul << " / " << playerIP.maxSoul
+             << " | Momentum: " << PS.momentum << endl;
+
+        cout << getName() << ": " << health << " Health"
+             << " | Danger: " << MS.danger << endl;
+
+        if (PS.temporaryDamageModifier != 0 || MS.temporaryDamageModifier != 0) {
+            cout << "Temporary Modifiers:" << endl;
+            if (PS.temporaryDamageModifier != 0) {
+                cout << "  Your temporary damage modifier: " << PS.temporaryDamageModifier << endl;
+            }
+            if (MS.temporaryDamageModifier != 0) {
+                cout << "  Enemy temporary damage modifier: " << MS.temporaryDamageModifier << endl;
+            }
+        }
+
+        cout << "=========================\n" << endl;
+    }
+
     void haveCombat() {
         PS.momentum = playerIP.permanentMomentum;
-        while (health > 0) {
+
+        cout << endl << "Combat begins against the " << getName() << "!" << endl;
+        printCombatStatus();
+
+        while (health > 0 && playerIP.health > 0) {
             doAction();
             makeZeroIfNegative(playerIP.health);
             makeZeroIfNegative(health);
-            cout << "You have " << playerIP.health << " Health remaining, have " << PS.momentum << " Momentum, and have " << playerIP.soul << " Souls"<< endl;
-            cout << "The Enemy has " << health << " Health remaining, and " << MS.danger << " Danger" << endl << endl;
+
+            printCombatStatus();
         }
-        playerIP.gainSoul(1);
+
         musicManager.stopMusicWithFade();
-        cout << "The " << name << " Died! You gained 1 Soul!"<< endl << endl;
+
+        if (playerIP.health <= 0) {
+            cout << "The " << getName() << " watches you fall." << endl << endl;
+            return;
+        }
+
+        playerIP.gainSoul(1);
+        cout << "The " << getName() << " died! You gained 1 Soul!" << endl << endl;
     }
 
     void virtual printIntent(const int indexOfIntent) const {

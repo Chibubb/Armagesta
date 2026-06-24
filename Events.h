@@ -308,6 +308,190 @@ namespace ArmagestaBiomeTools {
     }
 }
 
+namespace ArmagestaNonCombatEvents {
+    inline void desertWaystone(Player& playerIP) {
+        playerIP.addStoryFlag("Desert Waystone");
+        cout << endl << "===== Desert Waystone =====" << endl;
+        cout << "A sunken waystone rises from the sand. Its map is carved in shadows instead of lines." << endl;
+        vector<string> choices = {"Read the Shadow Map", "Press Your Palm to the Stone", "Leave It Alone"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Read the Shadow Map") {
+            cout << "The shadows show a pit that falls beneath the desert. The name Sand Pit burns into your memory." << endl;
+            playerIP.addQuest("Search the Desert for the Sand Pit");
+            playerIP.maxSoul += 1;
+        } else if (choices[choice] == "Press Your Palm to the Stone") {
+            cout << "The stone drinks your heat and gives back discipline. Your steps feel lighter." << endl;
+            playerIP.permanentMomentum += 1;
+            playerIP.health -= 4;
+            makeZeroIfNegative(playerIP.health);
+        } else {
+            cout << "You leave the waystone unread. The desert does not seem offended. It has time." << endl;
+        }
+    }
+
+    inline void caveResonance(Player& playerIP) {
+        playerIP.addStoryFlag("Cave Resonance Door");
+        cout << endl << "===== Resonance Door =====" << endl;
+        cout << "A sealed stone door hums when you breathe. It is not locked by metal, but by memory." << endl;
+        vector<string> choices = {"Hum With It", "Carve a Mark", "Step Away"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Hum With It") {
+            cout << "Your voice becomes three voices, then one. The door never opens, but your soul does." << endl;
+            playerIP.maxSoul += 2;
+            playerIP.gainSoul(2);
+            playerIP.addQuest("Find the Crystal Geode beneath the Caves");
+        } else if (choices[choice] == "Carve a Mark") {
+            cout << "Your mark fills with mineral light. You chip away a useful shard of metal-rich crystal." << endl;
+            playerIP.currentScrapMetal += 2;
+            playerIP.health -= 5;
+            makeZeroIfNegative(playerIP.health);
+        } else {
+            cout << "The door continues humming after you leave. It has learned the shape of your footsteps." << endl;
+        }
+    }
+
+    inline void redwoodMemory(Player& playerIP) {
+        playerIP.addStoryFlag("Redwood Memory Knot");
+        cout << endl << "===== Memory Knot =====" << endl;
+        cout << "A redwood root has grown around an old helmet. The wood has not crushed it. It has preserved it." << endl;
+        vector<string> choices = {"Listen to the Helmet", "Pull It Free", "Bury It Deeper"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Listen to the Helmet") {
+            cout << "A dead soldier whispers that the Oldest Redwood remembers the first throne and the first betrayal." << endl;
+            playerIP.addQuest("Seek the Oldest Redwood");
+            playerIP.permanentMomentum += 1;
+        } else if (choices[choice] == "Pull It Free") {
+            cout << "The helmet breaks, but its metal braces your arm." << endl;
+            playerIP.hardiness += 1;
+            playerIP.currentScrapMetal += 1;
+        } else {
+            cout << "You bury it deeper. The forest approves of things being allowed to finish dying." << endl;
+            playerIP.heal(10);
+        }
+    }
+
+    inline void swampFerry(Player& playerIP) {
+        playerIP.addStoryFlag("Swamp Ferry Contract");
+        cout << endl << "===== Empty Ferry =====" << endl;
+        cout << "A ferry bumps against the bank with no ferryman. A contract lies on the seat, already signed in pondwater." << endl;
+        vector<string> choices = {"Pay One Soul", "Sign in Blood", "Shove the Ferry Away"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Pay One Soul") {
+            if (playerIP.soul >= 1) {
+                playerIP.soul -= 1;
+                cout << "The ferry carries you three feet into the fog and back. Somehow, you return older and sturdier." << endl;
+                playerIP.maxHealth += 5;
+                playerIP.addQuest("Find the Witch's Hut in the Swamp");
+            } else {
+                cout << "You have no soul to spare. The contract folds itself shut." << endl;
+            }
+        } else if (choices[choice] == "Sign in Blood") {
+            cout << "The contract accepts red ink. Your blood feels like it learned a curse." << endl;
+            playerIP.health -= 8;
+            makeZeroIfNegative(playerIP.health);
+            playerIP.permanentDamageModifier += 1;
+        } else {
+            cout << "The ferry drifts away, offended in the way only empty things can be." << endl;
+            playerIP.gainSoul(1);
+        }
+    }
+
+    inline void citadelArmory(Player& playerIP) {
+        playerIP.addStoryFlag("Citadel Silent Armory");
+        cout << endl << "===== Silent Armory =====" << endl;
+        cout << "You find an armory where every weapon is chained to the wall. The chains are ceremonial, not practical." << endl;
+        vector<string> choices = {"Sharpen Your Blade", "Study the Shields", "Read the Oath on the Wall"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Sharpen Your Blade") {
+            cout << "You borrow the edge of a dead kingdom." << endl;
+            playerIP.permanentDamageModifier += 1;
+        } else if (choices[choice] == "Study the Shields") {
+            cout << "The shield forms are brutal, simple, and useful." << endl;
+            playerIP.hardiness += 2;
+        } else {
+            cout << "The oath says: A throne without a dragon is a chair. A dragon without a throne is a disaster." << endl;
+            playerIP.addQuest("Claim The Throne after defeating the Cinder Dragon");
+            playerIP.maxSoul += 1;
+        }
+    }
+
+    inline void beachTideCalendar(Player& playerIP) {
+        playerIP.addStoryFlag("Beach Tide Calendar");
+        cout << endl << "===== Tide Calendar =====" << endl;
+        cout << "Flat stones line the shore in a circle. The tide touches them in an order that looks intentional." << endl;
+        vector<string> choices = {"Count the Tide", "Sleep in the Circle", "Kick the Stones Apart"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Count the Tide") {
+            cout << "The rhythm points seaward, toward a reef that glows under moonless water." << endl;
+            playerIP.addQuest("Find the Coral Reef");
+            playerIP.permanentMomentum += 1;
+        } else if (choices[choice] == "Sleep in the Circle") {
+            cout << "You dream of lungs full of salt and wake breathing easier." << endl;
+            playerIP.heal(20);
+            playerIP.maxSoul += 1;
+        } else {
+            cout << "The tide immediately rebuilds the circle. You feel judged by water." << endl;
+            playerIP.health -= 6;
+            makeZeroIfNegative(playerIP.health);
+            playerIP.currentScrapMetal += 1;
+        }
+    }
+
+    inline void mountainBell(Player& playerIP) {
+        playerIP.addStoryFlag("Mountain Pilgrim Bell");
+        cout << endl << "===== Pilgrim Bell =====" << endl;
+        cout << "A bronze bell hangs from a frozen arch. Its clapper is a dragon tooth, worn smooth by desperate hands." << endl;
+        vector<string> choices = {"Ring It Once", "Pray Beneath It", "Break the Tooth Free"};
+        int choice = ArmagestaBiomeTools::askChoice(choices);
+
+        if (choices[choice] == "Ring It Once") {
+            cout << "The sound climbs higher than the mountain. Far away, something enormous shifts in its sleep." << endl;
+            playerIP.addQuest("Find Dragon's Lair");
+            playerIP.permanentMomentum += 1;
+        } else if (choices[choice] == "Pray Beneath It") {
+            cout << "Your prayer freezes before leaving your mouth, then falls back into you as resolve." << endl;
+            playerIP.maxHealth += 5;
+            playerIP.gainSoul(2);
+        } else {
+            cout << "The tooth snaps loose. It is almost too hot to carry." << endl;
+            playerIP.health -= 10;
+            makeZeroIfNegative(playerIP.health);
+            playerIP.permanentDamageModifier += 2;
+        }
+    }
+
+    inline void maybeTrigger(Player& playerIP) {
+        // Roughly one non-combat progression event every few moves.
+        if (randomNum(1, 100) > 22) {
+            return;
+        }
+
+        char biomeType = playerIP.getCurrentBiomeType();
+
+        if (biomeType == 'D' && !playerIP.hasStoryFlag("Desert Waystone")) {
+            desertWaystone(playerIP);
+        } else if (biomeType == 'C' && !playerIP.hasStoryFlag("Cave Resonance Door")) {
+            caveResonance(playerIP);
+        } else if (biomeType == 'R' && !playerIP.hasStoryFlag("Redwood Memory Knot")) {
+            redwoodMemory(playerIP);
+        } else if (biomeType == 'W' && !playerIP.hasStoryFlag("Swamp Ferry Contract")) {
+            swampFerry(playerIP);
+        } else if (biomeType == 'I' && !playerIP.hasStoryFlag("Citadel Silent Armory")) {
+            citadelArmory(playerIP);
+        } else if (biomeType == 'B' && !playerIP.hasStoryFlag("Beach Tide Calendar")) {
+            beachTideCalendar(playerIP);
+        } else if (biomeType == 'M' && !playerIP.hasStoryFlag("Mountain Pilgrim Bell")) {
+            mountainBell(playerIP);
+        }
+    }
+}
+
 class Desert : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {25, 20, 15, 15, 10, 10, 5};
@@ -1508,6 +1692,7 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("Sand Pit");
         if (ChoiceName == "Descend") {
             cout << "You slide into the pit and learn that falling can be steered if you stop arguing with gravity." << endl;
             if (!ArmagestaBiomeTools::hasCombatAction(playerIP, "Sandstep")) {
@@ -1558,6 +1743,7 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("Crystal Geode");
         if (ChoiceName == "Touch the Heart Crystal") {
             cout << "The heart crystal grows around your hand, then decides you are not worth keeping." << endl;
             if (!ArmagestaBiomeTools::hasCombatAction(playerIP, "Crystal Ward")) {
@@ -1603,6 +1789,7 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("Oldest Redwood");
         if (ChoiceName == "Speak the Old Oath") {
             cout << "You do not know the words until the tree says them through you." << endl;
             ArmagestaBiomeTools::unlockCombatAction(playerIP, "Redwood Oath", "Spend 5 Souls to heal, gain defense, empower your attacks, and weaken the enemy with ancient roots.");
@@ -1646,6 +1833,7 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("Witch's Hut");
         if (ChoiceName == "Knock Three Times") {
             cout << "The witch opens the door before the third knock and charges you for the unused one." << endl;
             ArmagestaBiomeTools::unlockCombatAction(playerIP, "Bogblood Hex", "Pay 6 Health to deal hex damage, heavily weaken the enemy, and regain 1 Soul.");
@@ -1689,12 +1877,14 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("The Throne");
         if (ChoiceName == "Sit on the Throne") {
             cout << "The throne tries to decide whether you are a ruler, a thief, or fuel." << endl;
             encounterStarlessOracle(playerIP, musicManager);
             if (playerIP.health > 0) {
                 ArmagestaBiomeTools::unlockCombatAction(playerIP, "Royal Decree", "Spend 3 Souls and 2 Momentum to forbid an enemy attack from landing, or condemn a passive enemy.");
                 playerIP.maxSoul += 1;
+                playerIP.claimThrone();
             }
         } else if (ChoiceName == "Break the Crown") {
             cout << "The crown breaks like a chain. The Citadel shakes with relief and rage." << endl;
@@ -1703,6 +1893,7 @@ protected:
         } else if (ChoiceName == "Read the Law") {
             cout << "The first law is survival. The second is obedience. The third has been scratched out by many hands." << endl;
             ArmagestaBiomeTools::unlockCombatAction(playerIP, "Royal Decree", "Spend 3 Souls and 2 Momentum to forbid an enemy attack from landing, or condemn a passive enemy.");
+            playerIP.addQuest("Defeat the Cinder Dragon, then return to The Throne");
         } else if (ChoiceName == "Bow and Leave") {
             cout << "The empty throne accepts respect better than occupation." << endl;
             playerIP.heal(20);
@@ -1732,6 +1923,7 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("Coral Reef");
         if (ChoiceName == "Dive to the Heart") {
             cout << "At the reef's heart, the Tide Leviathan coils around an altar of pearls." << endl;
             encounterTideLeviathan(playerIP, musicManager);
@@ -1775,6 +1967,7 @@ protected:
         ResolveChoice();
     }
     void ResolveChoice() override {
+        playerIP.discoverLandmark("Dragon's Lair");
         if (ChoiceName == "Challenge the Dragon") {
             cout << "The Cinder Dragon opens one eye. It has been awake for years, waiting for someone rude enough to call this a beginning." << endl;
             encounterCinderDragon(playerIP, musicManager);
@@ -1782,12 +1975,18 @@ protected:
                 ArmagestaBiomeTools::unlockCombatAction(playerIP, "Dragonfire", "Spend 8 Souls to breathe stolen dragonfire for massive damage, burning yourself in the process.");
                 playerIP.maxSoul += 2;
                 playerIP.permanentDamageModifier += 2;
+                playerIP.markDragonDefeated();
             }
         } else if (ChoiceName == "Steal an Ember") {
             cout << "The ember burns through the idea of your hand before reaching the skin." << endl;
             ArmagestaBiomeTools::hurtPlayer(playerIP, 15);
+            bool foughtDragonHere = false;
             if (randomNum(1, 10) <= 5) {
+                foughtDragonHere = true;
                 encounterCinderDragon(playerIP, musicManager);
+            }
+            if (foughtDragonHere && playerIP.health > 0) {
+                playerIP.markDragonDefeated();
             }
             if (playerIP.health > 0) {
                 ArmagestaBiomeTools::unlockCombatAction(playerIP, "Dragonfire", "Spend 8 Souls to breathe stolen dragonfire for massive damage, burning yourself in the process.");

@@ -74,38 +74,50 @@ int main() {
     bool gameEnds = false;
 
 
-     while (gameEnds == false) {
-         player->printActions();
-         string chosenAction = player->getAction();
-         if (chosenAction == "Move") {
-             char biomeType = player->move(player->getAChosenDirection());
+    while (gameEnds == false) {
+        player->printActions();
+        string chosenAction = player->getAction();
 
-             if (biomeType == 'X') {
-                 interactWithWorld(biomeType, *player, musicManager);
-             } else if (player->currentSpaceHasBeenExplored()) {
-                 player->describeAlreadyExploredSpace();
-             } else {
-                 player->markCurrentSpaceExplored();
-                 interactWithWorld(biomeType, *player, musicManager);
-             }
-         }
-         if (chosenAction == "Self Assess") {
-             player->assess();
-         }
-         if (chosenAction == "Understand Powers") {
-             player->understandPowers();
-         }
-         if (chosenAction == "Map") {
-             player->printMap();
-         }
-         cout << endl;
+        if (chosenAction == "Move") {
+            char biomeType = player->move(player->getAChosenDirection());
 
-         //Check if player is dead
-         if (player->health <= 0) {
-             cout << "You fall to the floor, breathless. You have died" << endl;
-             gameEnds = true;
-         }
-     }
+            if (biomeType == 'X') {
+                interactWithWorld(biomeType, *player, musicManager);
+            } else if (player->currentSpaceHasBeenExplored()) {
+                player->describeAlreadyExploredSpace();
+                ArmagestaNonCombatEvents::maybeTrigger(*player);
+            } else {
+                player->markCurrentSpaceExplored();
+                interactWithWorld(biomeType, *player, musicManager);
+                ArmagestaNonCombatEvents::maybeTrigger(*player);
+            }
+        } else if (chosenAction == "Self Assess") {
+            player->assess();
+        } else if (chosenAction == "Understand Powers") {
+            player->understandPowers();
+        } else if (chosenAction == "Map") {
+            player->printMap();
+        } else if (chosenAction == "Quest Log") {
+            player->printQuestLog();
+        } else if (chosenAction == "Save Game") {
+            player->saveGame();
+        } else if (chosenAction == "Load Game") {
+            player->loadGame();
+        }
+
+        cout << endl;
+
+        if (player->gameWon) {
+            cout << "You have completed the first version of Armagesta." << endl;
+            cout << "The map still breathes, but it no longer does so without a ruler." << endl;
+            gameEnds = true;
+        }
+
+        if (player->health <= 0) {
+            cout << "You fall to the floor, breathless. You have died." << endl;
+            gameEnds = true;
+        }
+    }
 
 
 
