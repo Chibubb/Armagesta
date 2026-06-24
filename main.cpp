@@ -15,8 +15,49 @@ void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicMana
     if (BiomeType == 'F') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
         auto Event = make_unique<Forest>(player, musicManager);
-    }
-    if (BiomeType == 'X') {
+    } else if (BiomeType == 'D') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Desert>(player, musicManager);
+    } else if (BiomeType == 'C') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Caves>(player, musicManager);
+    } else if (BiomeType == 'R') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<OldRedwoods>(player, musicManager);
+    } else if (BiomeType == 'W') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Swamp>(player, musicManager);
+    } else if (BiomeType == 'I') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Citadel>(player, musicManager);
+    } else if (BiomeType == 'B') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Beach>(player, musicManager);
+    } else if (BiomeType == 'M') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<Mountains>(player, musicManager);
+    } else if (BiomeType == 'S') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<SandPit>(player, musicManager);
+    } else if (BiomeType == 'G') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<CrystalGeode>(player, musicManager);
+    } else if (BiomeType == 'O') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<OldestRedwood>(player, musicManager);
+    } else if (BiomeType == 'H') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<WitchsHut>(player, musicManager);
+    } else if (BiomeType == 'T') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<TheThrone>(player, musicManager);
+    } else if (BiomeType == 'Y') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<CoralReef>(player, musicManager);
+    } else if (BiomeType == 'L') {
+        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        auto Event = make_unique<DragonsLair>(player, musicManager);
+    } else if (BiomeType == 'X') {
         cout << "You are at the edge of the map, you may not travel any farther in that direction..." << endl;
     }
 }
