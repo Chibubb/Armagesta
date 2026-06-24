@@ -31,208 +31,7 @@ protected:
 
 };
 
-class Forest : public BiomeEventDatabase {
-private:
-    vector<int> eventChances = {60, 40, 5, 5};
-    vector<string> eventNames = {"Bright Forest", "Dark Brush", "Hidden Cathedral", "Grand Tree"};
-    vector<string> eventFlavorText = {
-        "Light shines through the trees, illuminating the leafy forest floor",
-        "Whispers flow through the trees, making it clear you are not alone",
-        "A tall Cathedral hidden in he trees stands before you, covered in vines, and clearly deteriorated over many decades",
-        "A tree is rooted in front of you, standing at least three times as tall as any other that you have seen in the forest"
-    };
-    vector<vector<string>> eventChoices = {
-        {"Rest", "Scavenge"},
-        {"Confront", "Run Away"},
-        {"Explore the Basement", "Appreciate the Stained Glass Artwork", "Pray at the Altar", "Move On"},
-        {"Talk to the Tree", "Climb the Tree", "Carve into the Tree", "Move On"}
-    };
 
-    string ChoiceName;
-
-    int REI = -1;
-
-protected:
-    int getChoice() override {
-        int totalChance = 0;
-        for (auto i : eventChances) {
-            totalChance += i;
-        }
-        int y = randomNum(1, totalChance);
-        int cumulativeChance = 0;
-        for (int i = 0; i < eventChances.size(); i++) {
-            cumulativeChance += eventChances[i];
-            if (cumulativeChance >= y) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    void doEvent() override{
-        int ChosenChoice = 0;
-        cout << eventNames[REI] << endl;
-        cout << eventFlavorText[REI] << endl << endl;
-        if (eventChoices[REI].size() != 1) {
-            cout << "Choose one:" << endl;
-            int j = 1;
-            for (const auto& i : eventChoices[REI]) {
-                cout << j << ": " << i << endl;
-                j += 1;
-            }
-            cout << endl;
-            bool eventChoiceCorrectlyChosen = false;
-            string triedChoice;
-            bool firstTime = true;
-            while (true) {
-                getline(cin, triedChoice);
-                int k = 0;
-                for (k = 0; k < eventChoices[REI].size(); k++) {
-                    if (eventChoices[REI][k] == triedChoice) {
-                        eventChoiceCorrectlyChosen = true;
-                        ChosenChoice = k;
-                    }
-                }
-
-                if (eventChoiceCorrectlyChosen == true) {
-                    break;
-                }
-
-                if (firstTime == false) {
-                    cout << "Invalid input, try again..." << endl;
-                }
-
-                firstTime = false;
-
-            }
-        } else {
-            ChosenChoice = 0;
-        }
-
-        ChoiceName = eventChoices[REI][ChosenChoice];
-
-        ResolveChoice();
-
-    }
-
-    void ResolveChoice() override {
-        if (ChoiceName == "Rest") {
-            playerIP.heal(2);
-            cout << "You have rested back 2 Health!" << endl;
-        } else if (ChoiceName == "Confront") {
-            cout << "A Slime appears!" << endl;
-            encounterSlime(playerIP, musicManager);
-        } else if (ChoiceName == "Run Away") {
-            const int n = randomNum(1, 10);
-            if (n <= 5) {
-                playerIP.health -= 10;
-                cout << "You successfully get away, but are wounded in your escape" << endl;
-            } else {
-                cout << "You got away without getting wounded!" << endl;
-            }
-        } else if (ChoiceName == "Scavenge") {
-            const int n = randomNum(1, 10);
-            if (n <= 6) {
-                cout << "You have found nothing..." << endl;
-            } else if (n <= 8) {
-                cout << "You have found a piece of Scrap Metal" << endl;
-                playerIP.currentScrapMetal += 1;
-            } else if (n <= 9) {
-                cout << "You have found a juicy Plum! You have healed 10 Health!" << endl;
-                playerIP.heal(10);
-            } else if (n <= 10) {
-                cout << "You have found a Hearty Salmon! After some light cooking, it has become quite the meal!" << endl;
-                playerIP.maxHealth += 5;
-            }
-        } else if (ChoiceName == "Explore the Basement") {
-            const int n = randomNum(1, 10);
-            if (n <= 7) {
-                cout << "A Skeleton appears!" << endl;
-                encounterSkeleton(playerIP, musicManager);
-            }
-            if (n <= 2) {
-                cout << "Another Skeleton appears!" << endl;
-                encounterSkeleton(playerIP, musicManager);
-            }
-            cout << "You find a strange amulet, with a silver rim, and a central Sapphire" << endl;
-            playerIP.maxSoul += 1;
-            playerIP.combatActions.emplace_back("Break Sapphire Amulet");
-            playerIP.combatActionsDescriptions.emplace_back("It looks like tiny wisps flow and spin inside the Sapphire, I wonder what breaking it would do?");
-        } else if (ChoiceName == "Appreciate the Stained Glass Artwork") {
-            cout << "The stained glass artwork fills you with determination! You feel a power flow within you, and a pane of glass depicting a floral sword shatters" << endl;
-            playerIP.permanentDamageModifier += 1;
-        } else if (ChoiceName == "Pray at the Altar") {
-            const int n = randomNum(1, 10);
-            cout << "There is a large brown book on the alter..." << endl;
-            if (n <= 7) {
-                cout << "Out of the book comes a warm familiar soul, you absorb it. You have gained 5 souls, and your soul capacity feels bigger!" << endl;
-                playerIP.maxSoul += 2;
-                playerIP.gainSoul(5);
-            } else {
-                cout << "A large soul with demonic energy radiating from it emerges from the book, it pounces at you, dissipating into your chest..." << endl;
-                playerIP.maxSoul += 2;
-                playerIP.maxHealth -= 5;
-                if (playerIP.maxHealth > playerIP.health) {
-                    playerIP.health = playerIP.maxHealth;
-                }
-            }
-        } else if (ChoiceName == "Move On") {
-            cout << "Best leave that for another day..." << endl;
-            cout << "You feel slightly better knowing that this is YOUR choice";
-            playerIP.heal(3);
-        } else if (ChoiceName == "Talk to the Tree") {
-            const int n = randomNum(1, 10);
-            cout << "The Tree talks back!" << endl;
-            if (n <= 5) {
-                cout << "Although the tree doesn't seem to want to talk much, but it does drop a couple apple's for you!" << endl;
-                playerIP.heal(5);
-            } else if (n <= 7) {
-                cout << "The Tree seems irrationally angry, it bumps you away like a bug" << endl;
-                playerIP.health -= 5;
-            } else if (n <= 10) {
-                cout << "The Tree describes itself as an Ent, and says it has been here for centuries. It gives you a Hardwood stick from the top of its head and bids you off..." << endl;
-                playerIP.combatActions.emplace_back("Ent Wand");
-                playerIP.combatActionsDescriptions.emplace_back("This wand is a classic Ent trick, bring up roots to stab the enemy, as well as binding its movement, this requires a large amount of souls");
-            }
-        } else if (ChoiceName == "Climb the Tree") {
-            cout << "How many meters do you want to climb?" << endl;
-            int x;
-            cin >> x;
-            while (x <= 0 || x > 100) {
-                cout << "You can't even climb that high..." << endl;
-                cin >> x;
-            }
-            const int n = randomNum(1, x);
-            if (n <= 10) {
-                cout << "You found an orange!" << endl;
-                playerIP.heal(5);
-            } else if (n <= 30) {
-                cout << "You found a large Blood Orange!" << endl;
-                playerIP.maxHealth += 5;
-                playerIP.heal(15);
-            } else if (n <= 90) {
-                cout << "You fell quite high from the Tree!" << endl;
-                const int y = randomNum(1, 30);
-                cout << "You took " << y << " damage!" << endl;
-            } else if (n <= 100) {
-                cout << "At the top of the tree, it feels like you can see the entire world!" << endl;
-                playerIP.printMap();
-            }
-        } else if (ChoiceName == "Carve into the Tree") {
-            cout << "The Tree awakens, and seems very angry!" << endl;
-            encounterAncientEnt(playerIP, musicManager);
-            cout << "From the corpse of the ent is a large piece of unbreakable bark, you grab it, and it melds to your arm...";
-            playerIP.hardiness += 5;
-            playerIP.heal(30);
-        }
-    }
-
-public:
-    explicit Forest(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
-        REI = Forest::getChoice();
-        Forest::doEvent();
-    }
-};
 
 
 namespace ArmagestaBiomeTools {
@@ -491,6 +290,265 @@ namespace ArmagestaNonCombatEvents {
         }
     }
 }
+
+class Forest : public BiomeEventDatabase {
+private:
+    vector<int> eventChances = {60, 40, 5, 5};
+
+    vector<string> eventNames = {
+        "Bright Forest",
+        "Dark Brush",
+        "Hidden Cathedral",
+        "Grand Tree"
+    };
+
+    vector<string> eventFlavorText = {
+        "Light shines through the trees, illuminating the leafy forest floor. For a moment, Armagesta almost seems gentle.",
+        "Whispers flow through the trees, making it clear you are not alone. Something soft-bodied drags itself through the brush nearby.",
+        "A tall cathedral hidden in the trees stands before you, covered in vines and clearly deteriorated over many decades. The forest has not destroyed it; it has claimed it.",
+        "A tree is rooted in front of you, standing at least three times as tall as any other you have seen. Its bark bends like an old face trying to remember your name."
+    };
+
+    vector<vector<string>> eventChoices = {
+        {"Rest", "Scavenge"},
+        {"Confront", "Run Away"},
+        {"Explore the Basement", "Appreciate the Stained Glass Artwork", "Pray at the Altar", "Move On"},
+        {"Talk to the Tree", "Climb the Tree", "Carve into the Tree", "Move On"}
+    };
+
+    string ChoiceName;
+    int REI = -1;
+
+protected:
+    int getChoice() override {
+        return ArmagestaBiomeTools::weightedChoice(eventChances);
+    }
+
+    void doEvent() override {
+        ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        const int chosenChoice = ArmagestaBiomeTools::askChoice(eventChoices[REI]);
+        ChoiceName = eventChoices[REI][chosenChoice];
+
+        ResolveChoice();
+    }
+
+    void ResolveChoice() override {
+        if (ChoiceName == "Rest") {
+            playerIP.heal(2);
+            cout << "You rest beneath the trees. The leaves shift above you like quiet hands." << endl;
+            cout << "You healed 2 Health." << endl;
+
+        } else if (ChoiceName == "Scavenge") {
+            const int n = randomNum(1, 10);
+
+            if (n <= 6) {
+                cout << "You search under moss, roots, and fallen leaves, but find nothing useful." << endl;
+            } else if (n <= 8) {
+                cout << "You find a piece of Scrap Metal wedged inside an old stump." << endl;
+                playerIP.currentScrapMetal += 1;
+            } else if (n <= 9) {
+                cout << "You find a juicy plum hanging from a branch that seems too low by choice." << endl;
+                playerIP.heal(10);
+                cout << "You healed 10 Health." << endl;
+            } else {
+                cout << "You find a Hearty Salmon wrapped in wet leaves beside a cold cooking stone." << endl;
+                cout << "After some light cooking, it becomes quite the meal." << endl;
+                playerIP.maxHealth += 5;
+                playerIP.heal(5);
+                cout << "Your Max Health increased by 5." << endl;
+            }
+
+        } else if (ChoiceName == "Confront") {
+            cout << "You step toward the sound in the brush." << endl;
+            cout << "A Slime appears!" << endl;
+            encounterSlime(playerIP, musicManager);
+
+        } else if (ChoiceName == "Run Away") {
+            const int n = randomNum(1, 10);
+
+            if (n <= 5) {
+                cout << "You escape through the brambles, but the forest takes a little blood as payment." << endl;
+                ArmagestaBiomeTools::hurtPlayer(playerIP, 10);
+                cout << "You took 10 damage." << endl;
+            } else {
+                cout << "You slip away without being wounded. The whispers continue behind you, disappointed." << endl;
+            }
+
+        } else if (ChoiceName == "Explore the Basement") {
+            cout << "You descend beneath the cathedral. Roots hang from the ceiling like old veins." << endl;
+
+            const int n = randomNum(1, 10);
+
+            if (n <= 7) {
+                cout << "A Skeleton appears!" << endl;
+                encounterSkeleton(playerIP, musicManager);
+            }
+
+            if (playerIP.health <= 0) {
+                return;
+            }
+
+            if (n <= 2) {
+                cout << "Another Skeleton appears!" << endl;
+                encounterSkeleton(playerIP, musicManager);
+            }
+
+            if (playerIP.health <= 0) {
+                return;
+            }
+
+            cout << "Behind a cracked stone panel, you find a strange amulet with a silver rim and a central sapphire." << endl;
+            cout << "Tiny wisps flow and spin inside the gem like trapped weather." << endl;
+
+            playerIP.maxSoul += 1;
+            cout << "Your Max Souls increased by 1." << endl;
+
+            ArmagestaBiomeTools::unlockCombatAction(
+                playerIP,
+                "Break Sapphire Amulet",
+                "Break the sapphire amulet in combat, releasing the wisps trapped inside. Expensive, strange, and probably dangerous."
+            );
+
+        } else if (ChoiceName == "Appreciate the Stained Glass Artwork") {
+            cout << "You stand before the stained glass and let the colors fall across you." << endl;
+            cout << "One pane depicts a floral sword buried hilt-deep in a king's shadow." << endl;
+            cout << "The image fills you with determination, then suddenly shatters." << endl;
+
+            playerIP.permanentDamageModifier += 1;
+            cout << "Your permanent damage increased by 1." << endl;
+
+        } else if (ChoiceName == "Pray at the Altar") {
+            const int n = randomNum(1, 10);
+
+            cout << "There is a large brown book on the altar. Its pages turn without wind." << endl;
+
+            if (n <= 7) {
+                cout << "A warm, familiar soul rises out of the book and presses itself gently into your chest." << endl;
+                cout << "You gained 5 Souls, and your Soul capacity feels larger." << endl;
+
+                playerIP.maxSoul += 2;
+                playerIP.gainSoul(5);
+            } else {
+                cout << "A large soul with demonic energy radiating from it emerges from the book." << endl;
+                cout << "It pounces at you, dissipating into your chest like a curse pretending to be a blessing." << endl;
+
+                playerIP.maxSoul += 2;
+                playerIP.maxHealth -= 5;
+
+                if (playerIP.health > playerIP.maxHealth) {
+                    playerIP.health = playerIP.maxHealth;
+                }
+
+                cout << "Your Max Souls increased by 2, but your Max Health decreased by 5." << endl;
+            }
+
+        } else if (ChoiceName == "Move On") {
+            cout << "Best leave that for another day." << endl;
+            cout << "You feel slightly better knowing this was your choice." << endl;
+
+            playerIP.heal(3);
+            cout << "You healed 3 Health." << endl;
+
+        } else if (ChoiceName == "Talk to the Tree") {
+            const int n = randomNum(1, 10);
+
+            cout << "The tree talks back. Its voice sounds like wood bending in winter." << endl;
+
+            if (n <= 5) {
+                cout << "The tree does not seem interested in conversation, but it drops a few apples for you." << endl;
+                playerIP.heal(5);
+                cout << "You healed 5 Health." << endl;
+            } else if (n <= 7) {
+                cout << "The tree becomes irrationally angry and bumps you away like a bug." << endl;
+                ArmagestaBiomeTools::hurtPlayer(playerIP, 5);
+                cout << "You took 5 damage." << endl;
+            } else {
+                cout << "The tree describes itself as an Ent and claims to have watched the first roads rot into moss." << endl;
+                cout << "It gives you a hardwood stick from the top of its head and bids you off." << endl;
+
+                ArmagestaBiomeTools::unlockCombatAction(
+                    playerIP,
+                    "Ent Wand",
+                    "Call roots up from beneath the enemy, stabbing and binding them. This requires a large amount of Souls."
+                );
+            }
+
+        } else if (ChoiceName == "Climb the Tree") {
+            cout << "How many meters do you want to climb? Choose a number from 1 to 100." << endl;
+
+            int metersToClimb = 0;
+            string climbInput;
+
+            while (true) {
+                getline(cin >> ws, climbInput);
+
+                try {
+                    metersToClimb = stoi(climbInput);
+                } catch (...) {
+                    metersToClimb = 0;
+                }
+
+                if (metersToClimb > 0 && metersToClimb <= 100) {
+                    break;
+                }
+
+                cout << "You can't even climb that high..." << endl;
+                cout << "Choose a number from 1 to 100." << endl;
+            }
+
+            const int n = randomNum(1, metersToClimb);
+
+            if (n <= 10) {
+                cout << "You find an orange hidden between two branches." << endl;
+                playerIP.heal(5);
+                cout << "You healed 5 Health." << endl;
+            } else if (n <= 30) {
+                cout << "You find a large Blood Orange pulsing gently under the leaves." << endl;
+                playerIP.maxHealth += 5;
+                playerIP.heal(15);
+                cout << "Your Max Health increased by 5, and you healed 15 Health." << endl;
+            } else if (n <= 90) {
+                const int damageTaken = randomNum(1, 30);
+
+                cout << "The bark shifts under your hand. You fall hard through branches and leaves." << endl;
+                ArmagestaBiomeTools::hurtPlayer(playerIP, damageTaken);
+                cout << "You took " << damageTaken << " damage." << endl;
+            } else {
+                cout << "At the top of the tree, it feels like you can see the entire world." << endl;
+                cout << "The map of Armagesta opens in your mind like a wound made of roads." << endl;
+                playerIP.printMap();
+            }
+
+        } else if (ChoiceName == "Carve into the Tree") {
+            cout << "The blade bites into bark." << endl;
+            cout << "The tree awakens, and it is furious." << endl;
+
+            // If your Ent function is named encounterEnt instead, replace this line with:
+            // encounterEnt(playerIP, musicManager);
+            encounterAncientEnt(playerIP, musicManager);
+
+            if (playerIP.health <= 0) {
+                return;
+            }
+
+            cout << "From the corpse of the Ent, you take a large piece of unbreakable bark." << endl;
+            cout << "It melds to your arm, becoming shield, scar, and warning." << endl;
+
+            playerIP.hardiness += 5;
+            playerIP.heal(30);
+
+            cout << "Your Hardiness increased by 5, and you healed 30 Health." << endl;
+        }
+    }
+
+public:
+    explicit Forest(Player& PlayerIP, BackgroundMusicManager& musicManager)
+        : BiomeEventDatabase(PlayerIP, musicManager) {
+        REI = getChoice();
+        doEvent();
+    }
+};
 
 class Desert : public BiomeEventDatabase {
 private:
