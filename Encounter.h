@@ -219,7 +219,7 @@ public:
             PAD.type = "CHARGE";
         } else if (playerAction == "Riposte") {
             if (MAD.type == "M-ATTACK" && MAD.attackSpeed != "Quick") {
-                if (roll <= 100 - playerIP.accuracy) {
+                if (roll > 100 - playerIP.accuracy) {
                     int damageDealt = randomNum(4, 7) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
                     makeZeroIfNegative(damageDealt);
                     health -= damageDealt;
