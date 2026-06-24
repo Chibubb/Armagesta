@@ -36,9 +36,25 @@ public:
         return map[currentPosition[0]][currentPosition[1]];
     }
 
-    string getCurrentBiomeName() const {
-        char biomeType = getCurrentBiomeType();
+    bool isMajorBiomeType(const char biomeType) const {
+        return biomeType == 'F' || biomeType == 'D' || biomeType == 'C' || biomeType == 'R' ||
+               biomeType == 'W' || biomeType == 'I' || biomeType == 'B' || biomeType == 'M';
+    }
 
+    char getMajorBiomeType(const char biomeType) const {
+        // Landmark biomes inherit the region they are hidden inside. This prevents the big
+        // biome entrance banner from firing when stepping onto or off of one-space places.
+        if (biomeType == 'S') return 'D'; // Sand Pit lives in the Desert.
+        if (biomeType == 'G') return 'C'; // Crystal Geode lives in the Caves.
+        if (biomeType == 'O') return 'R'; // Oldest Redwood lives in the Old Redwoods.
+        if (biomeType == 'H') return 'W'; // Witch's Hut lives in the Swamp.
+        if (biomeType == 'T') return 'I'; // The Throne lives in the Citadel.
+        if (biomeType == 'Y') return 'B'; // Coral Reef lives in the Beach region.
+        if (biomeType == 'L') return 'M'; // Dragon's Lair lives in the Mountains.
+        return biomeType;
+    }
+
+    string getBiomeNameFromType(const char biomeType) const {
         if (biomeType == 'F') return "Forest";
         if (biomeType == 'D') return "Desert";
         if (biomeType == 'C') return "Caves";
@@ -57,6 +73,55 @@ public:
         if (biomeType == 'L') return "Dragon's Lair";
 
         return "Unknown Place";
+    }
+
+    string getCurrentBiomeName() const {
+        return getBiomeNameFromType(getCurrentBiomeType());
+    }
+
+    string getMajorBiomeNameFromType(const char biomeType) const {
+        return getBiomeNameFromType(getMajorBiomeType(biomeType));
+    }
+
+    bool shouldAnnounceMajorBiomeChange(const char previousBiomeType, const char newBiomeType) const {
+        if (newBiomeType == 'X') {
+            return false;
+        }
+
+        const char previousMajorBiome = getMajorBiomeType(previousBiomeType);
+        const char newMajorBiome = getMajorBiomeType(newBiomeType);
+
+        return isMajorBiomeType(newMajorBiome) && previousMajorBiome != newMajorBiome;
+    }
+
+    void announceMajorBiomeEntrance(const char biomeType) const {
+        const char majorBiomeType = getMajorBiomeType(biomeType);
+        const string majorBiomeName = getBiomeNameFromType(majorBiomeType);
+
+        cout << endl;
+        cout << "============================================================" << endl;
+        cout << "YOU HAVE ENTERED THE " << majorBiomeName << endl;
+        cout << "============================================================" << endl;
+
+        if (majorBiomeType == 'F') {
+            cout << "The air turns green and watchful. Branches bend like witnesses as the Forest accepts your footsteps." << endl;
+        } else if (majorBiomeType == 'D') {
+            cout << "The world opens into gold heat and bone-white distance. The Desert measures you by what you can survive without." << endl;
+        } else if (majorBiomeType == 'C') {
+            cout << "Stone closes overhead. The Caves breathe mineral darkness, and every echo sounds older than your name." << endl;
+        } else if (majorBiomeType == 'R') {
+            cout << "The trees become impossibly ancient. The Old Redwoods do not welcome you; they remember you in advance." << endl;
+        } else if (majorBiomeType == 'W') {
+            cout << "Mud, fog, and black water swallow the horizon. The Swamp listens with a thousand hidden throats." << endl;
+        } else if (majorBiomeType == 'I') {
+            cout << "Broken towers rise like iron teeth. The Citadel still believes in law, even after forgetting mercy." << endl;
+        } else if (majorBiomeType == 'B') {
+            cout << "Salt wind cuts through the silence. The Beach stretches before you, where every tide returns with evidence." << endl;
+        } else if (majorBiomeType == 'M') {
+            cout << "The ground climbs toward storm and old fire. The Mountains dare you to become heavy enough to matter." << endl;
+        }
+
+        cout << "============================================================" << endl << endl;
     }
 
     void describeAlreadyExploredSpace() const {

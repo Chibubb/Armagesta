@@ -6,6 +6,7 @@
 #define ARMAGESTA_EVENTDATABASE_H
 #include <iostream>
 #include <string>
+#include <cctype>
 #include <utility>
 #include "randomness.h"
 #include <memory>
@@ -35,6 +36,92 @@ protected:
 
 
 namespace ArmagestaBiomeTools {
+    inline string lowered(string value) {
+        for (char& letter : value) {
+            letter = static_cast<char>(tolower(static_cast<unsigned char>(letter)));
+        }
+        return value;
+    }
+
+    inline bool containsText(const string& text, const string& wantedText) {
+        return lowered(text).find(lowered(wantedText)) != string::npos;
+    }
+
+    inline string getChoiceMechanicalPreview(const string& choiceName) {
+        const string choice = lowered(choiceName);
+
+        // These are intentionally suggestive instead of exact. They let the player understand
+        // the likely kind of consequence without spoiling every random result.
+        if (choice == "rest" || containsText(choice, "sleep") || containsText(choice, "breathe")) {
+            return "Recovery path: likely restores Health, Souls, or gives a small safe benefit.";
+        }
+
+        if (choice == "move on" || choice == "turn back" || choice == "retreat" || choice == "leave" ||
+            choice == "leave carefully" || choice == "leave quietly" || choice == "leave it alone" ||
+            choice == "step away" || choice == "surface" || choice == "back away slowly" ||
+            choice == "bow and leave") {
+            return "Cautious path: usually avoids the main danger, often with a smaller reward.";
+        }
+
+        if (containsText(choice, "scrap") || containsText(choice, "pay") || containsText(choice, "offer") ||
+            containsText(choice, "pour souls") || containsText(choice, "leave a soul") ||
+            containsText(choice, "feed it souls") || containsText(choice, "buy")) {
+            return "Resource trade: may spend Scrap Metal or Souls to avoid danger or gain a lasting benefit.";
+        }
+
+        if (containsText(choice, "fight") || containsText(choice, "challenge") || containsText(choice, "confront") ||
+            containsText(choice, "wake") || containsText(choice, "call into") || containsText(choice, "call out") ||
+            containsText(choice, "shout") || containsText(choice, "open a cell") ||
+            containsText(choice, "challenge the dragon")) {
+            return "Danger path: likely starts combat, but can lead to stronger rewards or unlocks.";
+        }
+
+        if (containsText(choice, "steal") || containsText(choice, "rob") || containsText(choice, "loot") ||
+            containsText(choice, "break") || containsText(choice, "shatter") || containsText(choice, "cut") ||
+            containsText(choice, "kick") || containsText(choice, "deface") || containsText(choice, "stab") ||
+            containsText(choice, "pull") || containsText(choice, "throw")) {
+            return "Aggressive path: higher risk of damage or combat, usually with a stronger material reward.";
+        }
+
+        if (containsText(choice, "search") || containsText(choice, "scavenge") || containsText(choice, "dig") ||
+            containsText(choice, "collect") || containsText(choice, "harvest") || containsText(choice, "take") ||
+            containsText(choice, "reach")) {
+            return "Resource path: likely searches for loot, Scrap Metal, healing, or a useful upgrade.";
+        }
+
+        if (containsText(choice, "read") || containsText(choice, "study") || containsText(choice, "listen") ||
+            containsText(choice, "ask") || containsText(choice, "count") || containsText(choice, "mark") ||
+            containsText(choice, "watch") || containsText(choice, "hear")) {
+            return "Lore path: likely reveals story, objectives, or a careful stat/soul benefit.";
+        }
+
+        if (containsText(choice, "pray") || containsText(choice, "kneel") || containsText(choice, "bow") ||
+            containsText(choice, "confess") || containsText(choice, "salute") || containsText(choice, "speak") ||
+            containsText(choice, "answer") || containsText(choice, "argue") || containsText(choice, "refuse")) {
+            return "Spirit path: likely affects Souls, quests, judgment, or a permanent character stat.";
+        }
+
+        if (containsText(choice, "drink") || containsText(choice, "taste") || containsText(choice, "lick") ||
+            containsText(choice, "blood") || containsText(choice, "bleed")) {
+            return "Body-risk path: may heal or empower you, but can also cost Health.";
+        }
+
+        if (containsText(choice, "follow") || containsText(choice, "travel") || containsText(choice, "enter") ||
+            containsText(choice, "ride") || containsText(choice, "climb") || containsText(choice, "cross") ||
+            containsText(choice, "walk") || containsText(choice, "step") || containsText(choice, "jump") ||
+            containsText(choice, "sprint") || containsText(choice, "swim") || containsText(choice, "crawl") ||
+            containsText(choice, "edge along") || containsText(choice, "dive") || containsText(choice, "descend")) {
+            return "Movement path: likely tests risk versus progress, often affecting Momentum or Health.";
+        }
+
+        if (containsText(choice, "light") || containsText(choice, "extinguish") || containsText(choice, "ring") ||
+            containsText(choice, "sing") || containsText(choice, "hum") || containsText(choice, "signal")) {
+            return "Signal path: may summon help, danger, lore, or a special reward.";
+        }
+
+        return "Uncertain path: likely changes Health, Souls, resources, quests, or combat risk.";
+    }
+
     inline int weightedChoice(const vector<int>& chances) {
         int totalChance = 0;
         for (const int chance : chances) {
@@ -53,12 +140,16 @@ namespace ArmagestaBiomeTools {
 
     inline int askChoice(const vector<string>& choices) {
         if (choices.size() == 1) {
+            cout << "Only path:" << endl;
+            cout << "1: " << choices[0] << endl;
+            cout << "   Mechanical hint: " << getChoiceMechanicalPreview(choices[0]) << endl << endl;
             return 0;
         }
 
         cout << "Choose one:" << endl;
         for (int i = 0; i < choices.size(); i++) {
             cout << i + 1 << ": " << choices[i] << endl;
+            cout << "   Mechanical hint: " << getChoiceMechanicalPreview(choices[i]) << endl;
         }
         cout << endl;
 
@@ -2092,49 +2183,13 @@ private:
 
 protected:
     int getChoice() override {
-        int totalChance = 0;
-        for (auto i : eventChances) {
-            totalChance += i;
-        }
-        int y = randomNum(1, totalChance);
-        int cumulativeChance = 0;
-        for (int i = 0; i < eventChances.size(); i++) {
-            cumulativeChance += eventChances[i];
-            if (cumulativeChance >= y) {
-                return i;
-            }
-        }
-        return -1;
+        return ArmagestaBiomeTools::weightedChoice(eventChances);
     }
 
     void doEvent() override{
-        int ChosenChoice = 0;
-        cout << eventNames[REI] << endl;
-        cout << eventFlavorText[REI] << endl << endl;
-        if (eventChoices[REI].size() != 1) {
-            cout << "Choose one:" << endl;
-            int j = 1;
-            for (const auto& i : eventChoices[REI]) {
-                cout << j << ": " << i << endl;
-                j += 1;
-            }
-            cout << endl;
-            int z = 0;
-            while (z < 1 || z > eventChoices[REI].size()) {
-                cin >> z;
-                if (z < 1 || z > eventChoices[REI].size()) {
-                    cout << endl << "Invalid Input, Try Again" << endl;
-                    continue;
-                }
-                ChosenChoice = z;
-            }
-        } else {
-            ChosenChoice = 1;
-        }
-        ChoiceName = eventChoices[REI][ChosenChoice - 1];
-
+        ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+        ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
-
     }
 
     void ResolveChoice() override {

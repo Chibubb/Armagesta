@@ -79,17 +79,24 @@ int main() {
         string chosenAction = player->getAction();
 
         if (chosenAction == "Move") {
+            const char previousBiomeType = player->getCurrentBiomeType();
             char biomeType = player->move(player->getAChosenDirection());
 
             if (biomeType == 'X') {
                 interactWithWorld(biomeType, *player, musicManager);
-            } else if (player->currentSpaceHasBeenExplored()) {
-                player->describeAlreadyExploredSpace();
-                ArmagestaNonCombatEvents::maybeTrigger(*player);
             } else {
-                player->markCurrentSpaceExplored();
-                interactWithWorld(biomeType, *player, musicManager);
-                ArmagestaNonCombatEvents::maybeTrigger(*player);
+                if (player->shouldAnnounceMajorBiomeChange(previousBiomeType, biomeType)) {
+                    player->announceMajorBiomeEntrance(biomeType);
+                }
+
+                if (player->currentSpaceHasBeenExplored()) {
+                    player->describeAlreadyExploredSpace();
+                    ArmagestaNonCombatEvents::maybeTrigger(*player);
+                } else {
+                    player->markCurrentSpaceExplored();
+                    interactWithWorld(biomeType, *player, musicManager);
+                    ArmagestaNonCombatEvents::maybeTrigger(*player);
+                }
             }
         } else if (chosenAction == "Self Assess") {
             player->assess();
