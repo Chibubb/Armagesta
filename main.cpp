@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicManager& musicManager) {
+void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) {
     if (BiomeType == 'F') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
         auto Event = make_unique<Forest>(player, musicManager);
@@ -38,25 +38,25 @@ void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicMana
         auto Event = make_unique<Mountains>(player, musicManager);
     } else if (BiomeType == 'S') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<SandPit>(player, musicManager);
+        auto Event = make_unique<SandPit>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'G') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<CrystalGeode>(player, musicManager);
+        auto Event = make_unique<CrystalGeode>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'O') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<OldestRedwood>(player, musicManager);
+        auto Event = make_unique<OldestRedwood>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'H') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<WitchsHut>(player, musicManager);
+        auto Event = make_unique<WitchsHut>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'T') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<TheThrone>(player, musicManager);
+        auto Event = make_unique<TheThrone>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'Y') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<CoralReef>(player, musicManager);
+        auto Event = make_unique<CoralReef>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'L') {
         musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-        auto Event = make_unique<DragonsLair>(player, musicManager);
+        auto Event = make_unique<DragonsLair>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'X') {
         cout << "You are at the edge of the map, you may not travel any farther in that direction..." << endl;
     }
@@ -90,8 +90,13 @@ int main() {
                 }
 
                 if (player->currentSpaceHasBeenExplored()) {
-                    player->describeAlreadyExploredSpace();
-                    ArmagestaNonCombatEvents::maybeTrigger(*player);
+                    if (player->currentExploredSpaceShouldRunLoreOnlyEvent()) {
+                        player->describeLoreOnlyRevisit();
+                        interactWithWorld(biomeType, *player, musicManager, true);
+                    } else {
+                        player->describeAlreadyExploredSpace();
+                        ArmagestaNonCombatEvents::maybeTrigger(*player);
+                    }
                 } else {
                     player->markCurrentSpaceExplored();
                     interactWithWorld(biomeType, *player, musicManager);

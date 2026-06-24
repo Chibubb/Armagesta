@@ -483,6 +483,50 @@ void claimThrone() {
     }
 }
 
+
+
+bool isImportantLorePlaceType(const char biomeType) const {
+    return biomeType == 'S' || biomeType == 'G' || biomeType == 'O' || biomeType == 'H' ||
+           biomeType == 'T' || biomeType == 'Y' || biomeType == 'L';
+}
+
+string getImportantLoreGoalName(const char biomeType) const {
+    if (biomeType == 'S') return "Dune Maw";
+    if (biomeType == 'G') return "Crystal Matriarch";
+    if (biomeType == 'O') return "Ancient Ent";
+    if (biomeType == 'H') return "Marionette Coven";
+    if (biomeType == 'T') return "Claim The Throne";
+    if (biomeType == 'Y') return "Tide Leviathan";
+    if (biomeType == 'L') return "Cinder Dragon";
+    return "Unknown Lore Event";
+}
+
+bool importantLoreEventIsUnfinished(const char biomeType) const {
+    if (biomeType == 'S') return !hasStoryFlag("Dune Maw Defeated");
+    if (biomeType == 'G') return !hasStoryFlag("Crystal Matriarch Defeated");
+    if (biomeType == 'O') return !hasStoryFlag("Ancient Ent Defeated");
+    if (biomeType == 'H') return !hasStoryFlag("Marionette Coven Defeated");
+    if (biomeType == 'Y') return !hasStoryFlag("Tide Leviathan Defeated");
+    if (biomeType == 'L') return !dragonDefeated;
+
+    // The Throne should not be endlessly replayable before the Dragon is dead.
+    // It becomes revisit-triggerable only when the final claim is actually possible.
+    if (biomeType == 'T') return dragonDefeated && !gameWon;
+
+    return false;
+}
+
+bool currentExploredSpaceShouldRunLoreOnlyEvent() const {
+    const char biomeType = getCurrentBiomeType();
+    return currentSpaceHasBeenExplored() && isImportantLorePlaceType(biomeType) && importantLoreEventIsUnfinished(biomeType);
+}
+
+void describeLoreOnlyRevisit() const {
+    cout << "You return to the " << getCurrentBiomeName() << "." << endl;
+    cout << "This place has already given up its smaller secrets, so only the unfinished lore remains." << endl;
+    cout << "Unfinished lore path: " << getImportantLoreGoalName(getCurrentBiomeType()) << "." << endl << endl;
+}
+
 void printQuestLog() const {
     cout << endl << "===== QUEST LOG =====" << endl;
 
