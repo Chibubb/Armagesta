@@ -142,14 +142,14 @@ namespace ArmagestaBiomeTools {
         if (choices.size() == 1) {
             cout << "Only path:" << endl;
             cout << "1: " << choices[0] << endl;
-            cout << "   Mechanical hint: " << getChoiceMechanicalPreview(choices[0]) << endl << endl;
+            cout << "   " << getChoiceMechanicalPreview(choices[0]) << endl << endl;
             return 0;
         }
 
         cout << "Choose one:" << endl;
         for (int i = 0; i < choices.size(); i++) {
             cout << i + 1 << ": " << choices[i] << endl;
-            cout << "   Mechanical hint: " << getChoiceMechanicalPreview(choices[i]) << endl;
+            cout << "   " << getChoiceMechanicalPreview(choices[i]) << endl;
         }
         cout << endl;
 
