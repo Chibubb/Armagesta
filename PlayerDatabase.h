@@ -19,6 +19,47 @@ class Player {
 private:
 public:
 
+    bool currentSpaceHasBeenExplored() const {
+        return exploredMap[currentPosition[0]][currentPosition[1]];
+    }
+
+    void markCurrentSpaceExplored() {
+        exploredMap[currentPosition[0]][currentPosition[1]] = true;
+    }
+
+    char getCurrentBiomeType() const {
+        return map[currentPosition[0]][currentPosition[1]];
+    }
+
+    string getCurrentBiomeName() const {
+        char biomeType = getCurrentBiomeType();
+
+        if (biomeType == 'F') return "Forest";
+        if (biomeType == 'D') return "Desert";
+        if (biomeType == 'C') return "Caves";
+        if (biomeType == 'R') return "Old Redwoods";
+        if (biomeType == 'W') return "Swamp";
+        if (biomeType == 'I') return "Citadel";
+        if (biomeType == 'B') return "Beach";
+        if (biomeType == 'M') return "Mountains";
+
+        if (biomeType == 'S') return "Sand Pit";
+        if (biomeType == 'G') return "Crystal Geode";
+        if (biomeType == 'O') return "Oldest Redwood";
+        if (biomeType == 'H') return "Witch's Hut";
+        if (biomeType == 'T') return "The Throne";
+        if (biomeType == 'Y') return "Coral Reef";
+        if (biomeType == 'L') return "Dragon's Lair";
+
+        return "Unknown Place";
+    }
+
+    void describeAlreadyExploredSpace() const {
+        cout << "You return to the " << getCurrentBiomeName() << "." << endl;
+        cout << "The land here has already given up its secret. You may pass through, "
+             << "but there is nothing new to uncover at this coordinate." << endl;
+    }
+
     vector<vector<char>> map = {
         {'M', 'M', 'M', 'M', 'L', 'M', 'M', 'R', 'R', 'O', 'R'},
         {'M', 'M', 'M', 'C', 'C', 'G', 'C', 'R', 'R', 'R', 'R'},
@@ -32,6 +73,7 @@ public:
         {'Y', 'Y', 'B', 'B', 'B', 'B', 'I', 'I', 'I', 'I', 'I'},
         {'Y', 'Y', 'Y', 'B', 'B', 'B', 'B', 'I', 'I', 'I', 'I'}
     }; // 0 - 10 on both dimensions
+    vector<vector<bool>> exploredMap;
     int health = 100;
     int critChance = 5;
     int accuracy = 80;
@@ -44,7 +86,7 @@ public:
     int currentScrapMetal = 0;
     vector<int> currentPosition = {5, 5};
 
-    vector<string> actions = {"Move", "Self Assess", "Understand Powers"};
+    vector<string> actions = {"Move", "Self Assess", "Understand Powers", "Map"};
     vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte"
         , "Weaken", "Soul Burst"};
     vector<string> combatActionsDescriptions = {"Use your sword on the enemy, like you have done so many times before"
@@ -56,7 +98,10 @@ public:
         , "Caste a weakening curse on your enemy, immediately enacting bodily distrophy on them, requires a small amount of souls"
         , "Unleash the power of stolen souls on the currently living enemy in front of you, dealing a large amount of damage, requires a decent amount of souls"};
 
-    Player() = default;
+    Player() {
+        exploredMap = vector<vector<bool>>(map.size(), vector<bool>(map[0].size(), false));
+        markCurrentSpaceExplored(); // Starting tile begins explored
+    }
 
     void heal(const int healAmount) {
         health += healAmount;
@@ -127,7 +172,7 @@ public:
         bool directionChosenCorrectly = false;
         while (directionChosenCorrectly == false) {
             cout << "Which Direction?" << endl;
-            cin >> chosenDirection;
+            getline(cin, chosenDirection);
             if (chosenDirection == "North" || chosenDirection == "north"
                 || chosenDirection == "South" || chosenDirection == "south"
                 || chosenDirection == "West" || chosenDirection == "west"
@@ -192,12 +237,23 @@ public:
     }
 
     void printMap() const {
+        cout << "Map:" << endl;
+        cout << "@ = You, ? = Unexplored" << endl << endl;
+
         for (int i = 0; i < map.size(); i++) {
             for (int j = 0; j < map[i].size(); j++) {
-                cout << map[i][j] << " ";
+                if (currentPosition[0] == i && currentPosition[1] == j) {
+                    cout << "@ ";
+                } else if (exploredMap[i][j]) {
+                    cout << map[i][j] << " ";
+                } else {
+                    cout << "? ";
+                }
             }
             cout << endl;
         }
+
+        cout << endl;
     }
 
 };

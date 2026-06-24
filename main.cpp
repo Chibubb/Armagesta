@@ -78,13 +78,25 @@ int main() {
          player->printActions();
          string chosenAction = player->getAction();
          if (chosenAction == "Move") {
-             interactWithWorld(player->move(player->getAChosenDirection()), *player, musicManager);
+             char biomeType = player->move(player->getAChosenDirection());
+
+             if (biomeType == 'X') {
+                 interactWithWorld(biomeType, *player, musicManager);
+             } else if (player->currentSpaceHasBeenExplored()) {
+                 player->describeAlreadyExploredSpace();
+             } else {
+                 player->markCurrentSpaceExplored();
+                 interactWithWorld(biomeType, *player, musicManager);
+             }
          }
          if (chosenAction == "Self Assess") {
              player->assess();
          }
          if (chosenAction == "Understand Powers") {
              player->understandPowers();
+         }
+         if (chosenAction == "Map") {
+             player->printMap();
          }
          cout << endl;
 
