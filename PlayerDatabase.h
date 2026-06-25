@@ -355,6 +355,158 @@ void eraseFromVector(vector<string>& values, const string& target) {
     values.erase(remove(values.begin(), values.end(), target), values.end());
 }
 
+
+struct PlayerChangeSnapshot {
+    int health = 0;
+    int maxHealth = 0;
+    int soul = 0;
+    int maxSoul = 0;
+    int currentScrapMetal = 0;
+    int critChance = 0;
+    int accuracy = 0;
+    int hardiness = 0;
+    int permanentDamageModifier = 0;
+    int permanentMomentum = 0;
+    bool dragonDefeated = false;
+    bool throneClaimed = false;
+    bool gameWon = false;
+    vector<string> actions;
+    vector<string> combatActions;
+    vector<string> activeQuests;
+    vector<string> completedQuests;
+    vector<string> discoveredLandmarks;
+    vector<string> storyFlags;
+};
+
+PlayerChangeSnapshot makeChangeSnapshot() const {
+    PlayerChangeSnapshot snapshot;
+    snapshot.health = health;
+    snapshot.maxHealth = maxHealth;
+    snapshot.soul = soul;
+    snapshot.maxSoul = maxSoul;
+    snapshot.currentScrapMetal = currentScrapMetal;
+    snapshot.critChance = critChance;
+    snapshot.accuracy = accuracy;
+    snapshot.hardiness = hardiness;
+    snapshot.permanentDamageModifier = permanentDamageModifier;
+    snapshot.permanentMomentum = permanentMomentum;
+    snapshot.dragonDefeated = dragonDefeated;
+    snapshot.throneClaimed = throneClaimed;
+    snapshot.gameWon = gameWon;
+    snapshot.actions = actions;
+    snapshot.combatActions = combatActions;
+    snapshot.activeQuests = activeQuests;
+    snapshot.completedQuests = completedQuests;
+    snapshot.discoveredLandmarks = discoveredLandmarks;
+    snapshot.storyFlags = storyFlags;
+    return snapshot;
+}
+
+string playerChangeColor() const {
+    // Grayish blue ANSI true-color. CLion's Run console supports ANSI coloring.
+    return "\033[38;2;135;165;190m";
+}
+
+string playerChangeResetColor() const {
+    return "\033[0m";
+}
+
+void printPlayerChangeLine(const string& message) const {
+    cout << playerChangeColor() << message << playerChangeResetColor() << endl;
+}
+
+string signedDelta(const int before, const int after) const {
+    const int delta = after - before;
+    if (delta > 0) {
+        return "+" + to_string(delta);
+    }
+    return to_string(delta);
+}
+
+bool containsValue(const vector<string>& values, const string& target) const {
+    return find(values.begin(), values.end(), target) != values.end();
+}
+
+void reportNumericChange(const string& statName, const int before, const int after, bool& anyChange) const {
+    if (before == after) {
+        return;
+    }
+
+    if (!anyChange) {
+        cout << endl;
+        printPlayerChangeLine("===== PLAYER CHANGES =====");
+        anyChange = true;
+    }
+
+    printPlayerChangeLine("- " + statName + ": " + to_string(before) + " -> " + to_string(after) + " (" + signedDelta(before, after) + ")");
+}
+
+void reportAddedValues(const string& label, const vector<string>& before, const vector<string>& after, bool& anyChange) const {
+    for (const auto& value : after) {
+        if (!containsValue(before, value)) {
+            if (!anyChange) {
+                cout << endl;
+                printPlayerChangeLine("===== PLAYER CHANGES =====");
+                anyChange = true;
+            }
+            printPlayerChangeLine("- " + label + ": " + value);
+        }
+    }
+}
+
+void reportRemovedValues(const string& label, const vector<string>& before, const vector<string>& after, bool& anyChange) const {
+    for (const auto& value : before) {
+        if (!containsValue(after, value)) {
+            if (!anyChange) {
+                cout << endl;
+                printPlayerChangeLine("===== PLAYER CHANGES =====");
+                anyChange = true;
+            }
+            printPlayerChangeLine("- " + label + ": " + value);
+        }
+    }
+}
+
+void reportFlagChange(const string& label, const bool before, const bool after, bool& anyChange) const {
+    if (before == after) {
+        return;
+    }
+
+    if (!anyChange) {
+        cout << endl;
+        printPlayerChangeLine("===== PLAYER CHANGES =====");
+        anyChange = true;
+    }
+
+    printPlayerChangeLine("- " + label + ": " + string(after ? "Yes" : "No"));
+}
+
+void reportChangesSince(const PlayerChangeSnapshot& before) const {
+    bool anyChange = false;
+
+    reportNumericChange("Health", before.health, health, anyChange);
+    reportNumericChange("Max Health", before.maxHealth, maxHealth, anyChange);
+    reportNumericChange("Souls", before.soul, soul, anyChange);
+    reportNumericChange("Max Souls", before.maxSoul, maxSoul, anyChange);
+    reportNumericChange("Scrap Metal", before.currentScrapMetal, currentScrapMetal, anyChange);
+    reportNumericChange("Luck", before.critChance, critChance, anyChange);
+    reportNumericChange("Accuracy", before.accuracy, accuracy, anyChange);
+    reportNumericChange("Hardiness", before.hardiness, hardiness, anyChange);
+    reportNumericChange("Strength", before.permanentDamageModifier, permanentDamageModifier, anyChange);
+    reportNumericChange("Base Momentum", before.permanentMomentum, permanentMomentum, anyChange);
+
+    reportAddedValues("New world action", before.actions, actions, anyChange);
+    reportAddedValues("Story milestone", before.storyFlags, storyFlags, anyChange);
+
+    reportFlagChange("Cinder Dragon defeated", before.dragonDefeated, dragonDefeated, anyChange);
+    reportFlagChange("Throne claimed", before.throneClaimed, throneClaimed, anyChange);
+    reportFlagChange("Game won", before.gameWon, gameWon, anyChange);
+
+    if (anyChange) {
+        cout << endl;
+    }
+}
+
 bool hasWorldAction(const string& actionName) const {
     return vectorContains(actions, actionName);
 }
@@ -371,14 +523,14 @@ bool hasCombatAction(const string& actionName) const {
 
 void unlockCombatAction(const string& actionName, const string& description) {
     if (hasCombatAction(actionName)) {
-        cout << "You already know " << actionName << "." << endl;
+        printPlayerChangeLine("You already know " + actionName + ".");
         return;
     }
 
     combatActions.emplace_back(actionName);
     combatActionsDescriptions.emplace_back(description);
-    cout << "NEW COMBAT ACTION UNLOCKED: " << actionName << endl;
-    cout << description << endl;
+    printPlayerChangeLine("NEW COMBAT ACTION UNLOCKED: " + actionName);
+    printPlayerChangeLine(description);
 }
 
 bool hasStoryFlag(const string& flagName) const {
@@ -405,7 +557,8 @@ void addQuest(const string& questName) {
     }
 
     activeQuests.emplace_back(questName);
-    cout << endl << "NEW OBJECTIVE: " << questName << endl;
+    cout << endl;
+    printPlayerChangeLine("NEW OBJECTIVE: " + questName);
 }
 
 void completeQuest(const string& questName) {
@@ -415,7 +568,8 @@ void completeQuest(const string& questName) {
 
     eraseFromVector(activeQuests, questName);
     completedQuests.emplace_back(questName);
-    cout << endl << "OBJECTIVE COMPLETE: " << questName << endl;
+    cout << endl;
+    printPlayerChangeLine("OBJECTIVE COMPLETE: " + questName);
 }
 
 void initializeMainQuest() {
@@ -439,7 +593,8 @@ void discoverLandmark(const string& landmarkName) {
     }
 
     discoveredLandmarks.emplace_back(landmarkName);
-    cout << endl << "LANDMARK DISCOVERED: " << landmarkName << endl;
+    cout << endl;
+    printPlayerChangeLine("LANDMARK DISCOVERED: " + landmarkName);
 
     if (landmarkName == "The Throne") {
         completeQuest("Find The Throne");
@@ -473,6 +628,7 @@ void claimThrone() {
     if (dragonDefeated) {
         completeQuest("Return to The Throne and claim Armagesta");
         gameWon = true;
+        printPlayerChangeLine("THE THRONE HAS BEEN CLAIMED.");
         cout << endl;
         cout << "The Throne accepts you." << endl;
         cout << "The Dragon is dead, the seven places have spoken, and Armagesta finally has a will again." << endl;

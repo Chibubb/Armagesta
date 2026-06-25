@@ -205,13 +205,11 @@ namespace ArmagestaBiomeTools {
 
     inline void unlockCombatAction(Player& playerIP, const string& actionName, const string& description) {
         if (hasCombatAction(playerIP, actionName)) {
-            cout << "You already know " << actionName << ". The lesson echoes, but does not change you a second time." << endl;
+            playerIP.printPlayerChangeLine("You already know " + actionName + ". The lesson echoes, but does not change you a second time.");
             return;
         }
-        playerIP.combatActions.emplace_back(actionName);
-        playerIP.combatActionsDescriptions.emplace_back(description);
-        cout << "NEW COMBAT ACTION UNLOCKED: " << actionName << endl;
-        printStoryText(description);
+
+        playerIP.unlockCombatAction(actionName, description);
     }
 
     inline void hurtPlayer(Player& playerIP, const int damage) {

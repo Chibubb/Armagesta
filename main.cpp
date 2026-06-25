@@ -62,6 +62,19 @@ void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicMana
     }
 }
 
+
+void runWorldEventWithChangeReport(const char biomeType, Player& player, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) {
+    const auto beforeEvent = player.makeChangeSnapshot();
+    interactWithWorld(biomeType, player, musicManager, loreOnlyRevisit);
+    player.reportChangesSince(beforeEvent);
+}
+
+void runNonCombatEventWithChangeReport(Player& player) {
+    const auto beforeEvent = player.makeChangeSnapshot();
+    ArmagestaNonCombatEvents::maybeTrigger(player);
+    player.reportChangesSince(beforeEvent);
+}
+
 int main() {
 
     BackgroundMusicManager musicManager;
@@ -83,7 +96,7 @@ int main() {
             char biomeType = player->move(player->getAChosenDirection());
 
             if (biomeType == 'X') {
-                interactWithWorld(biomeType, *player, musicManager);
+                runWorldEventWithChangeReport(biomeType, *player, musicManager);
             } else {
                 if (player->shouldAnnounceMajorBiomeChange(previousBiomeType, biomeType)) {
                     player->announceMajorBiomeEntrance(biomeType);
@@ -92,15 +105,15 @@ int main() {
                 if (player->currentSpaceHasBeenExplored()) {
                     if (player->currentExploredSpaceShouldRunLoreOnlyEvent()) {
                         player->describeLoreOnlyRevisit();
-                        interactWithWorld(biomeType, *player, musicManager, true);
+                        runWorldEventWithChangeReport(biomeType, *player, musicManager, true);
                     } else {
                         player->describeAlreadyExploredSpace();
-                        ArmagestaNonCombatEvents::maybeTrigger(*player);
+                        runNonCombatEventWithChangeReport(*player);
                     }
                 } else {
                     player->markCurrentSpaceExplored();
-                    interactWithWorld(biomeType, *player, musicManager);
-                    ArmagestaNonCombatEvents::maybeTrigger(*player);
+                    runWorldEventWithChangeReport(biomeType, *player, musicManager);
+                    runNonCombatEventWithChangeReport(*player);
                 }
             }
         } else if (chosenAction == "Self Assess") {
@@ -114,7 +127,10 @@ int main() {
         } else if (chosenAction == "Save Game") {
             player->saveGame();
         } else if (chosenAction == "Load Game") {
-            player->loadGame();
+            const auto beforeLoad = player->makeChangeSnapshot();
+            if (player->loadGame()) {
+                player->reportChangesSince(beforeLoad);
+            }
         }
 
         cout << endl;
