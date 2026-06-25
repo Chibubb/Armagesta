@@ -194,7 +194,7 @@ public:
             playerIP.printPlayerChangeLine("The Cinder Dragon soul exhales inside you. You regain 2 Souls as combat begins.");
         }
 
-        cout << endl << "Combat begins against the " << getName() << "!" << endl;
+        cout << endl << combatStatusColor("Combat begins against the ", "1;37") << combatStatusColor(getName(), "1;31") << combatStatusColor("!", "1;37") << endl;
         printCombatStatus();
 
         while (health > 0 && playerIP.health > 0) {
@@ -214,17 +214,19 @@ public:
         musicManager.stopMusicWithFade();
 
         if (playerIP.health <= 0) {
-            cout << "The " << getName() << " watches you fall." << endl << endl;
+            musicManager.playCueImmediately(ArmagestaMusic::deathCue(), 1.15f, false);
+            cout << combatStatusColor("The ", "1;31") << combatStatusColor(getName(), "1;31") << combatStatusColor(" watches you fall.", "1;31") << endl << endl;
             return;
         }
 
+        musicManager.playCueImmediately(ArmagestaMusic::victoryCue(), 1.0f);
         playerIP.gainSoul(1);
-        cout << "The " << getName() << " died! You gained 1 Soul!" << endl << endl;
+        cout << "The " << combatStatusColor(getName(), "1;31") << " died! You gained " << combatStatusColor("1 Soul", "1;34") << "!" << endl << endl;
         playerIP.consumeMonsterSoul(getName());
     }
 
     void virtual printIntent(const int indexOfIntent) const {
-        cout << actionIntents[indexOfIntent] << endl << endl;
+        cout << combatStatusColor(actionIntents[indexOfIntent], "1;37") << endl << endl;
     }
 
     struct CombatFocusStepResult {

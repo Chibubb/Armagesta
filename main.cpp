@@ -13,49 +13,49 @@ using namespace std;
 
 void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) {
     if (BiomeType == 'F') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Forest>(player, musicManager);
     } else if (BiomeType == 'D') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Desert>(player, musicManager);
     } else if (BiomeType == 'C') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Caves>(player, musicManager);
     } else if (BiomeType == 'R') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<OldRedwoods>(player, musicManager);
     } else if (BiomeType == 'W') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Swamp>(player, musicManager);
     } else if (BiomeType == 'I') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Citadel>(player, musicManager);
     } else if (BiomeType == 'B') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Beach>(player, musicManager);
     } else if (BiomeType == 'M') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<Mountains>(player, musicManager);
     } else if (BiomeType == 'S') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<SandPit>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'G') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<CrystalGeode>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'O') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<OldestRedwood>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'H') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<WitchsHut>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'T') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<TheThrone>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'Y') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<CoralReef>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'L') {
-        musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
+        musicManager.changeAmbienceForBiome(BiomeType);
         auto Event = make_unique<DragonsLair>(player, musicManager, loreOnlyRevisit);
     } else if (BiomeType == 'X') {
         cout << "You are at the edge of the map, you may not travel any farther in that direction..." << endl;
@@ -65,6 +65,11 @@ void interactWithWorld(const char BiomeType, Player& player, BackgroundMusicMana
 
 void runWorldEventWithChangeReport(const char biomeType, Player& player, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) {
     const auto beforeEvent = player.makeChangeSnapshot();
+
+    if (biomeType != 'X' && player.isImportantLorePlaceType(biomeType) && !loreOnlyRevisit) {
+        musicManager.playCueImmediately(ArmagestaMusic::strangeCue(), 0.75f);
+    }
+
     interactWithWorld(biomeType, player, musicManager, loreOnlyRevisit);
     player.reportChangesSince(beforeEvent);
 }
@@ -79,11 +84,10 @@ int main() {
 
     BackgroundMusicManager musicManager;
 
-    musicManager.changeMusicWithFade("assets/music/Light Ambience 1.mp3");
-
     auto player = make_unique<Player>();
+    musicManager.changeAmbienceForBiome(player->getCurrentBiomeType());
 
-    cout << endl << "Welcome to Armagesta!" << endl << endl;
+    cout << endl << player->ansiColor("Welcome to Armagesta!", "1;35") << endl << endl;
     player->chooseDifficultyAtNewGame();
     bool gameEnds = false;
 
@@ -93,7 +97,7 @@ int main() {
         string chosenAction = player->getAction();
 
         if (chosenAction == "Move") {
-            cout << endl << "Explored map so far:" << endl;
+            cout << endl << player->ansiColor("Explored map so far:", "1;35") << endl;
             player->printMap();
 
             const char previousBiomeType = player->getCurrentBiomeType();
@@ -138,19 +142,24 @@ int main() {
             const auto beforeLoad = player->makeChangeSnapshot();
             if (player->loadGame()) {
                 player->reportChangesSince(beforeLoad);
+                musicManager.changeAmbienceForBiome(player->getCurrentBiomeType());
             }
         }
 
         cout << endl;
 
         if (player->gameWon) {
-            cout << "You have completed the first version of Armagesta." << endl;
-            cout << "The map still breathes, but it no longer does so without a ruler." << endl;
+            musicManager.stopMusicWithFade(0.40f);
+            musicManager.playCueImmediately(ArmagestaMusic::completionCue(), 1.20f, false);
+            cout << player->ansiColor("You have completed the first version of Armagesta.", "1;35") << endl;
+            cout << "The map still " << player->ansiColor("breathes", "1;32") << ", but it no longer does so without a " << player->ansiColor("ruler", "1;35") << "." << endl;
             gameEnds = true;
         }
 
         if (player->health <= 0) {
-            cout << "You fall to the floor, breathless. You have died." << endl;
+            musicManager.stopMusicWithFade(0.40f);
+            musicManager.playCueImmediately(ArmagestaMusic::deathCue(), 1.15f, false);
+            cout << player->ansiColor("You fall to the floor, breathless. You have died.", "1;31") << endl;
             gameEnds = true;
         }
     }

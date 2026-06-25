@@ -15,14 +15,105 @@
 #include <thread>
 #include <vector>
 
+namespace ArmagestaMusic {
+    inline std::string musicPath(const std::string& fileName) {
+        return "assets/music/" + fileName;
+    }
+
+    inline std::string defaultAmbience() {
+        return musicPath("Light Ambient 1 (Loop).mp3");
+    }
+
+    inline std::string biomeAmbience(const char biomeType) {
+        switch (biomeType) {
+            case 'F': return musicPath("Light Ambient 1 (Loop).mp3");      // Forest: gentle, readable, green exploration bed.
+            case 'D': return musicPath("Ambient 8.mp3");                  // Desert: bright, exposed, wind-scoured.
+            case 'C': return musicPath("Dark Ambient 4.mp3");             // Caves: low, hollow, stone-heavy.
+            case 'R': return musicPath("Ambient 3.mp3");                  // Old Redwoods: deep, earthy, ancient.
+            case 'W': return musicPath("Dark Ambient 2.mp3");             // Swamp: tense, wet, uneasy.
+            case 'I': return musicPath("Night Ambient 5 (Loop).mp3");     // Citadel: haunted structure and ritual weight.
+            case 'B': return musicPath("Light Ambience 2.mp3");           // Beach: open air and water.
+            case 'M': return musicPath("Night Ambient 4 (Loop).mp3");     // Mountains: thin, cold, high atmosphere.
+
+            case 'S': return musicPath("Ambient 10.mp3");                 // Sand Pit landmark.
+            case 'G': return musicPath("Light Ambient 3 (Loop).mp3");     // Crystal Geode landmark.
+            case 'O': return musicPath("Light Ambient 5 (Loop).mp3");     // Oldest Redwood landmark.
+            case 'H': return musicPath("Dark Ambient 5.mp3");             // Witch's Hut landmark.
+            case 'T': return musicPath("Night Ambient 2 (Loop).mp3");     // The Throne landmark.
+            case 'Y': return musicPath("Light Ambient 4 (Loop).mp3");     // Coral Reef landmark.
+            case 'L': return musicPath("Dark Ambient 1.mp3");             // Dragon's Lair landmark.
+            default:  return defaultAmbience();
+        }
+    }
+
+    inline std::string combatTrackForEnemy(const std::string& enemyName) {
+        if (enemyName == "Slime") return musicPath("Action 1 Loop.mp3");
+        if (enemyName == "Skeleton") return musicPath("Action 1 Loop.mp3");
+        if (enemyName == "Thorn Imp") return musicPath("Action 3 Loop.mp3");
+        if (enemyName == "Mire Leech") return musicPath("Action 2 Loop.mp3");
+        if (enemyName == "Glass Spider") return musicPath("Action 3 Loop.mp3");
+        if (enemyName == "Iron Scarab") return musicPath("Action 4 Loop.mp3");
+        if (enemyName == "Echo Bat") return musicPath("Action 3 Loop.mp3");
+        if (enemyName == "Ashen Hound") return musicPath("Action 5 Loop.mp3");
+        if (enemyName == "Grave Moss") return musicPath("Action 2 Loop.mp3");
+        if (enemyName == "Hollow Squire") return musicPath("Action 4 Loop.mp3");
+        if (enemyName == "Lantern Bearer") return musicPath("Action 4 Loop.mp3");
+        if (enemyName == "Ancient Ent") return musicPath("Action 2 Loop.mp3");
+        if (enemyName == "Reforged Knight") return musicPath("Action 4 Loop.mp3");
+        if (enemyName == "Candle Wraith") return musicPath("Action 5 Loop.mp3");
+        if (enemyName == "Cathedral Gargoyle") return musicPath("Action 4 Loop.mp3");
+        if (enemyName == "Silt Hydra") return musicPath("Action 5 Loop.mp3");
+        if (enemyName == "Marionette Coven") return musicPath("Action 5 Loop.mp3");
+        if (enemyName == "Starless Oracle") return musicPath("Action 5 Loop.mp3");
+        if (enemyName == "Dune Maw") return musicPath("Action 2 Loop.mp3");
+        if (enemyName == "Crystal Matriarch") return musicPath("Action 3 Loop.mp3");
+        if (enemyName == "Tide Leviathan") return musicPath("Action 4 Loop.mp3");
+        if (enemyName == "Cinder Dragon") return musicPath("Action 5 Loop.mp3");
+
+        return musicPath("Action 3 Loop.mp3");
+    }
+
+    inline std::string victoryCue() {
+        return musicPath("Victory.mp3");
+    }
+
+    inline std::string deathCue() {
+        return musicPath("Death.mp3");
+    }
+
+    inline std::string completionCue() {
+        return musicPath("Complete.mp3");
+    }
+
+    inline std::string strangeCue() {
+        return musicPath("Strange.mp3");
+    }
+
+    inline std::string landmarkCue() {
+        return musicPath("Fx 1.mp3");
+    }
+
+    inline std::string bossSoulCue() {
+        return musicPath("Fx 2.mp3");
+    }
+
+    inline std::string dangerCue() {
+        return musicPath("Fx 3.mp3");
+    }
+}
+
 class BackgroundMusicManager {
 private:
     sf::Music music;
+    sf::Music cueMusic;
 
     std::string requestedTrack;
     std::string currentTrack;
+    std::string requestedCue;
+    std::string currentCue;
     float maxVolume = 35.0f;
     bool hasLoadedTrack = false;
+    bool hasLoadedCue = false;
 
     [[nodiscard]] static bool fileExists(const std::string& filePath) {
         std::error_code ignoredError;
@@ -162,6 +253,40 @@ public:
         return true;
     }
 
+    bool changeAmbienceForBiome(const char biomeType, const bool loop = true) {
+        return changeMusicWithFade(ArmagestaMusic::biomeAmbience(biomeType), loop, 0.65f, 0.80f);
+    }
+
+    bool changeCombatMusicForEnemy(const std::string& enemyName) {
+        return changeMusicWithFade(ArmagestaMusic::combatTrackForEnemy(enemyName), true, 0.25f, 0.35f);
+    }
+
+    bool playCueImmediately(const std::string& filePath, const float volumeMultiplier = 1.0f, const bool restartIfSameCue = true) {
+        if (!restartIfSameCue && hasLoadedCue && requestedCue == filePath) {
+            return true;
+        }
+
+        const std::string resolvedPath = chooseBestMusicFile(filePath);
+
+        cueMusic.stop();
+        if (!cueMusic.openFromFile(resolvedPath)) {
+            std::cout << "Failed to load music cue: " << resolvedPath << std::endl;
+            hasLoadedCue = false;
+            requestedCue.clear();
+            currentCue.clear();
+            return false;
+        }
+
+        requestedCue = filePath;
+        currentCue = resolvedPath;
+        hasLoadedCue = true;
+
+        cueMusic.setLooping(false);
+        cueMusic.setVolume(std::clamp(maxVolume * volumeMultiplier, 0.0f, 100.0f));
+        cueMusic.play();
+        return true;
+    }
+
     void stopMusicWithFade(float fadeOutSeconds = 0.45f) {
         if (!hasLoadedTrack) {
             return;
@@ -174,13 +299,24 @@ public:
         currentTrack.clear();
     }
 
+    void stopCue() {
+        cueMusic.stop();
+        hasLoadedCue = false;
+        requestedCue.clear();
+        currentCue.clear();
+    }
+
     void pauseMusic() {
         music.pause();
+        cueMusic.pause();
     }
 
     void resumeMusic() {
         if (hasLoadedTrack) {
             music.play();
+        }
+        if (hasLoadedCue) {
+            cueMusic.play();
         }
     }
 
@@ -199,6 +335,14 @@ public:
 
     [[nodiscard]] std::string getRequestedTrack() const {
         return requestedTrack;
+    }
+
+    [[nodiscard]] std::string getCurrentCue() const {
+        return currentCue;
+    }
+
+    [[nodiscard]] std::string getRequestedCue() const {
+        return requestedCue;
     }
 };
 
