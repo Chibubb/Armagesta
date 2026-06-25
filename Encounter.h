@@ -18,6 +18,7 @@
 #include <cctype>
 #include <iomanip>
 #include <sstream>
+#include <cmath>
 
 using namespace std;
 
@@ -165,17 +166,18 @@ public:
         cout << actionIntents[indexOfIntent] << endl << endl;
     }
 
-    struct CombatFocusChallenge {
-        string prompt;
-        string expectedInput;
-        double perfectWindow = 1.0;
-        double goodWindow = 2.0;
-        double poorWindow = 3.0;
+    struct CombatFocusStepResult {
+        int points = 0;
+        double seconds = 0.0;
+        bool correctInput = false;
     };
 
     struct CombatFocusOutcome {
         string rank = "None";
+        string family = "NONE";
         int level = -1; // -1 = not attempted, 0 = fail, 1 = poor, 2 = good, 3 = perfect
+        int score = 0;
+        int possibleScore = 0;
         double seconds = 0.0;
         bool correctInput = false;
         int damageBonus = 0;
@@ -187,7 +189,17 @@ public:
         string resultLine;
     };
 
+    string trimCombatInput(const string& input) const {
+        const size_t first = input.find_first_not_of(" \t\n\r");
+        if (first == string::npos) {
+            return "";
+        }
+        const size_t last = input.find_last_not_of(" \t\n\r");
+        return input.substr(first, last - first + 1);
+    }
+
     string normalizeCombatFocusInput(string input) const {
+        input = trimCombatInput(input);
         string normalized;
         bool previousSpace = true;
 
@@ -212,13 +224,48 @@ public:
 
     bool isCombatFocusMagicAction(const string& playerAction) const {
         return playerAction == "Soul Burst" || playerAction == "Break Sapphire Amulet" ||
-               playerAction == "Ent Wand" || playerAction == "Sandstep" ||
-               playerAction == "Crystal Ward" || playerAction == "Redwood Oath" ||
-               playerAction == "Bogblood Hex" || playerAction == "Royal Decree" ||
-               playerAction == "Tidecall" || playerAction == "Ashen Pursuit" ||
+               playerAction == "Ent Wand" || playerAction == "Crystal Ward" ||
+               playerAction == "Redwood Oath" || playerAction == "Bogblood Hex" ||
+               playerAction == "Royal Decree" || playerAction == "Tidecall" ||
                playerAction == "Grave Bloom" || playerAction == "Lantern Mark" ||
                playerAction == "Wick Drain" || playerAction == "Stonebound Stance" ||
                playerAction == "Foresight" || playerAction == "Dragonfire";
+    }
+
+    string getCombatFocusFamily(const string& playerAction) const {
+        if (playerAction == "Brace" || playerAction == "Crystal Ward" ||
+            playerAction == "Redwood Oath" || playerAction == "Tidecall" ||
+            playerAction == "Stonebound Stance") {
+            return "DEFENSE";
+        }
+
+        if (playerAction == "Soul Burst" || playerAction == "Break Sapphire Amulet" ||
+            playerAction == "Ent Wand" || playerAction == "Bogblood Hex" ||
+            playerAction == "Royal Decree" || playerAction == "Grave Bloom" ||
+            playerAction == "Lantern Mark" || playerAction == "Wick Drain" ||
+            playerAction == "Dragonfire") {
+            return "MAGIC";
+        }
+
+        if (playerAction == "Roll" || playerAction == "Sandstep" ||
+            playerAction == "Ashen Pursuit" || playerAction == "Foresight") {
+            return "DODGE";
+        }
+
+        if (playerAction == "Slash" || playerAction == "Eviscerate" ||
+            playerAction == "Gravebreaker" || playerAction == "Severing Rhythm") {
+            return "ATTACK";
+        }
+
+        if (playerAction == "Think") {
+            return "CHARGE";
+        }
+
+        if (playerAction == "Riposte") {
+            return "PARRY";
+        }
+
+        return "NONE";
     }
 
     int getCombatFocusDifficultyTier() const {
@@ -265,18 +312,19 @@ public:
     }
 
     int getCombatFocusActionRisk(const string& playerAction, const MAD& monsterActionData) const {
+        const string family = getCombatFocusFamily(playerAction);
         int risk = 1;
 
-        if (playerAction == "Brace" || playerAction == "Crystal Ward" || playerAction == "Stonebound Stance" || playerAction == "Tidecall") {
+        if (family == "DEFENSE") {
             risk = 0;
-        } else if (playerAction == "Roll" || playerAction == "Sandstep" || playerAction == "Ashen Pursuit" ||
-                   playerAction == "Eviscerate" || playerAction == "Gravebreaker" || playerAction == "Severing Rhythm") {
+        } else if (family == "DODGE" || playerAction == "Eviscerate" || playerAction == "Gravebreaker" ||
+                   playerAction == "Severing Rhythm") {
             risk = 2;
-        } else if (playerAction == "Riposte" || playerAction == "Dragonfire") {
+        } else if (family == "PARRY" || playerAction == "Dragonfire") {
             risk = 3;
-        } else if (playerAction == "Think" && monsterActionData.type == "NO TYPE") {
+        } else if (family == "CHARGE" && monsterActionData.type == "NO TYPE") {
             risk = 0;
-        } else if (isCombatFocusMagicAction(playerAction)) {
+        } else if (family == "MAGIC") {
             risk = 1;
         }
 
@@ -290,134 +338,170 @@ public:
         return min(risk, 4);
     }
 
-    double getCombatFocusBaseWindow(const string& playerAction, const MAD& monsterActionData) const {
-        const int tier = getCombatFocusDifficultyTier();
-        double window = 4.1 - (tier * 0.35) - (MS.danger * 0.12);
-
-        if (monsterActionData.attackSpeed == "Quick") window -= 0.75;
-        if (monsterActionData.attackSpeed == "Slow") window += 0.65;
-
-        if (playerAction == "Riposte") window -= 0.65;
-        else if (playerAction == "Roll" || playerAction == "Sandstep") window -= 0.25;
-        else if (playerAction == "Think" || playerAction == "Grave Bloom") window += 0.75;
-        else if (playerAction == "Brace" || playerAction == "Crystal Ward" || playerAction == "Stonebound Stance") window += 0.35;
-        else if (playerAction == "Eviscerate" || playerAction == "Dragonfire") window -= 0.25;
-
-        if (name == "Cinder Dragon" && monsterActionData.attackSpeed == "Slow") window += 0.55;
-        if (name == "Glass Spider" || name == "Marionette Coven") window -= 0.25;
-        if (name == "Dune Maw" && monsterActionData.type == "M-ATTACK") window -= 0.20;
-        if (name == "Starless Oracle") window += 0.20; // The Oracle gives visions, but makes the answer stranger.
-
-        return max(1.25, min(window, 5.40));
+    vector<string> getThematicEnemyTargets() const {
+        if (name == "Slime") return {"GEL CORE", "WOBBLE", "GOO MASS", "BUBBLE"};
+        if (name == "Skeleton") return {"RIB", "SKULL", "SPINE", "JAWBONE", "SHOULDER SOCKET"};
+        if (name == "Thorn Imp") return {"THORN EAR", "BRIAR HAND", "IMP HORN", "ROOT ANKLE"};
+        if (name == "Mire Leech") return {"SUCKER", "SOFT BELLY", "BLACK GILL", "MIRE MOUTH"};
+        if (name == "Glass Spider") return {"GLASS LEG", "MIRROR EYE", "CRYSTAL FANG", "SILK JOINT"};
+        if (name == "Iron Scarab") return {"IRON SHELL", "HINGE", "BRASS MANDIBLE", "UNDERPLATE"};
+        if (name == "Echo Bat") return {"ECHO WING", "OPEN EAR", "SHRIEK THROAT", "HOOKED CLAW"};
+        if (name == "Ashen Hound") return {"ASH JAW", "SMOKE RIB", "EMBER PAW", "CHARRED THROAT"};
+        if (name == "Grave Moss") return {"ROOT MASS", "GRAVE BLOOM", "MOSS HEART", "BONE ROOT"};
+        if (name == "Hollow Squire") return {"VISOR", "SWORD WRIST", "EMPTY CHEST", "KNEE PLATE"};
+        if (name == "Lantern Bearer") return {"LANTERN HAND", "PALE FLAME", "HUNCHED BACK", "WICK EYE"};
+        if (name == "Ancient Ent") return {"KNOT HEART", "OLD BARK", "ROOT CROWN", "SAP WOUND"};
+        if (name == "Reforged Knight") return {"HELM SEAM", "FORGE SCAR", "GAUNTLET", "BROKEN PAULDRON"};
+        if (name == "Candle Wraith") return {"WICK", "WAX FACE", "GHOST FLAME", "MELTED HAND"};
+        if (name == "Cathedral Gargoyle") return {"STONE WING", "GARGOYLE JAW", "CHISELED EYE", "CRACKED TALON"};
+        if (name == "Silt Hydra") return {"SILT NECK", "LEFT HEAD", "MUD GILL", "HYDRA TONGUE"};
+        if (name == "Marionette Coven") return {"PUPPET STRING", "WOODEN WRIST", "PAINTED SMILE", "COVEN NEEDLE"};
+        if (name == "Starless Oracle") return {"BLIND STAR", "SECOND EYE", "ORACLE VEIL", "BLACK HALO"};
+        if (name == "Dune Maw") return {"SAND GUM", "BURIED EYE", "MAW TENDON", "DUNE THROAT"};
+        if (name == "Crystal Matriarch") return {"PRISM HEART", "CRYSTAL CROWN", "FACETED EYE", "GLASS WOMB"};
+        if (name == "Tide Leviathan") return {"TIDE GILL", "LEVIATHAN EYE", "CORAL JAW", "ABYSSAL FIN"};
+        if (name == "Cinder Dragon") return {"FURNACE THROAT", "ANCIENT WING JOINT", "EMBER EYE", "CINDER HEART"};
+        return {"THROAT", "RIB", "ANKLE", "HEART"};
     }
 
-    CombatFocusChallenge buildCombatFocusChallenge(const string& playerAction, const MAD& monsterActionData) const {
+    string chooseThematicEnemyTarget(const bool longTargetWanted) const {
+        vector<string> targets = getThematicEnemyTargets();
+        vector<string> longTargets;
+        vector<string> shortTargets;
+
+        for (const string& target : targets) {
+            if (target.size() >= 9) {
+                longTargets.push_back(target);
+            } else {
+                shortTargets.push_back(target);
+            }
+        }
+
+        if (longTargetWanted && !longTargets.empty()) {
+            return longTargets[randomNum(0, static_cast<int>(longTargets.size()) - 1)];
+        }
+        if (!longTargetWanted && !shortTargets.empty()) {
+            return shortTargets[randomNum(0, static_cast<int>(shortTargets.size()) - 1)];
+        }
+        return targets[randomNum(0, static_cast<int>(targets.size()) - 1)];
+    }
+
+    int getSequenceLengthForFamily(const string& family) const {
         const int tier = getCombatFocusDifficultyTier();
-        const bool boss = tier >= 4;
-        const double baseWindow = getCombatFocusBaseWindow(playerAction, monsterActionData);
-        CombatFocusChallenge challenge;
-        challenge.perfectWindow = baseWindow * 0.42;
-        challenge.goodWindow = baseWindow * 0.78;
-        challenge.poorWindow = baseWindow;
+        int length = 0;
 
-        if (name == "Starless Oracle") {
-            const vector<string> firstWords = {"ASH", "CROWN", "BONE", "TIDE", "ROOT"};
-            const vector<string> secondWords = {"ECHO", "KNIFE", "MOON", "GLASS", "EMBER"};
-            const vector<string> thirdWords = {"WOUND", "SALT", "THORN", "HUSH", "STAR"};
-            const string first = firstWords[randomNum(0, static_cast<int>(firstWords.size()) - 1)];
-            const string second = secondWords[randomNum(0, static_cast<int>(secondWords.size()) - 1)];
-            const string third = thirdWords[randomNum(0, static_cast<int>(thirdWords.size()) - 1)];
-            challenge.expectedInput = second;
-            challenge.prompt = "The Starless Oracle shows three futures: " + first + " / " + second + " / " + third +
-                               ". Type the SECOND future.";
-            challenge.perfectWindow += 0.25;
-            challenge.goodWindow += 0.25;
-            challenge.poorWindow += 0.25;
-            return challenge;
+        if (family == "DEFENSE") {
+            length = 2 + tier / 2;
+        } else if (family == "MAGIC") {
+            length = 2 + tier;
+        } else if (family == "ATTACK") {
+            length = 1 + tier;
         }
 
-        if (playerAction == "Riposte") {
-            challenge.expectedInput = boss ? "STRIKE NOW" : "NOW";
-            challenge.prompt = "Watch the commitment in the enemy's motion. Type " + challenge.expectedInput + " when you take the counter-opening.";
-            return challenge;
+        if (MS.danger >= 2) {
+            length += 1;
+        }
+        if (MS.danger >= 5) {
+            length += 1;
         }
 
-        if (playerAction == "Roll" || playerAction == "Sandstep" || playerAction == "Ashen Pursuit" || playerAction == "Foresight") {
-            const vector<string> directions = {"LEFT", "RIGHT", "LOW", "BACK"};
-            const string direction = directions[randomNum(0, static_cast<int>(directions.size()) - 1)];
-            challenge.expectedInput = boss ? "ROLL " + direction : direction;
+        if (family == "DEFENSE") return min(max(length, 2), 6);
+        if (family == "MAGIC") return min(max(length, 2), 7);
+        if (family == "ATTACK") return min(max(length, 1), 6);
+        return 0;
+    }
 
-            if (monsterActionData.type == "R-ATTACK") {
-                challenge.prompt = "A ranged line cuts toward you. Escape " + direction + ". Type " + challenge.expectedInput + ".";
-            } else if (monsterActionData.type == "M-ATTACK") {
-                challenge.prompt = "The enemy's body commits. Break " + direction + ". Type " + challenge.expectedInput + ".";
-            } else {
-                challenge.prompt = "You see loose ground and a possible reposition. Move " + direction + ". Type " + challenge.expectedInput + ".";
-            }
-            return challenge;
-        }
-
-        if (playerAction == "Brace" || playerAction == "Crystal Ward" || playerAction == "Stonebound Stance" ||
-            playerAction == "Redwood Oath" || playerAction == "Tidecall") {
-            const vector<string> guards = {"HIGH", "CENTER", "LOW"};
-            const string guard = guards[randomNum(0, static_cast<int>(guards.size()) - 1)];
-            challenge.expectedInput = boss ? "GUARD " + guard : guard;
-
-            if (guard == "HIGH") {
-                challenge.prompt = "The attack rises toward your head and shoulders. Guard HIGH. Type " + challenge.expectedInput + ".";
-            } else if (guard == "LOW") {
-                challenge.prompt = "The attack drops toward your legs and footing. Guard LOW. Type " + challenge.expectedInput + ".";
-            } else {
-                challenge.prompt = "The attack drives straight through your centerline. Guard CENTER. Type " + challenge.expectedInput + ".";
-            }
-            return challenge;
-        }
-
-        if (playerAction == "Think" || playerAction == "Lantern Mark" || playerAction == "Grave Bloom") {
-            const vector<string> focusWords = {"BREATHE", "WATCH", "WAIT", "LISTEN"};
-            const string focusWord = focusWords[randomNum(0, static_cast<int>(focusWords.size()) - 1)];
-            challenge.expectedInput = boss ? "FOCUS " + focusWord : focusWord;
-            challenge.prompt = "The battlefield gives you one quiet thread. Type " + challenge.expectedInput + " to keep your mind from snapping toward panic.";
-            return challenge;
-        }
-
-        if (isCombatFocusMagicAction(playerAction)) {
-            const vector<string> channelWords = {"SOUL", "LIGHT", "ROOT", "FLAME", "TIDE"};
-            const string channelWord = channelWords[randomNum(0, static_cast<int>(channelWords.size()) - 1)];
-            challenge.expectedInput = boss ? "CHANNEL " + channelWord : channelWord;
-            challenge.prompt = "Power gathers unevenly in your hands. Type " + challenge.expectedInput + " to shape it before it lashes back.";
-            return challenge;
-        }
-
-        const vector<string> targets = {"RIB", "THROAT", "ANKLE", "SPINE", "HEART"};
-        const string target = targets[randomNum(0, static_cast<int>(targets.size()) - 1)];
-        challenge.expectedInput = boss ? "CUT " + target : target;
-        if (monsterActionData.defenceValue > 0) {
-            challenge.prompt = "The enemy hides behind a guarded angle. Find the opening at the " + target + ". Type " + challenge.expectedInput + ".";
-        } else if (monsterActionData.type == "M-ATTACK" || monsterActionData.type == "R-ATTACK") {
-            challenge.prompt = "The enemy attacks and leaves a flashing opening at the " + target + ". Type " + challenge.expectedInput + ".";
+    vector<string> buildKeySequence(const string& family) const {
+        vector<string> possibleKeys;
+        if (family == "MAGIC") {
+            possibleKeys = {"q", "w", "e", "r"};
         } else {
-            challenge.prompt = "The enemy shifts without attacking. Your best opening is the " + target + ". Type " + challenge.expectedInput + ".";
+            possibleKeys = {"q", "w", "e"};
         }
-        return challenge;
+
+        const bool capitalKeysAllowed = getCombatFocusDifficultyTier() >= 3 || MS.danger >= 4;
+        if (capitalKeysAllowed) {
+            if (family == "MAGIC") {
+                possibleKeys.push_back("Q");
+                possibleKeys.push_back("W");
+                possibleKeys.push_back("E");
+                possibleKeys.push_back("R");
+            } else {
+                possibleKeys.push_back("Q");
+                possibleKeys.push_back("W");
+                possibleKeys.push_back("E");
+            }
+        }
+
+        vector<string> sequence;
+        const int sequenceLength = getSequenceLengthForFamily(family);
+        for (int i = 0; i < sequenceLength; i++) {
+            sequence.push_back(possibleKeys[randomNum(0, static_cast<int>(possibleKeys.size()) - 1)]);
+        }
+        return sequence;
     }
 
-    CombatFocusOutcome runCombatFocusChallenge(const string& playerAction, const MAD& monsterActionData) {
-        CombatFocusOutcome outcome;
-
-        if (!canAttemptCombatFocusForAction(playerAction)) {
-            return outcome;
+    double getKeyPerfectWindow(const string& key) const {
+        double window = 1.25 - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
+        if (!key.empty() && isupper(static_cast<unsigned char>(key[0]))) {
+            window -= 0.12;
         }
+        return max(0.70, window);
+    }
 
-        CombatFocusChallenge challenge = buildCombatFocusChallenge(playerAction, monsterActionData);
-        const int tier = getCombatFocusDifficultyTier();
+    double getKeyGoodWindow(const string& key) const {
+        return getKeyPerfectWindow(key) + 0.65;
+    }
 
+    double getKeyPoorWindow(const string& key) const {
+        return getKeyPerfectWindow(key) + 1.35;
+    }
+
+    double getWordPerfectWindow(const string& expectedInput, const string& family) const {
+        double window = 1.15 + static_cast<double>(expectedInput.size()) * 0.075 - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
+        if (family == "CHARGE") {
+            window += 0.20;
+        }
+        if (family == "ATTACK") {
+            window += 0.10;
+        }
+        return max(0.90, window);
+    }
+
+    double getWordGoodWindow(const string& expectedInput, const string& family) const {
+        return getWordPerfectWindow(expectedInput, family) + 0.90;
+    }
+
+    double getWordPoorWindow(const string& expectedInput, const string& family) const {
+        return getWordPerfectWindow(expectedInput, family) + 1.75;
+    }
+
+    double getParryAnticipationTime(const MAD& monsterActionData) const {
+        double waitTime = 1.45 + getCombatFocusDifficultyTier() * 0.42 + MS.danger * 0.12;
+        if (monsterActionData.attackSpeed == "Slow") waitTime += 0.55;
+        if (monsterActionData.attackSpeed == "Quick") waitTime -= 0.15;
+        if (name == "Cinder Dragon" || name == "Dune Maw" || name == "Tide Leviathan") waitTime += 0.45;
+        return max(1.20, min(waitTime, 4.80));
+    }
+
+    void printCombatFocusHeader(const string& playerAction, const string& family) const {
         cout << endl;
-        cout << "--- CLASH WINDOW: " << getCombatFocusDifficultyName(tier) << " " << getName() << " ---" << endl;
-        cout << challenge.prompt << endl;
-        cout << "Perfect <= " << fixed << setprecision(1) << challenge.perfectWindow
-             << "s | Good <= " << challenge.goodWindow
-             << "s | Poor <= " << challenge.poorWindow << "s" << defaultfloat << endl;
+        cout << "============================================================" << endl;
+        cout << "!!! CLASH WINDOW !!!" << endl;
+        cout << "Action: " << playerAction << " | Style: " << family << endl;
+        cout << "Enemy: " << getName() << " | Difficulty: " << getCombatFocusDifficultyName(getCombatFocusDifficultyTier()) << endl;
+        cout << "Capital letters matter when they appear." << endl;
+        cout << "============================================================" << endl;
+    }
+
+    CombatFocusStepResult askKeyStep(const string& expectedKey, const int stepNumber, const int totalSteps) const {
+        CombatFocusStepResult result;
+        cout << endl;
+        cout << "[" << stepNumber << "/" << totalSteps << "] TYPE THIS KEY, THEN PRESS ENTER:" << endl;
+        cout << ">>>   " << expectedKey << "   <<<" << endl;
+        cout << "Perfect <= " << fixed << setprecision(1) << getKeyPerfectWindow(expectedKey)
+             << "s | Good <= " << getKeyGoodWindow(expectedKey)
+             << "s | Poor <= " << getKeyPoorWindow(expectedKey) << "s" << defaultfloat << endl;
         cout << "> ";
 
         string playerInput;
@@ -425,47 +509,159 @@ public:
         getline(cin, playerInput);
         const auto end = chrono::steady_clock::now();
 
-        outcome.seconds = chrono::duration<double>(end - start).count();
-        const string normalizedInput = normalizeCombatFocusInput(playerInput);
-        outcome.correctInput = normalizedInput == challenge.expectedInput;
+        result.seconds = chrono::duration<double>(end - start).count();
+        result.correctInput = trimCombatInput(playerInput) == expectedKey;
 
-        if (!outcome.correctInput) {
-            outcome.level = 0;
-            outcome.rank = "Fail";
-        } else if (outcome.seconds <= challenge.perfectWindow) {
+        if (result.correctInput && result.seconds <= getKeyPerfectWindow(expectedKey)) {
+            result.points = 3;
+        } else if (result.correctInput && result.seconds <= getKeyGoodWindow(expectedKey)) {
+            result.points = 2;
+        } else if (result.correctInput && result.seconds <= getKeyPoorWindow(expectedKey)) {
+            result.points = 1;
+        } else {
+            result.points = 0;
+        }
+
+        if (!result.correctInput) {
+            cout << "Wrong key." << endl;
+        }
+        return result;
+    }
+
+    CombatFocusStepResult askWordStep(const string& expectedWord, const string& family, const string& promptLine) const {
+        CombatFocusStepResult result;
+        cout << endl;
+        cout << promptLine << endl;
+        cout << "TYPE THIS EXACT WORD/PHRASE, THEN PRESS ENTER:" << endl;
+        cout << ">>>   " << expectedWord << "   <<<" << endl;
+        cout << "Perfect <= " << fixed << setprecision(1) << getWordPerfectWindow(expectedWord, family)
+             << "s | Good <= " << getWordGoodWindow(expectedWord, family)
+             << "s | Poor <= " << getWordPoorWindow(expectedWord, family) << "s" << defaultfloat << endl;
+        cout << "> ";
+
+        string playerInput;
+        const auto start = chrono::steady_clock::now();
+        getline(cin, playerInput);
+        const auto end = chrono::steady_clock::now();
+
+        result.seconds = chrono::duration<double>(end - start).count();
+        result.correctInput = normalizeCombatFocusInput(playerInput) == expectedWord;
+
+        if (result.correctInput && result.seconds <= getWordPerfectWindow(expectedWord, family)) {
+            result.points = 3;
+        } else if (result.correctInput && result.seconds <= getWordGoodWindow(expectedWord, family)) {
+            result.points = 2;
+        } else if (result.correctInput && result.seconds <= getWordPoorWindow(expectedWord, family)) {
+            result.points = 1;
+        } else {
+            result.points = 0;
+        }
+
+        if (!result.correctInput) {
+            cout << "Wrong word or phrase." << endl;
+        }
+        return result;
+    }
+
+    CombatFocusStepResult askParryStep(const MAD& monsterActionData) const {
+        CombatFocusStepResult result;
+        const double targetSeconds = getParryAnticipationTime(monsterActionData);
+
+        cout << endl;
+        cout << "PARRY TIMING:" << endl;
+        cout << "1) Press ENTER to ready your weapon." << endl;
+        cout << "2) Wait " << fixed << setprecision(2) << targetSeconds << " seconds." << endl;
+        cout << "3) Press ENTER again as close to that moment as possible." << defaultfloat << endl;
+        cout << endl << "Press ENTER to begin the parry wait...";
+
+        string readyInput;
+        getline(cin, readyInput);
+
+        cout << "NOW WAIT... then press ENTER!" << endl;
+        const auto start = chrono::steady_clock::now();
+        string strikeInput;
+        getline(cin, strikeInput);
+        const auto end = chrono::steady_clock::now();
+
+        result.seconds = chrono::duration<double>(end - start).count();
+        const double missAmount = abs(result.seconds - targetSeconds);
+        result.correctInput = true;
+
+        cout << "Target: " << fixed << setprecision(2) << targetSeconds
+             << "s | You: " << result.seconds
+             << "s | Difference: " << missAmount << "s" << defaultfloat << endl;
+
+        const double perfectRange = max(0.16, 0.30 - getCombatFocusDifficultyTier() * 0.025);
+        const double goodRange = perfectRange + 0.32;
+        const double poorRange = goodRange + 0.45;
+
+        if (missAmount <= perfectRange) {
+            result.points = 3;
+        } else if (missAmount <= goodRange) {
+            result.points = 2;
+        } else if (missAmount <= poorRange) {
+            result.points = 1;
+        } else {
+            result.points = 0;
+        }
+        return result;
+    }
+
+    void addStepToOutcome(CombatFocusOutcome& outcome, const CombatFocusStepResult& step) const {
+        outcome.score += step.points;
+        outcome.possibleScore += 3;
+        outcome.seconds += step.seconds;
+        if (step.points > 0) {
+            outcome.correctInput = true;
+        }
+    }
+
+    void finalizeCombatFocusRank(CombatFocusOutcome& outcome) const {
+        if (outcome.possibleScore <= 0) {
+            outcome.level = -1;
+            outcome.rank = "None";
+            return;
+        }
+
+        const double ratio = static_cast<double>(outcome.score) / static_cast<double>(outcome.possibleScore);
+        if (ratio >= 0.88) {
             outcome.level = 3;
             outcome.rank = "Perfect";
-        } else if (outcome.seconds <= challenge.goodWindow) {
+        } else if (ratio >= 0.62) {
             outcome.level = 2;
             outcome.rank = "Good";
-        } else if (outcome.seconds <= challenge.poorWindow) {
+        } else if (ratio >= 0.34) {
             outcome.level = 1;
             outcome.rank = "Poor";
         } else {
             outcome.level = 0;
             outcome.rank = "Fail";
         }
+    }
 
+    void assignCombatFocusMechanicalResults(CombatFocusOutcome& outcome, const string& playerAction, const MAD& monsterActionData) const {
+        const int tier = getCombatFocusDifficultyTier();
         const int risk = getCombatFocusActionRisk(playerAction, monsterActionData);
+
         if (outcome.level == 3) {
             outcome.accuracyBonus = 18;
             outcome.critBonus = 10;
             outcome.damageBonus = 4 + tier / 2;
             outcome.defenceBonus = 5 + playerIP.hardiness;
             outcome.dangerDelta = MS.danger > 0 ? -1 : 0;
-            outcome.resultLine = "PERFECT FOCUS: You move before the opening fully exists.";
+            outcome.resultLine = "PERFECT FOCUS: You completely own the Clash Window.";
         } else if (outcome.level == 2) {
             outcome.accuracyBonus = 8;
             outcome.critBonus = 4;
             outcome.damageBonus = 2;
             outcome.defenceBonus = 2 + playerIP.hardiness / 2;
-            outcome.resultLine = "GOOD FOCUS: You catch the rhythm cleanly.";
+            outcome.resultLine = "GOOD FOCUS: You keep control of the moment.";
         } else if (outcome.level == 1) {
             outcome.accuracyBonus = -8;
             outcome.damageBonus = -2;
             outcome.defenceBonus = -2;
             outcome.dangerDelta = risk >= 2 ? 1 : 0;
-            outcome.resultLine = "POOR FOCUS: You move late, but not helplessly.";
+            outcome.resultLine = "POOR FOCUS: You survive the Clash Window, but lose some edge.";
         } else {
             outcome.accuracyBonus = -28;
             outcome.critBonus = -5;
@@ -477,11 +673,60 @@ public:
                 const int maxPenalty = 2 + risk + tier / 2 + MS.danger / 2;
                 outcome.immediateHealthPenalty = randomNum(minPenalty, maxPenalty);
             }
-            outcome.resultLine = outcome.correctInput ?
-                "FOCUS BROKEN: Your answer is right, but the moment is gone." :
-                "FOCUS BROKEN: The enemy reads your hesitation.";
+            outcome.resultLine = "FOCUS BROKEN: The enemy punishes the bad execution.";
+        }
+    }
+
+    CombatFocusOutcome runCombatFocusChallenge(const string& playerAction, const MAD& monsterActionData) {
+        CombatFocusOutcome outcome;
+        outcome.family = getCombatFocusFamily(playerAction);
+
+        if (outcome.family == "NONE" || !canAttemptCombatFocusForAction(playerAction)) {
+            return outcome;
         }
 
+        printCombatFocusHeader(playerAction, outcome.family);
+
+        if (outcome.family == "DEFENSE" || outcome.family == "MAGIC") {
+            if (outcome.family == "DEFENSE") {
+                cout << "DEFENSE: react to one guard key at a time. Possible keys: q / w / e." << endl;
+            } else {
+                cout << "MAGIC: channel one rune key at a time. Possible keys: q / w / e / r." << endl;
+            }
+            if (getCombatFocusDifficultyTier() >= 3 || MS.danger >= 4) {
+                cout << "Tough enemy pressure is active: CAPITAL keys may appear and must be typed exactly." << endl;
+            }
+            const vector<string> sequence = buildKeySequence(outcome.family);
+            for (int i = 0; i < sequence.size(); i++) {
+                addStepToOutcome(outcome, askKeyStep(sequence[i], i + 1, static_cast<int>(sequence.size())));
+            }
+        } else if (outcome.family == "ATTACK") {
+            cout << "ATTACK: first win the weapon rhythm keys, then cut the named enemy part." << endl;
+            if (getCombatFocusDifficultyTier() >= 3 || MS.danger >= 4) {
+                cout << "Tough enemy pressure is active: CAPITAL keys may appear and must be typed exactly." << endl;
+            }
+            const vector<string> sequence = buildKeySequence(outcome.family);
+            for (int i = 0; i < sequence.size(); i++) {
+                addStepToOutcome(outcome, askKeyStep(sequence[i], i + 1, static_cast<int>(sequence.size())));
+            }
+            const string target = chooseThematicEnemyTarget(getCombatFocusDifficultyTier() >= 2);
+            addStepToOutcome(outcome, askWordStep(target, outcome.family, "FINAL CUT: strike the exposed part of the " + getName() + "."));
+        } else if (outcome.family == "CHARGE") {
+            cout << "CHARGE: study the enemy and lock onto the named part as fast as possible." << endl;
+            const string target = chooseThematicEnemyTarget(getCombatFocusDifficultyTier() >= 1);
+            addStepToOutcome(outcome, askWordStep(target, outcome.family, "FOCUS TARGET: memorize the weak point before the moment passes."));
+        } else if (outcome.family == "DODGE") {
+            cout << "DODGE: type the shown direction as fast as possible." << endl;
+            const vector<string> directions = {"HIGH", "LOW", "RIGHT", "LEFT"};
+            const string direction = directions[randomNum(0, static_cast<int>(directions.size()) - 1)];
+            addStepToOutcome(outcome, askWordStep(direction, outcome.family, "DODGE NOW: move where the opening tells you to move."));
+        } else if (outcome.family == "PARRY") {
+            cout << "PARRY: this is not a typing test. It is pure timing." << endl;
+            addStepToOutcome(outcome, askParryStep(monsterActionData));
+        }
+
+        finalizeCombatFocusRank(outcome);
+        assignCombatFocusMechanicalResults(outcome, playerAction, monsterActionData);
         return outcome;
     }
 
@@ -490,14 +735,17 @@ public:
             return;
         }
 
-        cout << focus.resultLine << " (" << fixed << setprecision(2) << focus.seconds << "s)" << defaultfloat << endl;
+        cout << endl;
+        cout << focus.resultLine << endl;
+        cout << "Clash Score: " << focus.score << " / " << focus.possibleScore
+             << " | Total input time: " << fixed << setprecision(2) << focus.seconds << "s" << defaultfloat << endl;
         PS.lastFocusRank = focus.rank;
 
         if (focus.level >= 2) {
             PS.focusStreak += 1;
             if (focus.level == 3) {
                 PS.momentum += 1;
-                cout << "Your perfect timing gives you +1 Momentum." << endl;
+                cout << "Your perfect execution gives you +1 Momentum." << endl;
             }
             if (PS.focusStreak > 0 && PS.focusStreak % 3 == 0) {
                 PS.momentum += 1;
@@ -508,7 +756,7 @@ public:
         }
 
         if (focus.level == 0 && (playerAction == "Roll" || playerAction == "Riposte" || playerAction == "Eviscerate" ||
-                                 playerAction == "Dragonfire" || playerAction == "Gravebreaker")) {
+                                 playerAction == "Dragonfire" || playerAction == "Gravebreaker" || playerAction == "Severing Rhythm")) {
             PS.momentum -= 1;
             makeZeroIfNegative(PS.momentum);
             cout << "The failed commitment costs you 1 Momentum." << endl;
@@ -516,7 +764,7 @@ public:
 
         if (focus.immediateHealthPenalty > 0) {
             playerIP.health -= focus.immediateHealthPenalty;
-            cout << "The bad timing hurts you for " << focus.immediateHealthPenalty << " Health before the turn fully resolves." << endl;
+            cout << "The bad execution hurts you for " << focus.immediateHealthPenalty << " Health before the turn fully resolves." << endl;
         }
 
         if (focus.dangerDelta != 0) {
@@ -525,7 +773,7 @@ public:
             if (focus.dangerDelta > 0) {
                 cout << "The enemy grows more confident. Danger rises by " << focus.dangerDelta << "." << endl;
             } else {
-                cout << "Your timing steals certainty from the enemy. Danger falls by " << -focus.dangerDelta << "." << endl;
+                cout << "Your execution steals certainty from the enemy. Danger falls by " << -focus.dangerDelta << "." << endl;
             }
         }
     }
@@ -546,9 +794,9 @@ public:
 
             health -= damageAdjustment;
             if (damageAdjustment > 0) {
-                cout << "Combat Focus adds " << damageAdjustment << " damage to the action." << endl;
+                cout << "Clash execution adds " << damageAdjustment << " damage to the action." << endl;
             } else if (damageAdjustment < 0) {
-                cout << "Poor Combat Focus dulls the action by " << -damageAdjustment << " damage." << endl;
+                cout << "Poor Clash execution dulls the action by " << -damageAdjustment << " damage." << endl;
             }
         }
 
@@ -556,9 +804,9 @@ public:
             playerActionData.defenceValue += focus.defenceBonus;
             makeZeroIfNegative(playerActionData.defenceValue);
             if (focus.defenceBonus > 0) {
-                cout << "Combat Focus adds " << focus.defenceBonus << " defence for this turn." << endl;
+                cout << "Clash execution adds " << focus.defenceBonus << " defence for this turn." << endl;
             } else {
-                cout << "Poor Combat Focus lowers your defence by " << -focus.defenceBonus << " for this turn." << endl;
+                cout << "Poor Clash execution lowers your defence by " << -focus.defenceBonus << " for this turn." << endl;
             }
         }
     }

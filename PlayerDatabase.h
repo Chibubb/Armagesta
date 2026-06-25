@@ -170,13 +170,13 @@ public:
 
     vector<string> actions = {"Move", "Self Assess", "Understand Powers", "Map"};
     vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte", "Soul Burst"};
-    vector<string> combatActionsDescriptions = {"Use your sword on the enemy. A strong Clash Window can sharpen the hit, while bad timing can turn the opening against you."
-        , "Make the enemy's innards outards. Requires a large amount of Momentum, and its Clash Window is risky but extremely rewarding."
-        , "Try to dodge by rolling. Requires miniscule Momentum. The Clash Window now determines whether the roll fully avoids, partially avoids, or badly misreads the attack."
-        , "Block incoming damage using known battle stances. Reading the Clash Window correctly gives much stronger defense."
-        , "Take a moment of respite and assess the situation. A calm Clash Window grants extra Momentum; panic can waste the turn."
-        , "Parry an enemy who is attacking you. Riposte now demands a clean Clash Window before the counter can land."
-        , "Unleash stolen souls on the living enemy in front of you. Combat Focus can empower the burst, but poor channeling can lash back."};
+    vector<string> combatActionsDescriptions = {"ATTACK style: react to quick q/w/e weapon prompts, then type the exposed enemy body part to finish the strike."
+        , "ATTACK style: a harder, riskier weapon rhythm followed by a body-part finisher. Requires a large amount of Momentum."
+        , "DODGE style: quickly type HIGH, LOW, RIGHT, or LEFT to escape the enemy's line of attack. Requires a little Momentum."
+        , "DEFENSE style: react to one-by-one q/w/e guard prompts. Hard enemies may show capital letters that must be matched exactly."
+        , "CHARGE style: quickly identify and type a themed enemy body part to study it and build Momentum."
+        , "PARRY style: press Enter, wait the shown number of seconds, then press Enter again as close to the timing beat as possible."
+        , "MAGIC style: react to q/w/e/r channeling prompts. Bad channeling can weaken the spell or lash back."};
 
     Player() {
         if (exploredMap.empty()) {
@@ -206,6 +206,23 @@ public:
         if (soul > maxSoul) {
             soul = maxSoul;
         }
+    }
+
+    string trimMenuInput(const string& input) const {
+        const size_t first = input.find_first_not_of(" \t\n\r");
+        if (first == string::npos) {
+            return "";
+        }
+        const size_t last = input.find_last_not_of(" \t\n\r");
+        return input.substr(first, last - first + 1);
+    }
+
+    string lowerMenuInput(string input) const {
+        input = trimMenuInput(input);
+        for (char& character : input) {
+            character = static_cast<char>(tolower(static_cast<unsigned char>(character)));
+        }
+        return input;
     }
 
     char move(const string& direction) {
@@ -253,9 +270,18 @@ public:
     }
 
     void understandPowers() {
-        cout << "Combat Focus: Most combat actions now open a timed Clash Window after you choose them." << endl;
-        cout << "Type the shown response quickly and exactly. Perfect and Good timing improve damage, defense, Momentum, and flow streaks." << endl;
-        cout << "Poor or failed timing can weaken the action, raise enemy Danger, cost Momentum, or even hurt you on risky moves." << endl << endl;
+        cout << "Combat Focus: most combat actions open a Clash Window after you choose them." << endl;
+        cout << "You may choose actions by typing either the action name or its number." << endl << endl;
+        cout << "Each action style has its own quick event:" << endl;
+        cout << "ATTACK  = q/w/e weapon rhythm, then type a themed enemy body part." << endl;
+        cout << "DEFENSE = q/w/e guard sequence, one prompt at a time." << endl;
+        cout << "MAGIC   = q/w/e/r channeling sequence, one prompt at a time." << endl;
+        cout << "DODGE   = quickly type HIGH, LOW, RIGHT, or LEFT." << endl;
+        cout << "CHARGE  = quickly type a themed enemy body part to study it." << endl;
+        cout << "PARRY   = press Enter, wait the shown time, then press Enter again." << endl;
+        cout << "Elite and boss enemies may use capital reaction keys. Capital letters must be typed exactly." << endl;
+        cout << "Perfect and Good execution improve damage, defense, Momentum, and accuracy. Poor or failed execution can weaken the action, raise enemy Danger, cost Momentum, or hurt you." << endl << endl;
+
         for (int i = 0; i < combatActions.size(); i++) {
             cout << i + 1 << ": " << combatActions[i] << endl;
             cout << combatActionsDescriptions[i] << endl << endl;
@@ -264,20 +290,20 @@ public:
 
     string getAChosenDirection() {
         string chosenDirection;
-        bool directionChosenCorrectly = false;
-        while (directionChosenCorrectly == false) {
+        while (true) {
             cout << "Which Direction?" << endl;
+            cout << "1: North  2: South  3: West  4: East" << endl;
+            cout << "> ";
             getline(cin, chosenDirection);
-            if (chosenDirection == "North" || chosenDirection == "north"
-                || chosenDirection == "South" || chosenDirection == "south"
-                || chosenDirection == "West" || chosenDirection == "west"
-                || chosenDirection == "East" || chosenDirection == "east") {
-                directionChosenCorrectly = true;
-                } else {
-                    cout << "Not A Possible Direction..." << endl << endl;
-                }
+            const string choice = lowerMenuInput(chosenDirection);
+
+            if (choice == "1" || choice == "north" || choice == "n") return "North";
+            if (choice == "2" || choice == "south" || choice == "s") return "South";
+            if (choice == "3" || choice == "west" || choice == "w") return "West";
+            if (choice == "4" || choice == "east" || choice == "e") return "East";
+
+            cout << "Not A Possible Direction... Type 1, 2, 3, 4, or the direction name." << endl << endl;
         }
-        return chosenDirection;
     }
 
     void printActions() const {
@@ -290,45 +316,44 @@ public:
 
     //Map Action NOTE
     string getAction() const {
-        bool x = true;
         string chosenAction;
-        while (x == true) {
+        while (true) {
+            cout << "> ";
             getline(cin, chosenAction);
-            for (const auto & action : actions) {
-                if (chosenAction == action) {
-                    x = false;
+            const string choice = lowerMenuInput(chosenAction);
+
+            for (int i = 0; i < actions.size(); i++) {
+                if (choice == to_string(i + 1) || choice == lowerMenuInput(actions[i])) {
+                    return actions[i];
                 }
             }
-            if (x == true) {
-                cout << "Not A Possible Action..." << endl;
-            }
+
+            cout << "Not A Possible Action... Type the action name or its number." << endl;
         }
-
-        return chosenAction;
-
     }
 
     string getCombatAction() const {
-        bool x = true;
         string chosenAction;
-        while (x == true) {
+        while (true) {
             cout << "Possible Combat Actions:" << endl;
             for (int i = 0; i < combatActions.size(); i++) {
                 cout << i + 1 << ": " << combatActions[i] << "  ";
             }
-            cout << endl << endl;
+            cout << endl;
+            cout << "Type an action name or number." << endl;
+            cout << "> ";
+
             getline(cin, chosenAction);
-            for (const auto & action : combatActions) {
-                if (chosenAction == action) {
-                    x = false;
+            const string choice = lowerMenuInput(chosenAction);
+
+            for (int i = 0; i < combatActions.size(); i++) {
+                if (choice == to_string(i + 1) || choice == lowerMenuInput(combatActions[i])) {
+                    return combatActions[i];
                 }
             }
-            if (x == true) {
-                cout << "Not A Possible Action..." << endl;
-            }
-        }
 
-        return chosenAction;
+            cout << "Not A Possible Action... Type the action name or its number." << endl;
+        }
     }
 
     void printMap() const {
