@@ -83,7 +83,7 @@ int main() {
 
     auto player = make_unique<Player>();
 
-    cout << "Welcome to Armagesta!" << endl << endl;
+    cout << endl << "Welcome to Armagesta!" << endl << endl;
     bool gameEnds = false;
 
 
