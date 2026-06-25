@@ -1155,9 +1155,11 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
 
     string magic;
     getline(in, magic);
+
     const bool saveIsV1 = magic == "ARMAGESTA_SAVE_V1";
     const bool saveIsV2 = magic == "ARMAGESTA_SAVE_V2";
     const bool saveIsV3 = magic == "ARMAGESTA_SAVE_V3";
+
     if (!saveIsV1 && !saveIsV2 && !saveIsV3) {
         cout << "This save file is not compatible with this version of Armagesta." << endl;
         return false;
@@ -1166,6 +1168,7 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
     if (saveIsV3) {
         in >> quoted(qteDifficulty);
         in.ignore(numeric_limits<streamsize>::max(), '\n');
+
         if (normalizeDifficultyName(qteDifficulty).empty()) {
             qteDifficulty = "Normal";
         }
@@ -1177,12 +1180,23 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
        >> hardiness >> permanentDamageModifier >> permanentMomentum
        >> soul >> maxSoul >> currentScrapMetal;
 
+    if (!in) {
+        cout << "Save file could not load player stats correctly." << endl;
+        return false;
+    }
+
     if (currentPosition.size() < 2) {
         currentPosition = {5, 5};
     }
+
     in >> currentPosition[0] >> currentPosition[1];
     in >> mainQuestStarted >> dragonDefeated >> throneClaimed >> gameWon;
     in.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    if (!in) {
+        cout << "Save file could not load position or story flags correctly." << endl;
+        return false;
+    }
 
     if (!loadStringVector(in, actions)) return false;
     if (!loadStringVector(in, combatActions)) return false;
@@ -1191,7 +1205,10 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
     if (!loadStringVector(in, completedQuests)) return false;
     if (!loadStringVector(in, discoveredLandmarks)) return false;
     if (!loadStringVector(in, storyFlags)) return false;
-    if (saveIsV2) {
+
+    // IMPORTANT FIX:
+    // V3 saves consumedMonsterSouls, so V3 loads must read it too.
+    if (saveIsV2 || saveIsV3) {
         if (!loadStringVector(in, consumedMonsterSouls)) return false;
     } else {
         consumedMonsterSouls.clear();
@@ -1202,24 +1219,43 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
     in >> rows >> columns;
     in.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    if (rows <= 0 || columns <= 0) {
+    if (!in || rows <= 0 || columns <= 0) {
         cout << "Save file has invalid explored-map size." << endl;
         return false;
     }
 
-    exploredMap = vector<vector<bool>>(rows, vector<bool>(columns, false));
+    vector<vector<bool>> loadedExploredMap(rows, vector<bool>(columns, false));
+
     for (int i = 0; i < rows; i++) {
         string row;
         getline(in, row);
-        for (int j = 0; j < columns && j < row.size(); j++) {
-            exploredMap[i][j] = row[j] == '1';
+
+        for (int j = 0; j < columns && j < static_cast<int>(row.size()); j++) {
+            loadedExploredMap[i][j] = row[j] == '1';
         }
+    }
+
+    const int correctRows = static_cast<int>(map.size());
+    const int correctColumns = static_cast<int>(map[0].size());
+
+    exploredMap = vector<vector<bool>>(correctRows, vector<bool>(correctColumns, false));
+
+    for (int i = 0; i < correctRows && i < rows; i++) {
+        for (int j = 0; j < correctColumns && j < columns; j++) {
+            exploredMap[i][j] = loadedExploredMap[i][j];
+        }
+    }
+
+    if (currentPosition[0] < 0 || currentPosition[0] >= correctRows ||
+        currentPosition[1] < 0 || currentPosition[1] >= correctColumns) {
+        currentPosition = {5, 5};
     }
 
     normalizePlayerStateAfterLoad();
 
     cout << "Game loaded from " << fileName << "." << endl;
     cout << "You are at: " << getCurrentBiomeName() << endl;
+
     return true;
 }
 
