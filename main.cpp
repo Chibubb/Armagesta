@@ -84,6 +84,7 @@ int main() {
     auto player = make_unique<Player>();
 
     cout << endl << "Welcome to Armagesta!" << endl << endl;
+    player->chooseDifficultyAtNewGame();
     bool gameEnds = false;
 
 
@@ -126,6 +127,8 @@ int main() {
             player->printQuestLog();
         } else if (chosenAction == "Consumed Souls") {
             player->showConsumedMonsterSouls();
+        } else if (chosenAction == "Settings Menu") {
+            player->settingsMenu();
         } else if (chosenAction == "Save Game") {
             player->saveGame();
         } else if (chosenAction == "Load Game") {

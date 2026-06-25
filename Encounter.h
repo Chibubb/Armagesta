@@ -35,10 +35,11 @@ private:
 
 public:
     explicit Encounter(const int health, string name, vector<string> actionNames, vector<int> actionChances, vector<string> Intents, Player& playerData, BackgroundMusicManager& musicManager)
-    : health(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(playerData), actionIntents(std::move(Intents)), musicManager(musicManager) {};
+    : health(health), maxHealth(health), name(std::move(name)), actionNames(std::move(actionNames)), actionChances(std::move(actionChances)), playerIP(playerData), actionIntents(std::move(Intents)), musicManager(musicManager) {};
     virtual ~Encounter() = default;
 
     int health;
+    int maxHealth;
     Player& playerIP;
     BackgroundMusicManager& musicManager;
 
@@ -90,32 +91,92 @@ public:
 
     void virtual doAction() = 0;
 
+    string combatStatusColor(const string& text, const string& ansiCode) const {
+        return "\033[" + ansiCode + "m" + text + "\033[0m";
+    }
+
+    string buildFilledBar(const int currentValue, const int maximumValue, const int width, const string& fillColorCode) const {
+        const int safeMaximum = std::max(1, maximumValue);
+        const int clampedCurrent = std::max(0, std::min(currentValue, safeMaximum));
+        const double ratio = static_cast<double>(clampedCurrent) / static_cast<double>(safeMaximum);
+        int filledCount = static_cast<int>(round(ratio * width));
+        filledCount = std::max(0, std::min(filledCount, width));
+
+        string bar = "[";
+        for (int i = 0; i < width; i++) {
+            if (i < filledCount) {
+                bar += combatStatusColor("█", fillColorCode);
+            } else {
+                bar += "░";
+            }
+        }
+        bar += "]";
+        return bar;
+    }
+
+    string repeatedStatusSymbol(const string& symbol, const int amount, const string& colorCode, const int maxShown = 8) const {
+        if (amount <= 0) {
+            return combatStatusColor("0", "2;37");
+        }
+
+        string output;
+        const int shown = std::min(amount, maxShown);
+        for (int i = 0; i < shown; i++) {
+            output += combatStatusColor(symbol, colorCode);
+        }
+        if (amount > maxShown) {
+            output += combatStatusColor("+" + to_string(amount - maxShown), colorCode);
+        }
+        return output;
+    }
+
+    string coloredFocusRank() const {
+        if (PS.lastFocusRank == "Perfect" || PS.lastFocusRank == "Good") {
+            return combatStatusColor(PS.lastFocusRank, "1;32");
+        }
+        if (PS.lastFocusRank == "Poor") {
+            return combatStatusColor(PS.lastFocusRank, "1;33");
+        }
+        if (PS.lastFocusRank == "Fail") {
+            return combatStatusColor(PS.lastFocusRank, "1;31");
+        }
+        return combatStatusColor(PS.lastFocusRank, "2;37");
+    }
+
     void printCombatStatus() const {
         cout << endl;
-        cout << "===== COMBAT STATUS =====" << endl;
-        cout << "You: " << playerIP.health << " / " << playerIP.maxHealth << " Health"
-             << " | Souls: " << playerIP.soul << " / " << playerIP.maxSoul
-             << " | Momentum: " << PS.momentum
-             << " | Focus: " << PS.lastFocusRank;
-        if (PS.focusStreak > 0) {
-            cout << " (Streak " << PS.focusStreak << ")";
-        }
-        cout << endl;
+        cout << combatStatusColor("===== COMBAT STATUS =====", "1;37") << endl;
 
-        cout << getName() << ": " << health << " Health"
-             << " | Danger: " << MS.danger << endl;
+        cout << combatStatusColor("YOU", "1;37") << endl;
+        cout << "HP   " << buildFilledBar(playerIP.health, playerIP.maxHealth, 20, "1;31")
+             << " " << combatStatusColor(to_string(playerIP.health) + "/" + to_string(playerIP.maxHealth), "1;31") << endl;
+        cout << "SOUL " << buildFilledBar(playerIP.soul, playerIP.maxSoul, 20, "1;34")
+             << " " << combatStatusColor(to_string(playerIP.soul) + "/" + to_string(playerIP.maxSoul), "1;34") << endl;
+
+        cout << combatStatusColor("◆", "1;33") << " Momentum: " << repeatedStatusSymbol("◆", PS.momentum, "1;33")
+             << "  " << combatStatusColor("✦", "1;36") << " Focus: " << coloredFocusRank();
+        if (PS.focusStreak > 0) {
+            cout << " " << combatStatusColor("x" + to_string(PS.focusStreak), "1;32");
+        }
+        cout << endl << endl;
+
+        cout << combatStatusColor(getName(), "1;37") << endl;
+        cout << "HP   " << buildFilledBar(health, maxHealth, 20, "1;31")
+             << " " << combatStatusColor(to_string(health) + "/" + to_string(maxHealth), "1;31") << endl;
+        cout << combatStatusColor("!", "1;31") << " Danger: " << repeatedStatusSymbol("!", MS.danger, "1;31") << endl;
 
         if (PS.temporaryDamageModifier != 0 || MS.temporaryDamageModifier != 0) {
-            cout << "Temporary Modifiers:" << endl;
+            cout << combatStatusColor("Temp:", "1;35") << " ";
             if (PS.temporaryDamageModifier != 0) {
-                cout << "  Your temporary damage modifier: " << PS.temporaryDamageModifier << endl;
+                cout << "You " << combatStatusColor((PS.temporaryDamageModifier > 0 ? "+" : "") + to_string(PS.temporaryDamageModifier), PS.temporaryDamageModifier > 0 ? "1;32" : "1;31") << " ";
             }
             if (MS.temporaryDamageModifier != 0) {
-                cout << "  Enemy temporary damage modifier: " << MS.temporaryDamageModifier << endl;
+                cout << "Enemy " << combatStatusColor((MS.temporaryDamageModifier > 0 ? "+" : "") + to_string(MS.temporaryDamageModifier), MS.temporaryDamageModifier > 0 ? "1;31" : "1;32");
             }
+            cout << endl;
         }
 
-        cout << "=========================\n" << endl;
+        cout << combatStatusColor("=========================", "1;37") << "\n" << endl;
     }
 
     void haveCombat() {
@@ -441,7 +502,11 @@ public:
         return sequence;
     }
 
-    double getKeyPerfectWindow(const string& key) const {
+    double scaleQteWindow(const double baseWindow, const double minimumWindow) const {
+        return max(minimumWindow, baseWindow * playerIP.getQteDifficultyTimeMultiplier());
+    }
+
+    double rawKeyPerfectWindow(const string& key) const {
         double window = 1.25 - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
         if (!key.empty() && isupper(static_cast<unsigned char>(key[0]))) {
             window -= 0.12;
@@ -449,15 +514,19 @@ public:
         return max(0.70, window);
     }
 
+    double getKeyPerfectWindow(const string& key) const {
+        return scaleQteWindow(rawKeyPerfectWindow(key), 0.40);
+    }
+
     double getKeyGoodWindow(const string& key) const {
-        return getKeyPerfectWindow(key) + 0.65;
+        return scaleQteWindow(rawKeyPerfectWindow(key) + 0.65, 0.60);
     }
 
     double getKeyPoorWindow(const string& key) const {
-        return getKeyPerfectWindow(key) + 1.35;
+        return scaleQteWindow(rawKeyPerfectWindow(key) + 1.35, 0.85);
     }
 
-    double getWordPerfectWindow(const string& expectedInput, const string& family) const {
+    double rawWordPerfectWindow(const string& expectedInput, const string& family) const {
         double window = 1.15 + static_cast<double>(expectedInput.size()) * 0.075 - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
         if (family == "CHARGE") {
             window += 0.20;
@@ -468,12 +537,16 @@ public:
         return max(0.90, window);
     }
 
+    double getWordPerfectWindow(const string& expectedInput, const string& family) const {
+        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family), 0.55);
+    }
+
     double getWordGoodWindow(const string& expectedInput, const string& family) const {
-        return getWordPerfectWindow(expectedInput, family) + 0.90;
+        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family) + 0.90, 0.80);
     }
 
     double getWordPoorWindow(const string& expectedInput, const string& family) const {
-        return getWordPerfectWindow(expectedInput, family) + 1.75;
+        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family) + 1.75, 1.05);
     }
 
     double getParryAnticipationTime(const MAD& monsterActionData) const {
@@ -628,9 +701,10 @@ public:
         const double missAmount = abs(result.seconds - targetSeconds);
         result.correctInput = true;
 
-        const double perfectRange = max(0.16, 0.30 - getCombatFocusDifficultyTier() * 0.025);
-        const double goodRange = perfectRange + 0.32;
-        const double poorRange = goodRange + 0.45;
+        const double difficultyTimeScale = playerIP.getQteDifficultyTimeMultiplier();
+        const double perfectRange = max(0.08, (0.30 - getCombatFocusDifficultyTier() * 0.025) * difficultyTimeScale);
+        const double goodRange = perfectRange + 0.32 * difficultyTimeScale;
+        const double poorRange = goodRange + 0.45 * difficultyTimeScale;
 
         if (missAmount <= perfectRange) {
             result.points = 3;

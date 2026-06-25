@@ -167,6 +167,7 @@ public:
     int maxSoul = 10;
     int currentScrapMetal = 0;
     vector<int> currentPosition = {5, 5};
+    string qteDifficulty = "Normal";
 
     vector<string> actions = {"Move", "Self Assess", "Understand Powers", "Map"};
     vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte", "Soul Burst"};
@@ -188,6 +189,7 @@ public:
         unlockWorldAction("Map");
         unlockWorldAction("Quest Log");
         unlockWorldAction("Consumed Souls");
+        unlockWorldAction("Settings Menu");
         unlockWorldAction("Save Game");
         unlockWorldAction("Load Game");
 
@@ -223,6 +225,87 @@ public:
             character = static_cast<char>(tolower(static_cast<unsigned char>(character)));
         }
         return input;
+    }
+
+    string normalizeDifficultyName(const string& difficultyName) const {
+        const string choice = lowerMenuInput(difficultyName);
+        if (choice == "1" || choice == "easy") return "Easy";
+        if (choice == "2" || choice == "normal") return "Normal";
+        if (choice == "3" || choice == "hard") return "Hard";
+        if (choice == "4" || choice == "soulborn" || choice == "soulborne") return "Soulborn";
+        return "";
+    }
+
+    bool setQteDifficulty(const string& difficultyName) {
+        const string normalized = normalizeDifficultyName(difficultyName);
+        if (normalized.empty()) {
+            return false;
+        }
+        qteDifficulty = normalized;
+        return true;
+    }
+
+    string getQteDifficulty() const {
+        return qteDifficulty;
+    }
+
+    double getQteDifficultyTimeMultiplier() const {
+        if (qteDifficulty == "Easy") return 1.35;
+        if (qteDifficulty == "Hard") return 0.78;
+        if (qteDifficulty == "Soulborn") return 0.58;
+        return 1.00;
+    }
+
+    void printDifficultyOptions() const {
+        cout << "1: Easy     - Longer Clash Window timing." << endl;
+        cout << "2: Normal   - Intended Clash Window timing." << endl;
+        cout << "3: Hard     - Shorter Clash Window timing." << endl;
+        cout << "4: Soulborn - Brutal Clash Window timing." << endl;
+    }
+
+    void chooseDifficultyAtNewGame() {
+        cout << endl;
+        cout << "===== CHOOSE DIFFICULTY =====" << endl;
+        cout << "Difficulty only changes how much time you get during combat QTEs." << endl;
+        cout << "You can change this later from the Settings Menu." << endl << endl;
+
+        string choice;
+        while (true) {
+            printDifficultyOptions();
+            cout << "> ";
+            getline(cin, choice);
+            if (setQteDifficulty(choice)) {
+                cout << "Difficulty set to " << qteDifficulty << "." << endl << endl;
+                return;
+            }
+            cout << "Choose 1, 2, 3, 4, or type Easy, Normal, Hard, or Soulborn." << endl << endl;
+        }
+    }
+
+    void settingsMenu() {
+        cout << endl;
+        cout << "===== SETTINGS MENU =====" << endl;
+        cout << "Current QTE Difficulty: " << qteDifficulty << endl;
+        cout << "Only QTE timing changes. Enemy stats, rewards, and damage rules stay the same." << endl << endl;
+        cout << "Choose a difficulty, or type 5 to go back." << endl;
+
+        string choice;
+        while (true) {
+            printDifficultyOptions();
+            cout << "5: Back" << endl;
+            cout << "> ";
+            getline(cin, choice);
+            const string loweredChoice = lowerMenuInput(choice);
+            if (loweredChoice == "5" || loweredChoice == "back" || loweredChoice == "b") {
+                cout << "Leaving Settings Menu." << endl;
+                return;
+            }
+            if (setQteDifficulty(choice)) {
+                cout << "QTE Difficulty set to " << qteDifficulty << "." << endl;
+                return;
+            }
+            cout << "Choose 1, 2, 3, 4, 5, or type the difficulty name." << endl << endl;
+        }
     }
 
     char move(const string& direction) {
@@ -266,12 +349,14 @@ public:
         cout << "Souls: " << soul << " / " << maxSoul << endl;
         cout << "Hardiness: " << hardiness << endl;
         cout << "Strength: " << permanentDamageModifier << endl;
+        cout << "QTE Difficulty: " << qteDifficulty << endl;
         cout << "Consumed Monster Souls: " << consumedMonsterSouls.size() << endl;
     }
 
     void understandPowers() {
         cout << "Combat Focus: most combat actions open a Clash Window after you choose them." << endl;
-        cout << "You may choose actions by typing either the action name or its number." << endl << endl;
+        cout << "You may choose actions by typing either the action name or its number." << endl;
+        cout << "Current QTE Difficulty: " << qteDifficulty << " (change it from Settings Menu)." << endl << endl;
         cout << "Each action style has its own quick event:" << endl;
         cout << "ATTACK  = q/w/e weapon rhythm, then type a themed enemy body part." << endl;
         cout << "DEFENSE = q/w/e guard sequence, one prompt at a time." << endl;
@@ -399,6 +484,7 @@ struct PlayerChangeSnapshot {
     bool dragonDefeated = false;
     bool throneClaimed = false;
     bool gameWon = false;
+    string qteDifficulty;
     vector<string> actions;
     vector<string> combatActions;
     vector<string> activeQuests;
@@ -423,6 +509,7 @@ PlayerChangeSnapshot makeChangeSnapshot() const {
     snapshot.dragonDefeated = dragonDefeated;
     snapshot.throneClaimed = throneClaimed;
     snapshot.gameWon = gameWon;
+    snapshot.qteDifficulty = qteDifficulty;
     snapshot.actions = actions;
     snapshot.combatActions = combatActions;
     snapshot.activeQuests = activeQuests;
@@ -533,6 +620,15 @@ void reportChangesSince(const PlayerChangeSnapshot& before) const {
 
     reportFlagChange("Cinder Dragon defeated", before.dragonDefeated, dragonDefeated, anyChange);
     reportFlagChange("Throne claimed", before.throneClaimed, throneClaimed, anyChange);
+    if (before.qteDifficulty != qteDifficulty) {
+        if (!anyChange) {
+            cout << endl;
+            printPlayerChangeLine("===== PLAYER CHANGES =====");
+            anyChange = true;
+        }
+        printPlayerChangeLine("- QTE Difficulty: " + before.qteDifficulty + " -> " + qteDifficulty);
+    }
+
     reportFlagChange("Game won", before.gameWon, gameWon, anyChange);
 
     if (anyChange) {
@@ -625,6 +721,10 @@ void showConsumedMonsterSouls() const {
 void normalizePlayerStateAfterLoad() {
     removeCombatAction("Weaken");
     unlockWorldAction("Consumed Souls");
+    unlockWorldAction("Settings Menu");
+    if (normalizeDifficultyName(qteDifficulty).empty()) {
+        qteDifficulty = "Normal";
+    }
 
     while (combatActionsDescriptions.size() < combatActions.size()) {
         combatActionsDescriptions.emplace_back("No description has been recorded for this power yet.");
@@ -978,7 +1078,8 @@ bool saveGame(const string& fileName = "armagesta_save.txt") const {
         return false;
     }
 
-    out << "ARMAGESTA_SAVE_V2" << endl;
+    out << "ARMAGESTA_SAVE_V3" << endl;
+    out << quoted(qteDifficulty) << endl;
 
     out << health << ' ' << maxHealth << ' ' << critChance << ' ' << accuracy << ' '
         << hardiness << ' ' << permanentDamageModifier << ' ' << permanentMomentum << ' '
@@ -1020,9 +1121,20 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
     getline(in, magic);
     const bool saveIsV1 = magic == "ARMAGESTA_SAVE_V1";
     const bool saveIsV2 = magic == "ARMAGESTA_SAVE_V2";
-    if (!saveIsV1 && !saveIsV2) {
+    const bool saveIsV3 = magic == "ARMAGESTA_SAVE_V3";
+    if (!saveIsV1 && !saveIsV2 && !saveIsV3) {
         cout << "This save file is not compatible with this version of Armagesta." << endl;
         return false;
+    }
+
+    if (saveIsV3) {
+        in >> quoted(qteDifficulty);
+        in.ignore(numeric_limits<streamsize>::max(), '\n');
+        if (normalizeDifficultyName(qteDifficulty).empty()) {
+            qteDifficulty = "Normal";
+        }
+    } else {
+        qteDifficulty = "Normal";
     }
 
     in >> health >> maxHealth >> critChance >> accuracy
