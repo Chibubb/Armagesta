@@ -580,7 +580,7 @@ public:
     vector<string> buildKeySequence(const string& family) const {
         vector<string> possibleKeys;
         if (family == "MAGIC") {
-            possibleKeys = {"q", "w", "e", "r"};
+            possibleKeys = {"q", "w", "e", "r", "a", "s", "d"};
         } else {
             possibleKeys = {"q", "w", "e"};
         }
@@ -592,6 +592,9 @@ public:
                 possibleKeys.push_back("W");
                 possibleKeys.push_back("E");
                 possibleKeys.push_back("R");
+                possibleKeys.push_back("A");
+                possibleKeys.push_back("S");
+                possibleKeys.push_back("D");
             } else {
                 possibleKeys.push_back("Q");
                 possibleKeys.push_back("W");
@@ -730,7 +733,7 @@ public:
         if (family == "DEFENSE") {
             cout << "React to keys: " << combatFocusPromptColor("q / w / e") << endl;
         } else if (family == "MAGIC") {
-            cout << "Channel keys: " << combatFocusPromptColor("q / w / e / r") << endl;
+            cout << "Channel keys: " << combatFocusPromptColor("q / w / e / r / a / s / d") << endl;
         } else if (family == "DODGE") {
             cout << "Chain the dodge words shown." << endl;
             cout << "Possible: " << combatFocusPromptColor("HIGH / LOW / RIGHT / LEFT / RUN / JUMP / SPIN / TUMBLE / CONTORT") << endl;
@@ -969,7 +972,13 @@ public:
                 ));
             }
         } else if (outcome.family == "PARRY") {
-            addStepToOutcome(outcome, askParryStep(monsterActionData));
+            const CombatFocusStepResult parryTiming = askParryStep(monsterActionData);
+            addStepToOutcome(outcome, parryTiming);
+
+            if (parryTiming.points > 0) {
+                const string target = chooseThematicEnemyTarget(getCombatFocusDifficultyTier() >= 2);
+                addStepToOutcome(outcome, askWordStep(target, outcome.family, "COUNTER TARGET:"));
+            }
         }
 
         finalizeCombatFocusRank(outcome);
