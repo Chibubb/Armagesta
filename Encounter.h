@@ -484,24 +484,70 @@ public:
         return max(1.20, min(waitTime, 4.80));
     }
 
+    string combatFocusColor(const string& text, const string& ansiCode) const {
+        return "\033[" + ansiCode + "m" + text + "\033[0m";
+    }
+
+    string combatFocusPromptColor(const string& text) const {
+        return combatFocusColor(text, "1;36");
+    }
+
+    string combatFocusGoodColor(const string& text) const {
+        return combatFocusColor(text, "1;32");
+    }
+
+    string combatFocusBadColor(const string& text) const {
+        return combatFocusColor(text, "1;31");
+    }
+
+    string combatFocusWarnColor(const string& text) const {
+        return combatFocusColor(text, "1;33");
+    }
+
     void printCombatFocusHeader(const string& playerAction, const string& family) const {
         cout << endl;
-        cout << "============================================================" << endl;
-        cout << "!!! CLASH WINDOW !!!" << endl;
-        cout << "Action: " << playerAction << " | Style: " << family << endl;
-        cout << "Enemy: " << getName() << " | Difficulty: " << getCombatFocusDifficultyName(getCombatFocusDifficultyTier()) << endl;
-        cout << "Capital letters matter when they appear." << endl;
-        cout << "============================================================" << endl;
+        cout << "--- CLASH WINDOW ---" << endl;
+        cout << playerAction << " | " << family << " | " << getName() << endl;
+    }
+
+    void printCombatFocusRules(const string& family) const {
+        if (family == "DEFENSE") {
+            cout << "React to keys: " << combatFocusPromptColor("q / w / e") << endl;
+        } else if (family == "MAGIC") {
+            cout << "Channel keys: " << combatFocusPromptColor("q / w / e / r") << endl;
+        } else if (family == "DODGE") {
+            cout << "Type the direction shown: " << combatFocusPromptColor("HIGH / LOW / RIGHT / LEFT") << endl;
+        } else if (family == "ATTACK") {
+            cout << "Hit the rhythm keys, then type the enemy part." << endl;
+        } else if (family == "CHARGE") {
+            cout << "Type the enemy part as fast as possible." << endl;
+        } else if (family == "PARRY") {
+            cout << "Time your second ENTER after the shown delay." << endl;
+        }
+
+        if ((family == "DEFENSE" || family == "MAGIC" || family == "ATTACK") &&
+            (getCombatFocusDifficultyTier() >= 3 || MS.danger >= 4)) {
+            cout << combatFocusWarnColor("Capital letters may appear. Match them exactly.") << endl;
+        }
+    }
+
+    void waitForCombatFocusReady() const {
+        cout << "Ready? Press ENTER...";
+        string readyInput;
+        getline(cin, readyInput);
+    }
+
+    string combatFocusStepLabel(const int stepNumber, const int totalSteps) const {
+        ostringstream label;
+        label << "[" << stepNumber << "/" << totalSteps << "]";
+        return label.str();
     }
 
     CombatFocusStepResult askKeyStep(const string& expectedKey, const int stepNumber, const int totalSteps) const {
         CombatFocusStepResult result;
         cout << endl;
-        cout << "[" << stepNumber << "/" << totalSteps << "] TYPE THIS KEY, THEN PRESS ENTER:" << endl;
-        cout << ">>>   " << expectedKey << "   <<<" << endl;
-        cout << "Perfect <= " << fixed << setprecision(1) << getKeyPerfectWindow(expectedKey)
-             << "s | Good <= " << getKeyGoodWindow(expectedKey)
-             << "s | Poor <= " << getKeyPoorWindow(expectedKey) << "s" << defaultfloat << endl;
+        cout << combatFocusStepLabel(stepNumber, totalSteps) << " TYPE: "
+             << combatFocusPromptColor("  " + expectedKey + "  ") << endl;
         cout << "> ";
 
         string playerInput;
@@ -523,7 +569,7 @@ public:
         }
 
         if (!result.correctInput) {
-            cout << "Wrong key." << endl;
+            cout << combatFocusBadColor("Wrong key.") << endl;
         }
         return result;
     }
@@ -531,12 +577,10 @@ public:
     CombatFocusStepResult askWordStep(const string& expectedWord, const string& family, const string& promptLine) const {
         CombatFocusStepResult result;
         cout << endl;
-        cout << promptLine << endl;
-        cout << "TYPE THIS EXACT WORD/PHRASE, THEN PRESS ENTER:" << endl;
-        cout << ">>>   " << expectedWord << "   <<<" << endl;
-        cout << "Perfect <= " << fixed << setprecision(1) << getWordPerfectWindow(expectedWord, family)
-             << "s | Good <= " << getWordGoodWindow(expectedWord, family)
-             << "s | Poor <= " << getWordPoorWindow(expectedWord, family) << "s" << defaultfloat << endl;
+        if (!promptLine.empty()) {
+            cout << promptLine << endl;
+        }
+        cout << "TYPE: " << combatFocusPromptColor("  " + expectedWord + "  ") << endl;
         cout << "> ";
 
         string playerInput;
@@ -558,7 +602,7 @@ public:
         }
 
         if (!result.correctInput) {
-            cout << "Wrong word or phrase." << endl;
+            cout << combatFocusBadColor("Wrong input.") << endl;
         }
         return result;
     }
@@ -568,16 +612,13 @@ public:
         const double targetSeconds = getParryAnticipationTime(monsterActionData);
 
         cout << endl;
-        cout << "PARRY TIMING:" << endl;
-        cout << "1) Press ENTER to ready your weapon." << endl;
-        cout << "2) Wait " << fixed << setprecision(2) << targetSeconds << " seconds." << endl;
-        cout << "3) Press ENTER again as close to that moment as possible." << defaultfloat << endl;
-        cout << endl << "Press ENTER to begin the parry wait...";
+        cout << "WAIT: " << combatFocusPromptColor(to_string(targetSeconds).substr(0, 4) + " seconds") << endl;
+        cout << "Press ENTER to start...";
 
         string readyInput;
         getline(cin, readyInput);
 
-        cout << "NOW WAIT... then press ENTER!" << endl;
+        cout << combatFocusPromptColor("NOW WAIT... ENTER!") << endl;
         const auto start = chrono::steady_clock::now();
         string strikeInput;
         getline(cin, strikeInput);
@@ -586,10 +627,6 @@ public:
         result.seconds = chrono::duration<double>(end - start).count();
         const double missAmount = abs(result.seconds - targetSeconds);
         result.correctInput = true;
-
-        cout << "Target: " << fixed << setprecision(2) << targetSeconds
-             << "s | You: " << result.seconds
-             << "s | Difference: " << missAmount << "s" << defaultfloat << endl;
 
         const double perfectRange = max(0.16, 0.30 - getCombatFocusDifficultyTier() * 0.025);
         const double goodRange = perfectRange + 0.32;
@@ -686,42 +723,29 @@ public:
         }
 
         printCombatFocusHeader(playerAction, outcome.family);
+        printCombatFocusRules(outcome.family);
+        waitForCombatFocusReady();
 
         if (outcome.family == "DEFENSE" || outcome.family == "MAGIC") {
-            if (outcome.family == "DEFENSE") {
-                cout << "DEFENSE: react to one guard key at a time. Possible keys: q / w / e." << endl;
-            } else {
-                cout << "MAGIC: channel one rune key at a time. Possible keys: q / w / e / r." << endl;
-            }
-            if (getCombatFocusDifficultyTier() >= 3 || MS.danger >= 4) {
-                cout << "Tough enemy pressure is active: CAPITAL keys may appear and must be typed exactly." << endl;
-            }
             const vector<string> sequence = buildKeySequence(outcome.family);
             for (int i = 0; i < sequence.size(); i++) {
                 addStepToOutcome(outcome, askKeyStep(sequence[i], i + 1, static_cast<int>(sequence.size())));
             }
         } else if (outcome.family == "ATTACK") {
-            cout << "ATTACK: first win the weapon rhythm keys, then cut the named enemy part." << endl;
-            if (getCombatFocusDifficultyTier() >= 3 || MS.danger >= 4) {
-                cout << "Tough enemy pressure is active: CAPITAL keys may appear and must be typed exactly." << endl;
-            }
             const vector<string> sequence = buildKeySequence(outcome.family);
             for (int i = 0; i < sequence.size(); i++) {
                 addStepToOutcome(outcome, askKeyStep(sequence[i], i + 1, static_cast<int>(sequence.size())));
             }
             const string target = chooseThematicEnemyTarget(getCombatFocusDifficultyTier() >= 2);
-            addStepToOutcome(outcome, askWordStep(target, outcome.family, "FINAL CUT: strike the exposed part of the " + getName() + "."));
+            addStepToOutcome(outcome, askWordStep(target, outcome.family, "ENEMY PART:"));
         } else if (outcome.family == "CHARGE") {
-            cout << "CHARGE: study the enemy and lock onto the named part as fast as possible." << endl;
             const string target = chooseThematicEnemyTarget(getCombatFocusDifficultyTier() >= 1);
-            addStepToOutcome(outcome, askWordStep(target, outcome.family, "FOCUS TARGET: memorize the weak point before the moment passes."));
+            addStepToOutcome(outcome, askWordStep(target, outcome.family, "TARGET:"));
         } else if (outcome.family == "DODGE") {
-            cout << "DODGE: type the shown direction as fast as possible." << endl;
             const vector<string> directions = {"HIGH", "LOW", "RIGHT", "LEFT"};
             const string direction = directions[randomNum(0, static_cast<int>(directions.size()) - 1)];
-            addStepToOutcome(outcome, askWordStep(direction, outcome.family, "DODGE NOW: move where the opening tells you to move."));
+            addStepToOutcome(outcome, askWordStep(direction, outcome.family, "DODGE:"));
         } else if (outcome.family == "PARRY") {
-            cout << "PARRY: this is not a typing test. It is pure timing." << endl;
             addStepToOutcome(outcome, askParryStep(monsterActionData));
         }
 
@@ -735,21 +759,28 @@ public:
             return;
         }
 
+        string shownRank = focus.rank;
+        if (focus.level >= 2) {
+            shownRank = combatFocusGoodColor(shownRank);
+        } else if (focus.level == 1) {
+            shownRank = combatFocusWarnColor(shownRank);
+        } else {
+            shownRank = combatFocusBadColor(shownRank);
+        }
+
         cout << endl;
-        cout << focus.resultLine << endl;
-        cout << "Clash Score: " << focus.score << " / " << focus.possibleScore
-             << " | Total input time: " << fixed << setprecision(2) << focus.seconds << "s" << defaultfloat << endl;
+        cout << "Focus: " << shownRank << " (" << focus.score << "/" << focus.possibleScore << ")" << endl;
         PS.lastFocusRank = focus.rank;
 
         if (focus.level >= 2) {
             PS.focusStreak += 1;
             if (focus.level == 3) {
                 PS.momentum += 1;
-                cout << "Your perfect execution gives you +1 Momentum." << endl;
+                cout << combatFocusGoodColor("+1 Momentum") << endl;
             }
             if (PS.focusStreak > 0 && PS.focusStreak % 3 == 0) {
                 PS.momentum += 1;
-                cout << "FLOW STATE: Three strong Clash Windows in a row give you +1 extra Momentum." << endl;
+                cout << combatFocusGoodColor("Flow +1 Momentum") << endl;
             }
         } else {
             PS.focusStreak = 0;
@@ -759,21 +790,21 @@ public:
                                  playerAction == "Dragonfire" || playerAction == "Gravebreaker" || playerAction == "Severing Rhythm")) {
             PS.momentum -= 1;
             makeZeroIfNegative(PS.momentum);
-            cout << "The failed commitment costs you 1 Momentum." << endl;
+            cout << combatFocusBadColor("-1 Momentum") << endl;
         }
 
         if (focus.immediateHealthPenalty > 0) {
             playerIP.health -= focus.immediateHealthPenalty;
-            cout << "The bad execution hurts you for " << focus.immediateHealthPenalty << " Health before the turn fully resolves." << endl;
+            cout << combatFocusBadColor("-" + to_string(focus.immediateHealthPenalty) + " Health") << endl;
         }
 
         if (focus.dangerDelta != 0) {
             MS.danger += focus.dangerDelta;
             makeZeroIfNegative(MS.danger);
             if (focus.dangerDelta > 0) {
-                cout << "The enemy grows more confident. Danger rises by " << focus.dangerDelta << "." << endl;
+                cout << combatFocusBadColor("Danger +" + to_string(focus.dangerDelta)) << endl;
             } else {
-                cout << "Your execution steals certainty from the enemy. Danger falls by " << -focus.dangerDelta << "." << endl;
+                cout << combatFocusGoodColor("Danger " + to_string(focus.dangerDelta)) << endl;
             }
         }
     }
@@ -794,9 +825,9 @@ public:
 
             health -= damageAdjustment;
             if (damageAdjustment > 0) {
-                cout << "Clash execution adds " << damageAdjustment << " damage to the action." << endl;
+                cout << combatFocusGoodColor("Clash damage +" + to_string(damageAdjustment)) << endl;
             } else if (damageAdjustment < 0) {
-                cout << "Poor Clash execution dulls the action by " << -damageAdjustment << " damage." << endl;
+                cout << combatFocusBadColor("Clash damage " + to_string(damageAdjustment)) << endl;
             }
         }
 
@@ -804,9 +835,9 @@ public:
             playerActionData.defenceValue += focus.defenceBonus;
             makeZeroIfNegative(playerActionData.defenceValue);
             if (focus.defenceBonus > 0) {
-                cout << "Clash execution adds " << focus.defenceBonus << " defence for this turn." << endl;
+                cout << combatFocusGoodColor("Clash defence +" + to_string(focus.defenceBonus)) << endl;
             } else {
-                cout << "Poor Clash execution lowers your defence by " << -focus.defenceBonus << " for this turn." << endl;
+                cout << combatFocusBadColor("Clash defence " + to_string(focus.defenceBonus)) << endl;
             }
         }
     }
