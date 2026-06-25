@@ -649,6 +649,34 @@ public:
         return max(minimumWindow, baseWindow * playerIP.getQteDifficultyTimeMultiplier());
     }
 
+    int countTypingLetters(const string& expectedInput) const {
+        int count = 0;
+        for (const char c : expectedInput) {
+            if (!isspace(static_cast<unsigned char>(c))) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    int countTypingWords(const string& expectedInput) const {
+        int words = 0;
+        bool insideWord = false;
+        for (const char c : expectedInput) {
+            if (isspace(static_cast<unsigned char>(c))) {
+                insideWord = false;
+            } else if (!insideWord) {
+                words += 1;
+                insideWord = true;
+            }
+        }
+        return max(words, 1);
+    }
+
+    bool isEnemyPartTypingFamily(const string& family) const {
+        return family == "ATTACK" || family == "CHARGE" || family == "PARRY";
+    }
+
     double rawKeyPerfectWindow(const string& key) const {
         double window = 1.25 - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
         if (!key.empty() && isupper(static_cast<unsigned char>(key[0]))) {
@@ -670,29 +698,57 @@ public:
     }
 
     double rawWordPerfectWindow(const string& expectedInput, const string& family) const {
-        double window = 1.15 + static_cast<double>(expectedInput.size()) * 0.075 - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
-        if (family == "CHARGE") {
-            window += 0.20;
-        }
-        if (family == "ATTACK") {
-            window += 0.10;
-        }
         if (family == "DODGE") {
+            double window = 1.15 + static_cast<double>(expectedInput.size()) * 0.075
+                            - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
             window -= 0.20;
+            return max(0.65, window);
         }
-        return max(family == "DODGE" ? 0.65 : 0.90, window);
+
+        if (isEnemyPartTypingFamily(family)) {
+            const int letters = countTypingLetters(expectedInput);
+            const int words = countTypingWords(expectedInput);
+            const int spacesBetweenWords = max(0, words - 1);
+
+            // Enemy-part prompts are longer than dodge words and need to be readable before they are typed.
+            // Hard mode is treated as the fair baseline for an average typer: short targets are still tense,
+            // but two- and three-word targets now give enough time to read, move your hands, and finish.
+            double window = 1.10
+                            + static_cast<double>(letters) * 0.20
+                            + static_cast<double>(spacesBetweenWords) * 0.38;
+
+            // Enemy difficulty still matters, but monster parts already scale naturally through length.
+            // Keep this penalty light so boss targets are dramatic instead of impossible.
+            window -= getCombatFocusDifficultyTier() * 0.035;
+            window -= MS.danger * 0.015;
+
+            if (family == "CHARGE") {
+                window += 0.25;
+            }
+            if (family == "PARRY") {
+                window += 0.15;
+            }
+
+            return max(1.45, window);
+        }
+
+        double window = 1.15 + static_cast<double>(expectedInput.size()) * 0.075
+                        - getCombatFocusDifficultyTier() * 0.08 - MS.danger * 0.03;
+        return max(0.90, window);
     }
 
     double getWordPerfectWindow(const string& expectedInput, const string& family) const {
-        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family), 0.55);
+        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family), isEnemyPartTypingFamily(family) ? 1.10 : 0.55);
     }
 
     double getWordGoodWindow(const string& expectedInput, const string& family) const {
-        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family) + 0.90, 0.80);
+        const double bonusWindow = isEnemyPartTypingFamily(family) ? 1.15 : 0.90;
+        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family) + bonusWindow, isEnemyPartTypingFamily(family) ? 1.65 : 0.80);
     }
 
     double getWordPoorWindow(const string& expectedInput, const string& family) const {
-        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family) + 1.75, 1.05);
+        const double bonusWindow = isEnemyPartTypingFamily(family) ? 2.60 : 1.75;
+        return scaleQteWindow(rawWordPerfectWindow(expectedInput, family) + bonusWindow, isEnemyPartTypingFamily(family) ? 2.25 : 1.05);
     }
 
     double getParryAnticipationTime(const MAD& monsterActionData) const {

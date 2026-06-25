@@ -250,10 +250,11 @@ public:
     }
 
     double getQteDifficultyTimeMultiplier() const {
-        if (qteDifficulty == "Easy") return 1.35;
-        if (qteDifficulty == "Hard") return 0.78;
-        if (qteDifficulty == "Soulborn") return 0.58;
-        return 1.00;
+        if (qteDifficulty == "Easy") return 1.60;
+        if (qteDifficulty == "Normal") return 1.25;
+        if (qteDifficulty == "Hard") return 1.00;
+        if (qteDifficulty == "Soulborn") return 0.72;
+        return 1.25;
     }
 
     void printDifficultyOptions() const {
