@@ -402,44 +402,147 @@ public:
     }
 
     vector<string> getThematicEnemyTargets() const {
-        if (name == "Slime") return {"GEL CORE", "WOBBLE", "GOO MASS", "BUBBLE"};
-        if (name == "Skeleton") return {"RIB", "SKULL", "SPINE", "JAWBONE", "SHOULDER SOCKET"};
-        if (name == "Thorn Imp") return {"THORN EAR", "BRIAR HAND", "IMP HORN", "ROOT ANKLE"};
-        if (name == "Mire Leech") return {"SUCKER", "SOFT BELLY", "BLACK GILL", "MIRE MOUTH"};
-        if (name == "Glass Spider") return {"GLASS LEG", "MIRROR EYE", "CRYSTAL FANG", "SILK JOINT"};
-        if (name == "Iron Scarab") return {"IRON SHELL", "HINGE", "BRASS MANDIBLE", "UNDERPLATE"};
-        if (name == "Echo Bat") return {"ECHO WING", "OPEN EAR", "SHRIEK THROAT", "HOOKED CLAW"};
-        if (name == "Ashen Hound") return {"ASH JAW", "SMOKE RIB", "EMBER PAW", "CHARRED THROAT"};
-        if (name == "Grave Moss") return {"ROOT MASS", "GRAVE BLOOM", "MOSS HEART", "BONE ROOT"};
-        if (name == "Hollow Squire") return {"VISOR", "SWORD WRIST", "EMPTY CHEST", "KNEE PLATE"};
-        if (name == "Lantern Bearer") return {"LANTERN HAND", "PALE FLAME", "HUNCHED BACK", "WICK EYE"};
-        if (name == "Ancient Ent") return {"KNOT HEART", "OLD BARK", "ROOT CROWN", "SAP WOUND"};
-        if (name == "Reforged Knight") return {"HELM SEAM", "FORGE SCAR", "GAUNTLET", "BROKEN PAULDRON"};
-        if (name == "Candle Wraith") return {"WICK", "WAX FACE", "GHOST FLAME", "MELTED HAND"};
-        if (name == "Cathedral Gargoyle") return {"STONE WING", "GARGOYLE JAW", "CHISELED EYE", "CRACKED TALON"};
-        if (name == "Silt Hydra") return {"SILT NECK", "LEFT HEAD", "MUD GILL", "HYDRA TONGUE"};
-        if (name == "Marionette Coven") return {"PUPPET STRING", "WOODEN WRIST", "PAINTED SMILE", "COVEN NEEDLE"};
-        if (name == "Starless Oracle") return {"BLIND STAR", "SECOND EYE", "ORACLE VEIL", "BLACK HALO"};
-        if (name == "Dune Maw") return {"SAND GUM", "BURIED EYE", "MAW TENDON", "DUNE THROAT"};
-        if (name == "Crystal Matriarch") return {"PRISM HEART", "CRYSTAL CROWN", "FACETED EYE", "GLASS WOMB"};
-        if (name == "Tide Leviathan") return {"TIDE GILL", "LEVIATHAN EYE", "CORAL JAW", "ABYSSAL FIN"};
-        if (name == "Cinder Dragon") return {"FURNACE THROAT", "ANCIENT WING JOINT", "EMBER EYE", "CINDER HEART"};
-        return {"THROAT", "RIB", "ANKLE", "HEART"};
+        if (name == "Slime") return {
+            "CORE", "WOBBLE", "BUBBLE", "PUDDLE",
+            "GEL CORE", "GOO MASS", "SLIME VEIN", "JELLY NERVE", "CLEAR MEMBRANE"
+        };
+        if (name == "Skeleton") return {
+            "RIB", "SKULL", "SPINE", "JAWBONE", "KNEECAP", "PELVIS",
+            "SHOULDER SOCKET", "CRACKED VERTEBRA", "RUSTY COLLARBONE", "LOOSE RIB CAGE"
+        };
+        if (name == "Thorn Imp") return {
+            "HORN", "EAR", "CLAW", "ANKLE",
+            "THORN EAR", "BRIAR HAND", "IMP HORN", "ROOT ANKLE",
+            "BARBED ELBOW", "TWISTED THORN CROWN"
+        };
+        if (name == "Mire Leech") return {
+            "SUCKER", "GILL", "BELLY", "TAIL",
+            "SOFT BELLY", "BLACK GILL", "MIRE MOUTH", "WET SPINE",
+            "PULSING SUCKER RING", "SLICK UNDERBELLY"
+        };
+        if (name == "Glass Spider") return {
+            "FANG", "LEG", "EYE",
+            "GLASS LEG", "MIRROR EYE", "CRYSTAL FANG", "SILK JOINT",
+            "REFLECTIVE ABDOMEN", "FRACTURED MIRROR EYE", "RAZOR SILK GLAND"
+        };
+        if (name == "Iron Scarab") return {
+            "HINGE", "PLATE", "CLAW",
+            "IRON SHELL", "BRASS MANDIBLE", "UNDERPLATE", "RIVETED LEG",
+            "LOCKING WING CASE", "GILDED MANDIBLE JOINT", "SCRATCHED IRON BELLY"
+        };
+        if (name == "Echo Bat") return {
+            "EAR", "WING", "CLAW",
+            "ECHO WING", "OPEN EAR", "SHRIEK THROAT", "HOOKED CLAW",
+            "TUNING RIB", "RINGING INNER EAR", "SPLIT ECHO MEMBRANE"
+        };
+        if (name == "Ashen Hound") return {
+            "JAW", "PAW", "RIB",
+            "ASH JAW", "SMOKE RIB", "EMBER PAW", "CHARRED THROAT",
+            "BURNT SNOUT", "COAL BLACK LUNG", "SMOLDERING HOUND HEART"
+        };
+        if (name == "Grave Moss") return {
+            "MOSS", "ROOT", "BLOOM",
+            "ROOT MASS", "GRAVE BLOOM", "MOSS HEART", "BONE ROOT",
+            "ROT SPORE", "BURIED BONE ROOT", "CEMETERY MOSS HEART"
+        };
+        if (name == "Hollow Squire") return {
+            "VISOR", "KNEE", "WRIST",
+            "SWORD WRIST", "EMPTY CHEST", "KNEE PLATE", "DENTED VISOR",
+            "HOLLOW HELM GAP", "RUSTED SQUIRE HEART", "BROKEN OATH HAND"
+        };
+        if (name == "Lantern Bearer") return {
+            "WICK", "HAND", "BACK",
+            "LANTERN HAND", "PALE FLAME", "HUNCHED BACK", "WICK EYE",
+            "CAGED LIGHT", "TREMBLING LANTERN HOOK", "PALE FLAME KNOT"
+        };
+        if (name == "Ancient Ent") return {
+            "BARK", "ROOT", "KNOT",
+            "KNOT HEART", "OLD BARK", "ROOT CROWN", "SAP WOUND",
+            "ANCIENT BRANCH", "HOLLOW TREE CHEST", "DEEP ROOT CROWN"
+        };
+        if (name == "Reforged Knight") return {
+            "GAUNTLET", "VISOR", "SEAM",
+            "HELM SEAM", "FORGE SCAR", "BROKEN PAULDRON", "MOLTEN KNEE",
+            "REWELDED RIB PLATE", "BLACKENED FORGE SCAR", "CRACKED HELM SEAM"
+        };
+        if (name == "Candle Wraith") return {
+            "WICK", "FLAME", "WAX",
+            "WAX FACE", "GHOST FLAME", "MELTED HAND", "DRIPPING WICK",
+            "SMOKING CANDLE EYE", "MELTED WAX THROAT", "PALE FUNERAL FLAME"
+        };
+        if (name == "Cathedral Gargoyle") return {
+            "JAW", "WING", "TALON",
+            "STONE WING", "GARGOYLE JAW", "CHISELED EYE", "CRACKED TALON",
+            "BELL TOWER HORN", "RAIN CUT STONE WING", "CATHEDRAL ROOF CLAW"
+        };
+        if (name == "Silt Hydra") return {
+            "NECK", "HEAD", "GILL",
+            "SILT NECK", "LEFT HEAD", "MUD GILL", "HYDRA TONGUE",
+            "RIGHT HEAD", "DROWNED CENTER HEAD", "MUD CHOKED GILL"
+        };
+        if (name == "Marionette Coven") return {
+            "STRING", "WRIST", "NEEDLE",
+            "PUPPET STRING", "WOODEN WRIST", "PAINTED SMILE", "COVEN NEEDLE",
+            "HINGED KNEE", "TANGLED PUPPET STRING", "CARVED WITCH FACE"
+        };
+        if (name == "Starless Oracle") return {
+            "VEIL", "HALO", "EYE",
+            "BLIND STAR", "SECOND EYE", "ORACLE VEIL", "BLACK HALO",
+            "PROPHECY TONGUE", "STARLESS THIRD EYE", "UNWRITTEN FUTURE THREAD"
+        };
+        if (name == "Dune Maw") return {
+            "GUM", "EYE", "MAW",
+            "SAND GUM", "BURIED EYE", "MAW TENDON", "DUNE THROAT",
+            "SINKING JAW", "BURIED GRINDING TOOTH", "SAND CLOGGED THROAT"
+        };
+        if (name == "Crystal Matriarch") return {
+            "CROWN", "EYE", "HEART",
+            "PRISM HEART", "CRYSTAL CROWN", "FACETED EYE", "GLASS WOMB",
+            "SHARD VEIN", "REFRACTED MOTHER EYE", "PRISMATIC HEART CHAMBER"
+        };
+        if (name == "Tide Leviathan") return {
+            "GILL", "EYE", "FIN",
+            "TIDE GILL", "LEVIATHAN EYE", "CORAL JAW", "ABYSSAL FIN",
+            "BRINE SCALE", "DEEP SEA LUNG", "ANCIENT CORAL JAW"
+        };
+        if (name == "Cinder Dragon") return {
+            "EYE", "HEART", "CLAW",
+            "FURNACE THROAT", "ANCIENT WING JOINT", "EMBER EYE", "CINDER HEART",
+            "MOLTEN SCALE", "SMOLDERING DRAGON HEART", "CRACKED FURNACE THROAT", "ANCIENT ASHEN WING"
+        };
+        return {"THROAT", "RIB", "ANKLE", "HEART", "WEAK JOINT", "EXPOSED NERVE"};
     }
 
     string chooseThematicEnemyTarget(const bool longTargetWanted) const {
         vector<string> targets = getThematicEnemyTargets();
-        vector<string> longTargets;
         vector<string> shortTargets;
+        vector<string> longTargets;
+        vector<string> eliteTargets;
+        vector<string> bossTargets;
 
         for (const string& target : targets) {
+            const int spaces = static_cast<int>(count(target.begin(), target.end(), ' '));
+
             if (target.size() >= 9) {
                 longTargets.push_back(target);
             } else {
                 shortTargets.push_back(target);
             }
+
+            if (target.size() >= 14 || spaces >= 2) {
+                eliteTargets.push_back(target);
+            }
+            if (spaces >= 2) {
+                bossTargets.push_back(target);
+            }
         }
 
+        if (longTargetWanted && getCombatFocusDifficultyTier() >= 4 && !bossTargets.empty()) {
+            return bossTargets[randomNum(0, static_cast<int>(bossTargets.size()) - 1)];
+        }
+        if (longTargetWanted && getCombatFocusDifficultyTier() >= 3 && !eliteTargets.empty()) {
+            return eliteTargets[randomNum(0, static_cast<int>(eliteTargets.size()) - 1)];
+        }
         if (longTargetWanted && !longTargets.empty()) {
             return longTargets[randomNum(0, static_cast<int>(longTargets.size()) - 1)];
         }
@@ -504,6 +607,41 @@ public:
         return sequence;
     }
 
+    int getDodgeSequenceLength() const {
+        const int tier = getCombatFocusDifficultyTier();
+        int length = 3;
+
+        if (tier >= 2) {
+            length += 1;
+        }
+        if (tier >= 3) {
+            length += 1;
+        }
+        if (tier >= 4) {
+            length += 1;
+        }
+        if (MS.danger >= 3) {
+            length += 1;
+        }
+        if (MS.danger >= 6) {
+            length += 1;
+        }
+
+        return min(max(length, 3), 8);
+    }
+
+    vector<string> buildDodgeWordSequence() const {
+        vector<string> possibleWords = {"HIGH", "LOW", "RIGHT", "LEFT", "RUN", "JUMP", "SPIN", "TUMBLE", "CONTORT"};
+        vector<string> sequence;
+        const int sequenceLength = getDodgeSequenceLength();
+
+        for (int i = 0; i < sequenceLength; i++) {
+            sequence.push_back(possibleWords[randomNum(0, static_cast<int>(possibleWords.size()) - 1)]);
+        }
+
+        return sequence;
+    }
+
     double scaleQteWindow(const double baseWindow, const double minimumWindow) const {
         return max(minimumWindow, baseWindow * playerIP.getQteDifficultyTimeMultiplier());
     }
@@ -536,7 +674,10 @@ public:
         if (family == "ATTACK") {
             window += 0.10;
         }
-        return max(0.90, window);
+        if (family == "DODGE") {
+            window -= 0.20;
+        }
+        return max(family == "DODGE" ? 0.65 : 0.90, window);
     }
 
     double getWordPerfectWindow(const string& expectedInput, const string& family) const {
@@ -591,7 +732,8 @@ public:
         } else if (family == "MAGIC") {
             cout << "Channel keys: " << combatFocusPromptColor("q / w / e / r") << endl;
         } else if (family == "DODGE") {
-            cout << "Type the direction shown: " << combatFocusPromptColor("HIGH / LOW / RIGHT / LEFT") << endl;
+            cout << "Chain the dodge words shown." << endl;
+            cout << "Possible: " << combatFocusPromptColor("HIGH / LOW / RIGHT / LEFT / RUN / JUMP / SPIN / TUMBLE / CONTORT") << endl;
         } else if (family == "ATTACK") {
             cout << "Hit the rhythm keys, then type the enemy part." << endl;
         } else if (family == "CHARGE") {
@@ -818,9 +960,14 @@ public:
             const string target = chooseThematicEnemyTarget(getCombatFocusDifficultyTier() >= 1);
             addStepToOutcome(outcome, askWordStep(target, outcome.family, "TARGET:"));
         } else if (outcome.family == "DODGE") {
-            const vector<string> directions = {"HIGH", "LOW", "RIGHT", "LEFT"};
-            const string direction = directions[randomNum(0, static_cast<int>(directions.size()) - 1)];
-            addStepToOutcome(outcome, askWordStep(direction, outcome.family, "DODGE:"));
+            const vector<string> dodgeSequence = buildDodgeWordSequence();
+            for (int i = 0; i < dodgeSequence.size(); i++) {
+                addStepToOutcome(outcome, askWordStep(
+                    dodgeSequence[i],
+                    outcome.family,
+                    combatFocusStepLabel(i + 1, static_cast<int>(dodgeSequence.size())) + " DODGE:"
+                ));
+            }
         } else if (outcome.family == "PARRY") {
             addStepToOutcome(outcome, askParryStep(monsterActionData));
         }
