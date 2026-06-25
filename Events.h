@@ -1795,6 +1795,9 @@ protected:
             cout << "Inside the skull, old heat still clings to the bone." << endl;
             if (randomNum(1, 10) <= 4) {
                 encounterCinderDragon(playerIP, musicManager);
+                if (playerIP.health > 0) {
+                    playerIP.markDragonDefeated();
+                }
             } else {
                 playerIP.maxSoul += 2;
             }
@@ -1822,6 +1825,9 @@ protected:
             playerIP.maxSoul += 1;
             if (randomNum(1, 10) <= 3) {
                 encounterCinderDragon(playerIP, musicManager);
+                if (playerIP.health > 0) {
+                    playerIP.markDragonDefeated();
+                }
             }
         } else if (ChoiceName == "Salute the Guards") {
             ArmagestaBiomeTools::printStoryText("The frozen guards salute back. Your spine becomes briefly straighter.");
@@ -1859,10 +1865,20 @@ private:
     vector<vector<string>> eventChoices = {{"Descend", "Throw Scrap First", "Meditate at the Edge", "Leave"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Descend";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -1873,6 +1889,7 @@ protected:
             if (!ArmagestaBiomeTools::hasCombatAction(playerIP, "Sandstep")) {
                 encounterDuneMaw(playerIP, musicManager);
                 if (playerIP.health > 0) {
+                    playerIP.addStoryFlag("Dune Maw Defeated");
                     ArmagestaBiomeTools::unlockCombatAction(playerIP, "Sandstep", "Spend 2 Souls to dodge with desert footwork, gain Momentum, and raise defense for the turn.");
                 }
             } else {
@@ -1896,7 +1913,7 @@ protected:
         }
     }
 public:
-    explicit SandPit(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit SandPit(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = SandPit::getChoice();
         SandPit::doEvent();
     }
@@ -1910,10 +1927,20 @@ private:
     vector<vector<string>> eventChoices = {{"Touch the Heart Crystal", "Break a Reflection", "Kneel in the Light", "Leave Carefully"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Break a Reflection";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -1931,6 +1958,7 @@ protected:
             cout << "The broken reflection crawls out as the Crystal Matriarch's anger." << endl;
             encounterCrystalMatriarch(playerIP, musicManager);
             if (playerIP.health > 0) {
+                playerIP.addStoryFlag("Crystal Matriarch Defeated");
                 playerIP.currentScrapMetal += 3;
             }
         } else if (ChoiceName == "Kneel in the Light") {
@@ -1942,7 +1970,7 @@ protected:
         }
     }
 public:
-    explicit CrystalGeode(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit CrystalGeode(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = CrystalGeode::getChoice();
         CrystalGeode::doEvent();
     }
@@ -1956,10 +1984,20 @@ private:
     vector<vector<string>> eventChoices = {{"Speak the Old Oath", "Climb Inside the Bark", "Challenge the Elder", "Sleep at its Roots"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Challenge the Elder";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -1977,6 +2015,7 @@ protected:
             ArmagestaBiomeTools::printStoryText("The Oldest Redwood does not fight you itself. It sends an Ancient Ent like a raised eyebrow.");
             encounterAncientEnt(playerIP, musicManager);
             if (playerIP.health > 0) {
+                playerIP.addStoryFlag("Ancient Ent Defeated");
                 playerIP.hardiness += 3;
             }
         } else if (ChoiceName == "Sleep at its Roots") {
@@ -1986,7 +2025,7 @@ protected:
         }
     }
 public:
-    explicit OldestRedwood(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit OldestRedwood(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = OldestRedwood::getChoice();
         OldestRedwood::doEvent();
     }
@@ -2000,10 +2039,20 @@ private:
     vector<vector<string>> eventChoices = {{"Knock Three Times", "Drink from the Cauldron", "Buy a Hex", "Steal the Broom"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Steal the Broom";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -2027,10 +2076,13 @@ protected:
         } else if (ChoiceName == "Steal the Broom") {
             ArmagestaBiomeTools::printStoryText("The broom screams for its sisters. The Marionette Coven answers instead.");
             encounterMarionetteCoven(playerIP, musicManager);
+            if (playerIP.health > 0) {
+                playerIP.addStoryFlag("Marionette Coven Defeated");
+            }
         }
     }
 public:
-    explicit WitchsHut(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit WitchsHut(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = WitchsHut::getChoice();
         WitchsHut::doEvent();
     }
@@ -2044,10 +2096,20 @@ private:
     vector<vector<string>> eventChoices = {{"Sit on the Throne", "Break the Crown", "Read the Law", "Bow and Leave"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Sit on the Throne";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -2076,7 +2138,7 @@ protected:
         }
     }
 public:
-    explicit TheThrone(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit TheThrone(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = TheThrone::getChoice();
         TheThrone::doEvent();
     }
@@ -2090,10 +2152,20 @@ private:
     vector<vector<string>> eventChoices = {{"Dive to the Heart", "Take a Coral Crown", "Listen to the Current", "Surface"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Dive to the Heart";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -2103,6 +2175,7 @@ protected:
             cout << "At the reef's heart, the Tide Leviathan coils around an altar of pearls." << endl;
             encounterTideLeviathan(playerIP, musicManager);
             if (playerIP.health > 0) {
+                playerIP.addStoryFlag("Tide Leviathan Defeated");
                 ArmagestaBiomeTools::unlockCombatAction(playerIP, "Tidecall", "Spend 4 Souls to call a defensive tide that damages the enemy and weakens its Danger.");
             }
         } else if (ChoiceName == "Take a Coral Crown") {
@@ -2120,7 +2193,7 @@ protected:
         }
     }
 public:
-    explicit CoralReef(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit CoralReef(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = CoralReef::getChoice();
         CoralReef::doEvent();
     }
@@ -2134,10 +2207,20 @@ private:
     vector<vector<string>> eventChoices = {{"Challenge the Dragon", "Steal an Ember", "Offer the Hoard", "Retreat"}};
     string ChoiceName;
     int REI = -1;
+    bool loreOnlyRevisit = false;
 protected:
     int getChoice() override { return ArmagestaBiomeTools::weightedChoice(eventChances); }
     void doEvent() override {
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
+
+        if (loreOnlyRevisit) {
+            ChoiceName = "Challenge the Dragon";
+            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            ResolveChoice();
+            return;
+        }
+
         ChoiceName = eventChoices[REI][ArmagestaBiomeTools::askChoice(eventChoices[REI])];
         ResolveChoice();
     }
@@ -2147,6 +2230,7 @@ protected:
             ArmagestaBiomeTools::printStoryText("The Cinder Dragon opens one eye. It has been awake for years, waiting for someone rude enough to call this a beginning.");
             encounterCinderDragon(playerIP, musicManager);
             if (playerIP.health > 0) {
+                playerIP.markDragonDefeated();
                 ArmagestaBiomeTools::unlockCombatAction(playerIP, "Dragonfire", "Spend 8 Souls to breathe stolen dragonfire for massive damage, burning yourself in the process.");
                 playerIP.maxSoul += 2;
                 playerIP.permanentDamageModifier += 2;
@@ -2181,7 +2265,7 @@ protected:
         }
     }
 public:
-    explicit DragonsLair(Player& PlayerIP, BackgroundMusicManager& musicManager) : BiomeEventDatabase(PlayerIP, musicManager) {
+    explicit DragonsLair(Player& PlayerIP, BackgroundMusicManager& musicManager, const bool loreOnlyRevisit = false) : BiomeEventDatabase(PlayerIP, musicManager), loreOnlyRevisit(loreOnlyRevisit) {
         REI = DragonsLair::getChoice();
         DragonsLair::doEvent();
     }
