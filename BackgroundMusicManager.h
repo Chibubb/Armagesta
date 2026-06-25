@@ -17,7 +17,7 @@ private:
     sf::Music music;
 
     std::string currentTrack;
-    float maxVolume = 50.0f;
+    float maxVolume = 35.0f;
     bool hasLoadedTrack = false;
 
     void fadeVolume(float startVolume, float endVolume, float seconds) {
@@ -27,37 +27,43 @@ private:
         }
 
         using clock = std::chrono::steady_clock;
-
-        auto startTime = clock::now();
+        const auto startTime = clock::now();
 
         while (true) {
-            auto now = clock::now();
+            const auto now = clock::now();
             float elapsed = std::chrono::duration<float>(now - startTime).count();
-
             float t = elapsed / seconds;
 
             if (t > 1.0f) {
                 t = 1.0f;
             }
 
-            float currentVolume = startVolume + (endVolume - startVolume) * t;
+            const float currentVolume = startVolume + (endVolume - startVolume) * t;
             music.setVolume(currentVolume);
 
             if (t >= 1.0f) {
                 break;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            std::this_thread::sleep_for(std::chrono::milliseconds(24));
         }
     }
 
 public:
-    bool playMusicImmediately(const std::string& filePath, bool loop = true) {
+    // MP3 files often pop at their loop boundary. Armagesta now defaults music to not looping,
+    // which removes the repeating click while still allowing long ambience tracks to play normally.
+    bool playMusicImmediately(const std::string& filePath, bool loop = false) {
+        if (hasLoadedTrack && currentTrack == filePath) {
+            return true;
+        }
+
+        music.setVolume(0.0f);
         music.stop();
 
         if (!music.openFromFile(filePath)) {
             std::cout << "Failed to load music file: " << filePath << std::endl;
             hasLoadedTrack = false;
+            currentTrack = "";
             return false;
         }
 
@@ -73,9 +79,9 @@ public:
 
     bool changeMusicWithFade(
         const std::string& filePath,
-        bool loop = true,
-        float fadeOutSeconds = 1.5f,
-        float fadeInSeconds = 1.5f
+        bool loop = false,
+        float fadeOutSeconds = 0.35f,
+        float fadeInSeconds = 0.35f
     ) {
         if (hasLoadedTrack && currentTrack == filePath) {
             return true;
@@ -83,12 +89,14 @@ public:
 
         if (hasLoadedTrack) {
             fadeVolume(maxVolume, 0.0f, fadeOutSeconds);
+            std::this_thread::sleep_for(std::chrono::milliseconds(35));
             music.stop();
         }
 
         if (!music.openFromFile(filePath)) {
             std::cout << "Failed to load music file: " << filePath << std::endl;
             hasLoadedTrack = false;
+            currentTrack = "";
             return false;
         }
 
@@ -104,12 +112,13 @@ public:
         return true;
     }
 
-    void stopMusicWithFade(float fadeOutSeconds = 1.5f) {
+    void stopMusicWithFade(float fadeOutSeconds = 0.35f) {
         if (!hasLoadedTrack) {
             return;
         }
 
         fadeVolume(maxVolume, 0.0f, fadeOutSeconds);
+        std::this_thread::sleep_for(std::chrono::milliseconds(35));
         music.stop();
         hasLoadedTrack = false;
         currentTrack = "";
@@ -140,5 +149,3 @@ public:
 };
 
 #endif // ARMAGESTA_BACKGROUNDMUSICMANAGER_H
-
-

@@ -149,6 +149,7 @@ public:
     vector<string> completedQuests;
     vector<string> discoveredLandmarks;
     vector<string> storyFlags;
+    vector<string> consumedMonsterSouls;
 
     bool mainQuestStarted = false;
     bool dragonDefeated = false;
@@ -168,15 +169,13 @@ public:
     vector<int> currentPosition = {5, 5};
 
     vector<string> actions = {"Move", "Self Assess", "Understand Powers", "Map"};
-    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte"
-        , "Weaken", "Soul Burst"};
+    vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte", "Soul Burst"};
     vector<string> combatActionsDescriptions = {"Use your sword on the enemy, like you have done so many times before"
         , "Make the enemy's innards outards, requires a large amount of Momentum"
-        , "Try to dodge you enemy's attack by rolling, requires miniscule Momentum"
+        , "Try to dodge your enemy's attack by rolling, requires miniscule Momentum"
         , "Block incoming damage using known battle stances"
         , "Take a moment of respite, and assess the situation around you, gains you Momentum"
         , "Parry an enemy who is choosing to attack you, dealing damage, acquiring defense, and gaining Momentum"
-        , "Caste a weakening curse on your enemy, immediately enacting bodily distrophy on them, requires a small amount of souls"
         , "Unleash the power of stolen souls on the currently living enemy in front of you, dealing a large amount of damage, requires a decent amount of souls"};
 
     Player() {
@@ -188,6 +187,7 @@ public:
 
         unlockWorldAction("Map");
         unlockWorldAction("Quest Log");
+        unlockWorldAction("Consumed Souls");
         unlockWorldAction("Save Game");
         unlockWorldAction("Load Game");
 
@@ -249,6 +249,7 @@ public:
         cout << "Souls: " << soul << " / " << maxSoul << endl;
         cout << "Hardiness: " << hardiness << endl;
         cout << "Strength: " << permanentDamageModifier << endl;
+        cout << "Consumed Monster Souls: " << consumedMonsterSouls.size() << endl;
     }
 
     void understandPowers() {
@@ -376,6 +377,7 @@ struct PlayerChangeSnapshot {
     vector<string> completedQuests;
     vector<string> discoveredLandmarks;
     vector<string> storyFlags;
+    vector<string> consumedMonsterSouls;
 };
 
 PlayerChangeSnapshot makeChangeSnapshot() const {
@@ -399,6 +401,7 @@ PlayerChangeSnapshot makeChangeSnapshot() const {
     snapshot.completedQuests = completedQuests;
     snapshot.discoveredLandmarks = discoveredLandmarks;
     snapshot.storyFlags = storyFlags;
+    snapshot.consumedMonsterSouls = consumedMonsterSouls;
     return snapshot;
 }
 
@@ -496,6 +499,8 @@ void reportChangesSince(const PlayerChangeSnapshot& before) const {
     reportNumericChange("Base Momentum", before.permanentMomentum, permanentMomentum, anyChange);
 
     reportAddedValues("New world action", before.actions, actions, anyChange);
+    reportAddedValues("New combat action", before.combatActions, combatActions, anyChange);
+    reportAddedValues("Consumed soul", before.consumedMonsterSouls, consumedMonsterSouls, anyChange);
     reportAddedValues("Story milestone", before.storyFlags, storyFlags, anyChange);
 
     reportFlagChange("Cinder Dragon defeated", before.dragonDefeated, dragonDefeated, anyChange);
@@ -531,6 +536,198 @@ void unlockCombatAction(const string& actionName, const string& description) {
     combatActionsDescriptions.emplace_back(description);
     printPlayerChangeLine("NEW COMBAT ACTION UNLOCKED: " + actionName);
     printPlayerChangeLine(description);
+}
+
+int getCombatActionIndex(const string& actionName) const {
+    for (int i = 0; i < combatActions.size(); i++) {
+        if (combatActions[i] == actionName) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void removeCombatAction(const string& actionName) {
+    const int index = getCombatActionIndex(actionName);
+    if (index < 0) {
+        return;
+    }
+
+    combatActions.erase(combatActions.begin() + index);
+    if (index < combatActionsDescriptions.size()) {
+        combatActionsDescriptions.erase(combatActionsDescriptions.begin() + index);
+    }
+}
+
+void updateCombatActionDescription(const string& actionName, const string& newDescription) {
+    const int index = getCombatActionIndex(actionName);
+    if (index >= 0 && index < combatActionsDescriptions.size()) {
+        combatActionsDescriptions[index] = newDescription;
+    }
+}
+
+bool hasConsumedMonsterSoul(const string& monsterName) const {
+    return vectorContains(consumedMonsterSouls, monsterName);
+}
+
+void printSoulRewardHeader(const string& monsterName) const {
+    cout << endl;
+    printPlayerChangeLine("===== SOUL CONSUMED: " + monsterName + " =====");
+}
+
+void showConsumedMonsterSouls() const {
+    cout << endl;
+    cout << "===== CONSUMED MONSTER SOULS =====" << endl;
+    if (consumedMonsterSouls.empty()) {
+        cout << "You have not consumed the soul of any monster yet." << endl;
+        cout << "The first time you defeat each kind of enemy, its soul will leave a permanent mark on you." << endl;
+        cout << endl;
+        return;
+    }
+
+    for (int i = 0; i < consumedMonsterSouls.size(); i++) {
+        cout << i + 1 << ": " << consumedMonsterSouls[i] << endl;
+    }
+    cout << endl;
+    cout << "Each listed soul has already given its first-time reward." << endl;
+    cout << "Defeating that same kind of enemy again still grants ordinary Souls, but not another permanent soul-consumption reward." << endl;
+    cout << endl;
+}
+
+void normalizePlayerStateAfterLoad() {
+    removeCombatAction("Weaken");
+    unlockWorldAction("Consumed Souls");
+
+    while (combatActionsDescriptions.size() < combatActions.size()) {
+        combatActionsDescriptions.emplace_back("No description has been recorded for this power yet.");
+    }
+    while (combatActionsDescriptions.size() > combatActions.size()) {
+        combatActionsDescriptions.pop_back();
+    }
+}
+
+void consumeMonsterSoul(const string& monsterName) {
+    if (hasConsumedMonsterSoul(monsterName)) {
+        return;
+    }
+
+    consumedMonsterSouls.emplace_back(monsterName);
+    printSoulRewardHeader(monsterName);
+
+    if (monsterName == "Slime") {
+        maxHealth += 3;
+        heal(3);
+        printPlayerChangeLine("The Slime's soft body-memory teaches your wounds to close with less argument. Max Health +3 and you heal 3 Health.");
+    } else if (monsterName == "Skeleton") {
+        accuracy += 1;
+        maxSoul += 1;
+        printPlayerChangeLine("The Skeleton leaves behind the patience of old bones and empty eye sockets. Accuracy +1 and Max Souls +1.");
+    } else if (monsterName == "Thorn Imp") {
+        hardiness += 1;
+        critChance += 1;
+        printPlayerChangeLine("The Thorn Imp's spite roots under your skin. Hardiness +1 and Luck +1.");
+    } else if (monsterName == "Mire Leech") {
+        maxHealth += 2;
+        gainSoul(1);
+        printPlayerChangeLine("The Mire Leech's hunger teaches your body how to take back what was stolen. Max Health +2 and you regain 1 Soul.");
+    } else if (monsterName == "Glass Spider") {
+        accuracy += 2;
+        printPlayerChangeLine("The Glass Spider's many reflected eyes settle behind your own. Accuracy +2.");
+    } else if (monsterName == "Iron Scarab") {
+        hardiness += 1;
+        maxHealth += 4;
+        printPlayerChangeLine("The Iron Scarab curls into the shape of armor inside your chest. Hardiness +1 and Max Health +4.");
+    } else if (monsterName == "Echo Bat") {
+        accuracy += 1;
+        critChance += 1;
+        printPlayerChangeLine("The Echo Bat's last shriek becomes a map of openings. Accuracy +1 and Luck +1.");
+    } else if (monsterName == "Ashen Hound") {
+        maxSoul += 1;
+        permanentMomentum += 1;
+        printPlayerChangeLine("The Ashen Hound leaves a coal-red hunting instinct in your legs. Max Souls +1 and Base Momentum +1.");
+        unlockCombatAction("Ashen Pursuit", "Spend 2 Souls to chase through an incoming attack, gaining defense and burning the enemy. Stronger when the enemy is attacking.");
+    } else if (monsterName == "Grave Moss") {
+        hardiness += 1;
+        maxHealth += 5;
+        printPlayerChangeLine("The Grave Moss settles over your scars like patient soil. Hardiness +1 and Max Health +5.");
+        unlockCombatAction("Grave Bloom", "Spend 3 Souls to heal and grow defensive moss. If the enemy is not attacking, you also gain Momentum.");
+    } else if (monsterName == "Hollow Squire") {
+        hardiness += 2;
+        printPlayerChangeLine("The Hollow Squire's drilled reflexes correct your stance. Hardiness +2.");
+        printPlayerChangeLine("BRACE UPGRADED: Squire's Brace. Brace now gains extra defense and can create Momentum when used against attacks.");
+        updateCombatActionDescription("Brace", "Block incoming damage using disciplined battle stances. The Hollow Squire soul gives this extra defense and Momentum against attacks.");
+    } else if (monsterName == "Lantern Bearer") {
+        maxSoul += 2;
+        printPlayerChangeLine("The Lantern Bearer's little light refuses to go out inside you. Max Souls +2.");
+        unlockCombatAction("Lantern Mark", "Spend 2 Souls to mark the enemy with corpse-light, making your next attacks hit harder and lowering its Danger.");
+    } else if (monsterName == "Reforged Knight") {
+        permanentDamageModifier += 1;
+        maxHealth += 5;
+        printPlayerChangeLine("The Reforged Knight's furnace-tempered will hammers itself into your sword arm. Strength +1 and Max Health +5.");
+        unlockCombatAction("Gravebreaker", "Spend 2 Souls and 4 Momentum on a heavy anti-armor strike that ignores much of the enemy's defense.");
+    } else if (monsterName == "Candle Wraith") {
+        critChance += 2;
+        maxSoul += 1;
+        printPlayerChangeLine("The Candle Wraith gutters out, but its last flame learns your name. Luck +2 and Max Souls +1.");
+        unlockCombatAction("Wick Drain", "Spend 3 Souls to burn the enemy with ghost-flame, lower its Danger, and draw back a little Soul when the flame bites deep.");
+    } else if (monsterName == "Cathedral Gargoyle") {
+        hardiness += 2;
+        permanentMomentum += 1;
+        printPlayerChangeLine("The Cathedral Gargoyle gives you the patience of stone and the violence of falling towers. Hardiness +2 and Base Momentum +1.");
+        unlockCombatAction("Stonebound Stance", "Spend 2 Souls to become nearly immovable for one turn, gaining strong defense and punishing melee attackers.");
+    } else if (monsterName == "Silt Hydra") {
+        maxHealth += 8;
+        printPlayerChangeLine("The Silt Hydra's many-throated survival coils into your spine. Max Health +8.");
+        unlockCombatAction("Severing Rhythm", "Spend 3 Souls and 3 Momentum to strike in a repeating pattern, dealing several smaller hits that punish wounded enemies.");
+    } else if (monsterName == "Starless Oracle") {
+        accuracy += 2;
+        maxSoul += 2;
+        printPlayerChangeLine("The Starless Oracle leaves behind the cold certainty of things that almost happened. Accuracy +2 and Max Souls +2.");
+        unlockCombatAction("Foresight", "Spend 3 Souls to read the next instant. If the enemy attacks, the attack fails; otherwise you gain Momentum and sharpen your next strike.");
+    } else if (monsterName == "Dune Maw") {
+        maxSoul += 3;
+        permanentMomentum += 1;
+        printPlayerChangeLine("The Dune Maw's endless appetite hollows a useful chamber in your soul. Max Souls +3 and Base Momentum +1.");
+        printPlayerChangeLine("BOSS SOUL SHIFT: Sand-hunger. You now begin combat with extra Momentum, and Sandstep costs 1 less Soul.");
+    } else if (monsterName == "Crystal Matriarch") {
+        maxSoul += 4;
+        hardiness += 2;
+        printPlayerChangeLine("The Crystal Matriarch fractures into a crown of clear instincts. Max Souls +4 and Hardiness +2.");
+        printPlayerChangeLine("BOSS SOUL SHIFT: Prismatic Aegis. Once per combat, a killing blow can leave you barely alive instead.");
+    } else if (monsterName == "Ancient Ent") {
+        maxHealth += 20;
+        hardiness += 2;
+        printPlayerChangeLine("The Ancient Ent does not die quickly; it becomes a ring in you. Max Health +20 and Hardiness +2.");
+        printPlayerChangeLine("BOSS SOUL SHIFT: Rooted Thought. Think now restores a little Health and grants more Momentum.");
+    } else if (monsterName == "Marionette Coven") {
+        critChance += 3;
+        accuracy += 2;
+        printPlayerChangeLine("The Marionette Coven's cut strings wrap around your fingers instead of your throat. Luck +3 and Accuracy +2.");
+        printPlayerChangeLine("BOSS SOUL SHIFT: String-Sight. Riposte can now answer quick and ranged attacks, though ranged counters are weaker.");
+    } else if (monsterName == "Tide Leviathan") {
+        maxSoul += 5;
+        heal(10);
+        printPlayerChangeLine("The Tide Leviathan leaves an ocean where your limit used to be. Max Souls +5 and you heal 10 Health.");
+        printPlayerChangeLine("BOSS SOUL SHIFT: Undertow. Tidecall becomes cheaper and heals you when it crashes through an enemy.");
+    } else if (monsterName == "Cinder Dragon") {
+        maxSoul += 6;
+        permanentDamageModifier += 2;
+        maxHealth += 10;
+        printPlayerChangeLine("The Cinder Dragon's heart does not fit inside you cleanly; it burns new room. Max Souls +6, Strength +2, and Max Health +10.");
+        printPlayerChangeLine("BOSS SOUL SHIFT: Dragonheart. Soul Burst becomes cheaper and far more destructive.");
+    } else {
+        maxSoul += 1;
+        printPlayerChangeLine("This unfamiliar soul leaves a small, nameless widening inside you. Max Souls +1.");
+    }
+
+    if (soul > maxSoul) {
+        soul = maxSoul;
+    }
+    if (health > maxHealth) {
+        health = maxHealth;
+    }
+
+    cout << endl;
 }
 
 bool hasStoryFlag(const string& flagName) const {
@@ -752,7 +949,7 @@ bool saveGame(const string& fileName = "armagesta_save.txt") const {
         return false;
     }
 
-    out << "ARMAGESTA_SAVE_V1" << endl;
+    out << "ARMAGESTA_SAVE_V2" << endl;
 
     out << health << ' ' << maxHealth << ' ' << critChance << ' ' << accuracy << ' '
         << hardiness << ' ' << permanentDamageModifier << ' ' << permanentMomentum << ' '
@@ -769,6 +966,7 @@ bool saveGame(const string& fileName = "armagesta_save.txt") const {
     saveStringVector(out, completedQuests);
     saveStringVector(out, discoveredLandmarks);
     saveStringVector(out, storyFlags);
+    saveStringVector(out, consumedMonsterSouls);
 
     out << exploredMap.size() << ' ' << exploredMap[0].size() << endl;
     for (const auto& row : exploredMap) {
@@ -791,7 +989,9 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
 
     string magic;
     getline(in, magic);
-    if (magic != "ARMAGESTA_SAVE_V1") {
+    const bool saveIsV1 = magic == "ARMAGESTA_SAVE_V1";
+    const bool saveIsV2 = magic == "ARMAGESTA_SAVE_V2";
+    if (!saveIsV1 && !saveIsV2) {
         cout << "This save file is not compatible with this version of Armagesta." << endl;
         return false;
     }
@@ -814,6 +1014,11 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
     if (!loadStringVector(in, completedQuests)) return false;
     if (!loadStringVector(in, discoveredLandmarks)) return false;
     if (!loadStringVector(in, storyFlags)) return false;
+    if (saveIsV2) {
+        if (!loadStringVector(in, consumedMonsterSouls)) return false;
+    } else {
+        consumedMonsterSouls.clear();
+    }
 
     int rows = 0;
     int columns = 0;
@@ -833,6 +1038,8 @@ bool loadGame(const string& fileName = "armagesta_save.txt") {
             exploredMap[i][j] = row[j] == '1';
         }
     }
+
+    normalizePlayerStateAfterLoad();
 
     cout << "Game loaded from " << fileName << "." << endl;
     cout << "You are at: " << getCurrentBiomeName() << endl;

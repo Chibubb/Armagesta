@@ -107,6 +107,16 @@ public:
 
     void haveCombat() {
         PS.momentum = playerIP.permanentMomentum;
+        bool prismaticAegisUsed = false;
+
+        if (playerIP.hasConsumedMonsterSoul("Dune Maw")) {
+            PS.momentum += 1;
+            playerIP.printPlayerChangeLine("The Dune Maw soul stirs under your feet. You begin combat with +1 Momentum.");
+        }
+        if (playerIP.hasConsumedMonsterSoul("Cinder Dragon")) {
+            playerIP.gainSoul(2);
+            playerIP.printPlayerChangeLine("The Cinder Dragon soul exhales inside you. You regain 2 Souls as combat begins.");
+        }
 
         cout << endl << "Combat begins against the " << getName() << "!" << endl;
         printCombatStatus();
@@ -115,6 +125,12 @@ public:
             doAction();
             makeZeroIfNegative(playerIP.health);
             makeZeroIfNegative(health);
+
+            if (playerIP.health <= 0 && playerIP.hasConsumedMonsterSoul("Crystal Matriarch") && !prismaticAegisUsed) {
+                prismaticAegisUsed = true;
+                playerIP.health = 1;
+                playerIP.printPlayerChangeLine("PRISMATIC AEGIS: The Crystal Matriarch soul shatters in your blood and leaves you alive at 1 Health.");
+            }
 
             printCombatStatus();
         }
@@ -128,6 +144,7 @@ public:
 
         playerIP.gainSoul(1);
         cout << "The " << getName() << " died! You gained 1 Soul!" << endl << endl;
+        playerIP.consumeMonsterSoul(getName());
     }
 
     void virtual printIntent(const int indexOfIntent) const {
@@ -208,26 +225,54 @@ public:
         } else if (playerAction == "Brace") {
 
             int defenceGain = randomNum(4, 6) + playerIP.hardiness;
+            if (playerIP.hasConsumedMonsterSoul("Hollow Squire")) {
+                defenceGain += 2;
+                if (MAD.type == "M-ATTACK" || MAD.type == "R-ATTACK") {
+                    PS.momentum += 1;
+                    cout << "The Hollow Squire soul locks your feet into a drilled guard. You gain 1 Momentum from meeting the attack correctly." << endl;
+                }
+            }
             makeZeroIfNegative(defenceGain);
             PAD.defenceValue += defenceGain;
             cout << "You Braced for impact, and blocked for " << defenceGain << " defence!" << endl;
             PAD.type = "DEFENSE";
         } else if (playerAction == "Think") {
 
-            PS.momentum += 2;
-            cout << "You took a moment to assess the situation and look for an opening, and gained 2 Momentum!" << endl;
+            int momentumGain = 2;
+            if (playerIP.hasConsumedMonsterSoul("Ancient Ent")) {
+                momentumGain = 3;
+                playerIP.heal(2);
+                cout << "The Ancient Ent soul slows your breathing until your thoughts have roots. You heal 2 Health." << endl;
+            }
+            PS.momentum += momentumGain;
+            cout << "You took a moment to assess the situation and look for an opening, and gained " << momentumGain << " Momentum!" << endl;
             PAD.type = "CHARGE";
         } else if (playerAction == "Riposte") {
-            if (MAD.type == "M-ATTACK" && MAD.attackSpeed != "Quick") {
-                if (roll > 100 - playerIP.accuracy) {
+            const bool stringSight = playerIP.hasConsumedMonsterSoul("Marionette Coven");
+            const bool canAnswerMelee = MAD.type == "M-ATTACK" && (MAD.attackSpeed != "Quick" || stringSight);
+            const bool canAnswerRanged = MAD.type == "R-ATTACK" && stringSight;
+
+            if (canAnswerMelee || canAnswerRanged) {
+                const int accuracyPenalty = canAnswerRanged ? 15 : 0;
+                if (roll > 100 - playerIP.accuracy + accuracyPenalty) {
                     int damageDealt = randomNum(4, 7) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
+                    if (canAnswerRanged) {
+                        damageDealt = randomNum(3, 5) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier - MAD.defenceValue;
+                    }
                     makeZeroIfNegative(damageDealt);
                     health -= damageDealt;
                     int defenceGain = randomNum(2, 4) + playerIP.hardiness;
                     makeZeroIfNegative(defenceGain);
                     PAD.defenceValue += defenceGain;
                     PS.momentum += 1;
-                    cout << "You Parried the " << name << "'s Attack! You dealt " << damageDealt << " damage, gained " << defenceGain << " defence, and gained 1 Momentum!" << endl;
+                    if (canAnswerRanged) {
+                        cout << "String-Sight pulls your weapon along the path of the projectile. You cut the attack out of the air and punish the opening!" << endl;
+                    } else if (MAD.attackSpeed == "Quick") {
+                        cout << "String-Sight shows the quick attack before the body commits to it. Your Riposte catches what used to be too fast." << endl;
+                    } else {
+                        cout << "You Parried the " << name << "'s Attack!" << endl;
+                    }
+                    cout << "You dealt " << damageDealt << " damage, gained " << defenceGain << " defence, and gained 1 Momentum!" << endl;
                     PAD.type = "PARRY";
                 } else {
                     cout << "You tried to Parry, but Missed!" << endl;
@@ -236,22 +281,11 @@ public:
             } else if (MAD.type == "M-ATTACK" && MAD.attackSpeed == "Quick") {
                 cout << "You Parried, but the " << name << " Attacked too quick to Parry!" << endl;
                 PAD.type = "MISSED HIT";
-            }else if (MAD.type == "R-ATTACK"){
+            } else if (MAD.type == "R-ATTACK"){
                 cout << "You Parried, but the " << name << " was not using a Melee Attack!" << endl;
                 PAD.type = "NO TYPE";
             } else {
                 cout << "You Parried, but the " << name << " was not Attacking!" << endl;
-                PAD.type = "NO TYPE";
-            }
-        } else if (playerAction == "Weaken") {
-
-            if (playerIP.soul >= 2) {
-                playerIP.soul -= 2;
-                MS.temporaryDamageModifier -= 2;
-                cout << "You spent 2 Souls and used Weaken! The " << name << " strength went down by 2!" << endl;
-                PAD.type = "MAGIC";
-            } else {
-                cout << "You tried to use Weaken, but didn't have enough Souls!" << endl;
                 PAD.type = "NO TYPE";
             }
         } else if (playerAction == "Break Sapphire Amulet") {
@@ -264,11 +298,17 @@ public:
             PAD.type = "MAGIC";
         } else if (playerAction == "Soul Burst") {
 
-            if (playerIP.soul >= 4) {
-                playerIP.soul -= 4;
-                int damageDealt = randomNum(13, 17);
+            const bool dragonheart = playerIP.hasConsumedMonsterSoul("Cinder Dragon");
+            const int soulCost = dragonheart ? 3 : 4;
+            if (playerIP.soul >= soulCost) {
+                playerIP.soul -= soulCost;
+                int damageDealt = dragonheart ? randomNum(22, 28) : randomNum(13, 17);
                 health -= damageDealt;
-                cout << "You spent 4 Souls and used Soul Burst! You dealt " << damageDealt << " Magical damage to the " << name << "!" << endl;
+                cout << "You spent " << soulCost << " Souls and used Soul Burst! You dealt " << damageDealt << " Magical damage to the " << name << "!" << endl;
+                if (dragonheart) {
+                    MS.danger += 1;
+                    cout << "Dragonheart turns the burst into a miniature sun. The enemy's Danger rises from panic and heat." << endl;
+                }
                 PAD.type = "MAGIC";
             } else {
                 cout << "You tried to use Soul Burst, but didn't have enough Souls!" << endl;
@@ -288,11 +328,12 @@ public:
             }
         } else if (playerAction == "Sandstep") {
 
-            if (playerIP.soul >= 2) {
-                playerIP.soul -= 2;
+            const int soulCost = playerIP.hasConsumedMonsterSoul("Dune Maw") ? 1 : 2;
+            if (playerIP.soul >= soulCost) {
+                playerIP.soul -= soulCost;
                 PAD.defenceValue += 9 + PS.momentum;
                 PS.momentum += 2;
-                cout << "You spend 2 Souls and step with the memory of dunes. Your body slips sideways before danger fully arrives." << endl;
+                cout << "You spend " << soulCost << " Souls and step with the memory of dunes. Your body slips sideways before danger fully arrives." << endl;
                 cout << "You gained 2 Momentum and raised your defense for this turn!" << endl;
                 PAD.type = "DODGE";
             } else {
@@ -302,12 +343,14 @@ public:
 
         } else if (playerAction == "Crystal Ward") {
 
-            if (playerIP.soul >= 3) {
-                playerIP.soul -= 3;
-                PAD.defenceValue += 15 + playerIP.hardiness;
-                cout << "You spend 3 Souls and a clear crystal wall snaps into existence in front of you." << endl;
+            const bool matriarchSoul = playerIP.hasConsumedMonsterSoul("Crystal Matriarch");
+            const int soulCost = matriarchSoul ? 2 : 3;
+            if (playerIP.soul >= soulCost) {
+                playerIP.soul -= soulCost;
+                PAD.defenceValue += (matriarchSoul ? 19 : 15) + playerIP.hardiness;
+                cout << "You spend " << soulCost << " Souls and a clear crystal wall snaps into existence in front of you." << endl;
                 if (MAD.type == "M-ATTACK" || MAD.type == "R-ATTACK") {
-                    int damageDealt = randomNum(4, 8);
+                    int damageDealt = matriarchSoul ? randomNum(7, 11) : randomNum(4, 8);
                     health -= damageDealt;
                     cout << "The enemy's attack rings against the ward and sends broken light back at it for " << damageDealt << " damage!" << endl;
                 }
@@ -375,21 +418,169 @@ public:
 
         } else if (playerAction == "Tidecall") {
 
-            if (playerIP.soul >= 4) {
-                playerIP.soul -= 4;
-                int damageDealt = randomNum(10, 15);
+            const bool leviathanSoul = playerIP.hasConsumedMonsterSoul("Tide Leviathan");
+            const int soulCost = leviathanSoul ? 3 : 4;
+            if (playerIP.soul >= soulCost) {
+                playerIP.soul -= soulCost;
+                int damageDealt = leviathanSoul ? randomNum(14, 19) : randomNum(10, 15);
                 health -= damageDealt;
-                PAD.defenceValue += 7;
+                PAD.defenceValue += leviathanSoul ? 10 : 7;
                 if (MAD.type == "R-ATTACK") {
                     PAD.defenceValue += 8;
                     cout << "The tide rises especially high against the incoming ranged attack." << endl;
                 }
-                MS.danger -= 1;
+                MS.danger -= leviathanSoul ? 2 : 1;
                 makeZeroIfNegative(MS.danger);
-                cout << "You spend 4 Souls and call a cold tide through the battlefield, dealing " << damageDealt << " damage." << endl;
+                if (leviathanSoul) {
+                    playerIP.heal(3);
+                    cout << "Undertow pulls life back into you. You heal 3 Health." << endl;
+                }
+                cout << "You spend " << soulCost << " Souls and call a cold tide through the battlefield, dealing " << damageDealt << " damage." << endl;
                 PAD.type = "MAGIC";
             } else {
                 cout << "You tried to use Tidecall, but didn't have enough Souls!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Ashen Pursuit") {
+
+            if (playerIP.soul >= 2) {
+                playerIP.soul -= 2;
+                int damageDealt = (MAD.type == "M-ATTACK" || MAD.type == "R-ATTACK") ? randomNum(9, 13) : randomNum(5, 8);
+                health -= damageDealt;
+                PAD.defenceValue += (MAD.type == "M-ATTACK" || MAD.type == "R-ATTACK") ? 12 : 5;
+                PS.momentum += 1;
+                cout << "You spend 2 Souls and move like an Ashen Hound through smoke and hunger." << endl;
+                cout << "You deal " << damageDealt << " fire-scar damage, gain 1 Momentum, and raise your defense for the turn." << endl;
+                PAD.type = "MAGIC";
+            } else {
+                cout << "You tried to use Ashen Pursuit, but didn't have enough Souls!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Grave Bloom") {
+
+            if (playerIP.soul >= 3) {
+                playerIP.soul -= 3;
+                int healAmount = randomNum(6, 9);
+                playerIP.heal(healAmount);
+                PAD.defenceValue += 8 + playerIP.hardiness;
+                if (MAD.type == "NO TYPE") {
+                    PS.momentum += 2;
+                    cout << "The enemy gives the grave-growth time to flower. You gain 2 Momentum." << endl;
+                }
+                cout << "You spend 3 Souls and grave moss blooms over your wounds, healing " << healAmount << " Health and raising your defense." << endl;
+                PAD.type = "MAGIC";
+            } else {
+                cout << "You tried to use Grave Bloom, but didn't have enough Souls!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Lantern Mark") {
+
+            if (playerIP.soul >= 2) {
+                playerIP.soul -= 2;
+                PS.temporaryDamageModifier += 3;
+                MS.danger -= 1;
+                makeZeroIfNegative(MS.danger);
+                cout << "You spend 2 Souls and hang a pale lantern-mark over the enemy's heart." << endl;
+                cout << "Your next attacks bite harder, and the enemy's Danger falls by 1." << endl;
+                PAD.type = "MAGIC";
+            } else {
+                cout << "You tried to use Lantern Mark, but didn't have enough Souls!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Gravebreaker") {
+
+            if (playerIP.soul >= 2 && PS.momentum >= 4) {
+                playerIP.soul -= 2;
+                PS.momentum -= 4;
+                int damageDealt = randomNum(18, 24) + playerIP.permanentDamageModifier + PS.temporaryDamageModifier;
+                health -= damageDealt;
+                cout << "You spend 2 Souls and 4 Momentum, then bring your weapon down with the Reforged Knight's ruinous weight." << endl;
+                cout << "The strike breaks through armor and deals " << damageDealt << " damage!" << endl;
+                PAD.type = "ATTACK";
+            } else {
+                cout << "You tried to use Gravebreaker, but you lacked either 2 Souls or 4 Momentum!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Wick Drain") {
+
+            if (playerIP.soul >= 3) {
+                playerIP.soul -= 3;
+                int damageDealt = randomNum(10, 14) + playerIP.permanentDamageModifier;
+                health -= damageDealt;
+                MS.danger -= 2;
+                makeZeroIfNegative(MS.danger);
+                if (damageDealt >= 13) {
+                    playerIP.gainSoul(1);
+                    cout << "The ghost-flame bites deep enough to gutter back into you. You regain 1 Soul." << endl;
+                }
+                cout << "You spend 3 Souls and press a Candle Wraith flame into the enemy, dealing " << damageDealt << " damage and lowering its Danger." << endl;
+                PAD.type = "MAGIC";
+            } else {
+                cout << "You tried to use Wick Drain, but didn't have enough Souls!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Stonebound Stance") {
+
+            if (playerIP.soul >= 2) {
+                playerIP.soul -= 2;
+                PAD.defenceValue += 18 + playerIP.hardiness;
+                cout << "You spend 2 Souls and let Cathedral Gargoyle stone settle over your bones." << endl;
+                if (MAD.type == "M-ATTACK") {
+                    int damageDealt = randomNum(5, 9) + playerIP.hardiness;
+                    health -= damageDealt;
+                    cout << "The melee attack crashes into stone and is punished for " << damageDealt << " damage!" << endl;
+                }
+                PAD.type = "DEFENSE";
+            } else {
+                cout << "You tried to use Stonebound Stance, but didn't have enough Souls!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Severing Rhythm") {
+
+            if (playerIP.soul >= 3 && PS.momentum >= 3) {
+                playerIP.soul -= 3;
+                PS.momentum -= 3;
+                int totalDamage = 0;
+                for (int i = 0; i < 3; i++) {
+                    int hitDamage = randomNum(4, 7) + playerIP.permanentDamageModifier;
+                    if (health < 20) {
+                        hitDamage += 2;
+                    }
+                    health -= hitDamage;
+                    totalDamage += hitDamage;
+                }
+                cout << "You spend 3 Souls and 3 Momentum, striking in the Silt Hydra's repeating rhythm." << endl;
+                cout << "Three cutting blows deal " << totalDamage << " total damage!" << endl;
+                PAD.type = "ATTACK";
+            } else {
+                cout << "You tried to use Severing Rhythm, but you lacked either 3 Souls or 3 Momentum!" << endl;
+                PAD.type = "NO TYPE";
+            }
+
+        } else if (playerAction == "Foresight") {
+
+            if (playerIP.soul >= 3) {
+                playerIP.soul -= 3;
+                cout << "You spend 3 Souls and borrow the Starless Oracle's almost-future." << endl;
+                if (MAD.type == "M-ATTACK" || MAD.type == "R-ATTACK") {
+                    PAD.defenceValue += 10000;
+                    PS.momentum += 1;
+                    cout << "You step out of the attack before it fully exists and gain 1 Momentum." << endl;
+                } else {
+                    PS.momentum += 3;
+                    PS.temporaryDamageModifier += 2;
+                    cout << "No attack arrives, so you use the vision to prepare. You gain 3 Momentum and sharpen your next strikes." << endl;
+                }
+                PAD.type = "MAGIC";
+            } else {
+                cout << "You tried to use Foresight, but didn't have enough Souls!" << endl;
                 PAD.type = "NO TYPE";
             }
 

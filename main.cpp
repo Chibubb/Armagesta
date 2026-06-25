@@ -124,6 +124,8 @@ int main() {
             player->printMap();
         } else if (chosenAction == "Quest Log") {
             player->printQuestLog();
+        } else if (chosenAction == "Consumed Souls") {
+            player->showConsumedMonsterSouls();
         } else if (chosenAction == "Save Game") {
             player->saveGame();
         } else if (chosenAction == "Load Game") {
