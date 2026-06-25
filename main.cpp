@@ -93,6 +93,9 @@ int main() {
         string chosenAction = player->getAction();
 
         if (chosenAction == "Move") {
+            cout << endl << "Explored map so far:" << endl;
+            player->printMap();
+
             const char previousBiomeType = player->getCurrentBiomeType();
             char biomeType = player->move(player->getAChosenDirection());
 

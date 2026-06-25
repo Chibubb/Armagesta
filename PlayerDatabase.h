@@ -441,18 +441,54 @@ public:
         }
     }
 
+    string ansiColor(const string& text, const string& colorCode) const {
+        return "\033[" + colorCode + "m" + text + "\033[0m";
+    }
+
+    string mapBiomeColorCode(const char biomeType) const {
+        const char majorBiomeType = getMajorBiomeType(biomeType);
+
+        if (majorBiomeType == 'F') return "1;32";      // Forest - bright green
+        if (majorBiomeType == 'D') return "1;33";      // Desert - bright yellow
+        if (majorBiomeType == 'C') return "38;5;244";  // Caves - stone gray
+        if (majorBiomeType == 'R') return "38;5;130";  // Old Redwoods - bark brown
+        if (majorBiomeType == 'W') return "38;5;64";   // Swamp - murky green
+        if (majorBiomeType == 'I') return "1;35";      // Citadel - royal violet
+        if (majorBiomeType == 'B') return "1;36";      // Beach - bright cyan
+        if (majorBiomeType == 'M') return "1;37";      // Mountains - white
+
+        return "0";
+    }
+
+    string coloredMapTile(const char biomeType) const {
+        return ansiColor(string(1, biomeType), mapBiomeColorCode(biomeType));
+    }
+
+    void printMapLegend() const {
+        cout << "@ = You, ? = Unexplored" << endl;
+        cout << coloredMapTile('F') << " Forest  "
+             << coloredMapTile('D') << " Desert  "
+             << coloredMapTile('C') << " Caves  "
+             << coloredMapTile('R') << " Redwoods  "
+             << coloredMapTile('W') << " Swamp  "
+             << coloredMapTile('I') << " Citadel  "
+             << coloredMapTile('B') << " Beach  "
+             << coloredMapTile('M') << " Mountains" << endl;
+        cout << "Landmarks inherit their biome color." << endl << endl;
+    }
+
     void printMap() const {
         cout << "Map:" << endl;
-        cout << "@ = You, ? = Unexplored" << endl << endl;
+        printMapLegend();
 
         for (int i = 0; i < map.size(); i++) {
             for (int j = 0; j < map[i].size(); j++) {
                 if (currentPosition[0] == i && currentPosition[1] == j) {
-                    cout << "@ ";
+                    cout << ansiColor("@", mapBiomeColorCode(map[i][j])) << " ";
                 } else if (exploredMap[i][j]) {
-                    cout << map[i][j] << " ";
+                    cout << coloredMapTile(map[i][j]) << " ";
                 } else {
-                    cout << "? ";
+                    cout << ansiColor("?", "2;37") << " ";
                 }
             }
             cout << endl;
