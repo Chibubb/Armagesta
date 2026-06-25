@@ -194,7 +194,8 @@ namespace ArmagestaBiomeTools {
 
     inline void printEventHeader(const string& eventName, const string& eventFlavorText) {
         cout << endl << "===== " << eventName << " =====" << endl;
-        cout << eventFlavorText << endl << endl;
+        cout << eventFlavorText << endl;
+        cout << endl;
     }
 }
 
@@ -202,7 +203,7 @@ namespace ArmagestaNonCombatEvents {
     inline void desertWaystone(Player& playerIP) {
         playerIP.addStoryFlag("Desert Waystone");
         cout << endl << "===== Desert Waystone =====" << endl;
-        cout << "A sunken waystone rises from the sand. Its map is carved in shadows instead of lines." << endl;
+        cout << "A sunken waystone rises from the sand, its top just high enough to cast a shadow in every direction at once. The map carved across it is made of darkness instead of lines, and the darkness shifts whenever you look away. Someone wanted travelers to find the Sand Pit, but not all travelers to survive finding it." << endl;
         vector<string> choices = {"Read the Shadow Map", "Press Your Palm to the Stone", "Leave It Alone"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -223,7 +224,7 @@ namespace ArmagestaNonCombatEvents {
     inline void caveResonance(Player& playerIP) {
         playerIP.addStoryFlag("Cave Resonance Door");
         cout << endl << "===== Resonance Door =====" << endl;
-        cout << "A sealed stone door hums when you breathe. It is not locked by metal, but by memory." << endl;
+        cout << "A sealed stone door hums when you breathe, answering your lungs before you have chosen to speak. There is no keyhole, no handle, and no visible hinge, only stone worn smooth by generations of desperate palms. It is not locked by metal; it is locked by memory, and yours seems close enough to fit." << endl;
         vector<string> choices = {"Hum With It", "Carve a Mark", "Step Away"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -245,7 +246,7 @@ namespace ArmagestaNonCombatEvents {
     inline void redwoodMemory(Player& playerIP) {
         playerIP.addStoryFlag("Redwood Memory Knot");
         cout << endl << "===== Memory Knot =====" << endl;
-        cout << "A redwood root has grown around an old helmet. The wood has not crushed it. It has preserved it." << endl;
+        cout << "A redwood root has grown around an old helmet, holding it as carefully as a hand around a candle. The metal is rusted, but the visor still points toward the Citadel as if the dead soldier inside never stopped watching. The wood has not crushed the relic; it has preserved it, and preservation feels more judgmental than kindness here." << endl;
         vector<string> choices = {"Listen to the Helmet", "Pull It Free", "Bury It Deeper"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -266,7 +267,7 @@ namespace ArmagestaNonCombatEvents {
     inline void swampFerry(Player& playerIP) {
         playerIP.addStoryFlag("Swamp Ferry Contract");
         cout << endl << "===== Empty Ferry =====" << endl;
-        cout << "A ferry bumps against the bank with no ferryman. A contract lies on the seat, already signed in pondwater." << endl;
+        cout << "A ferry bumps against the bank with no ferryman, knocking three times against the mud as if asking to be invited ashore. A contract lies on the seat, already signed in pondwater and sealed with a thumbprint that may not be human. The fog behind the boat parts just enough to suggest that the river knows your destination better than you do." << endl;
         vector<string> choices = {"Pay One Soul", "Sign in Blood", "Shove the Ferry Away"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -293,7 +294,7 @@ namespace ArmagestaNonCombatEvents {
     inline void citadelArmory(Player& playerIP) {
         playerIP.addStoryFlag("Citadel Silent Armory");
         cout << endl << "===== Silent Armory =====" << endl;
-        cout << "You find an armory where every weapon is chained to the wall. The chains are ceremonial, not practical." << endl;
+        cout << "You find an armory where every weapon is chained to the wall, each blade displayed like a criminal awaiting sentence. The chains are ceremonial, not practical; any strong hand could break them, but every instinct tells you that would still count as treason. Dust lies over the room in the shape of soldiers who never returned for their steel." << endl;
         vector<string> choices = {"Sharpen Your Blade", "Study the Shields", "Read the Oath on the Wall"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -313,7 +314,7 @@ namespace ArmagestaNonCombatEvents {
     inline void beachTideCalendar(Player& playerIP) {
         playerIP.addStoryFlag("Beach Tide Calendar");
         cout << endl << "===== Tide Calendar =====" << endl;
-        cout << "Flat stones line the shore in a circle. The tide touches them in an order that looks intentional." << endl;
+        cout << "Flat stones line the shore in a circle, each one carved with a moon phase, a wave mark, or a name too eroded to trust. The tide touches them in an order that looks intentional, pausing at some and avoiding others like a priest choosing who deserves blessing. Beneath the sound of surf, you can almost hear something counting with you from underwater." << endl;
         vector<string> choices = {"Count the Tide", "Sleep in the Circle", "Kick the Stones Apart"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -336,7 +337,7 @@ namespace ArmagestaNonCombatEvents {
     inline void mountainBell(Player& playerIP) {
         playerIP.addStoryFlag("Mountain Pilgrim Bell");
         cout << endl << "===== Pilgrim Bell =====" << endl;
-        cout << "A bronze bell hangs from a frozen arch. Its clapper is a dragon tooth, worn smooth by desperate hands." << endl;
+        cout << "A bronze bell hangs from a frozen arch, green with age except where countless hands have polished it bright. Its clapper is a dragon tooth, worn smooth by pilgrims who came here to ask the mountain for courage, forgiveness, or death. The bell has not rung in years, but the snow beneath it is cracked in perfect circles." << endl;
         vector<string> choices = {"Ring It Once", "Pray Beneath It", "Break the Tooth Free"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
 
@@ -394,10 +395,10 @@ private:
     };
 
     vector<string> eventFlavorText = {
-        "Light shines through the trees, illuminating the leafy forest floor. For a moment, Armagesta almost seems gentle.",
-        "Whispers flow through the trees, making it clear you are not alone. Something soft-bodied drags itself through the brush nearby.",
-        "A tall cathedral hidden in the trees stands before you, covered in vines and clearly deteriorated over many decades. The forest has not destroyed it; it has claimed it.",
-        "A tree is rooted in front of you, standing at least three times as tall as any other you have seen. Its bark bends like an old face trying to remember your name."
+        "Light pours through the canopy in broad green shafts, catching on drifting pollen and the pale backs of leaves. The forest floor glows as if the earth itself is remembering spring, and for one dangerous moment Armagesta almost seems gentle. Even here, though, the quiet has edges; birds stop singing whenever your hand nears your weapon.",
+        "Whispers flow through the trees in overlapping layers, some high as insects and some low as buried men. Something soft-bodied drags itself through the brush nearby, pausing whenever you pause, breathing whenever you forget to. The darker leaves are wet with something that is not rain, and every path ahead seems to narrow toward the sound.",
+        "A tall cathedral hidden in the trees stands before you, its roof split by branches and its saints softened under moss. Vines pass through broken windows like green fingers searching old wounds, and the bell tower leans against a redwood as if exhausted. The forest has not destroyed this holy place; it has claimed it, and the claim feels older than the religion that built the stones.",
+        "A tree towers before you, at least three times taller than the giants around it, its crown vanishing into a private weather of leaves. Knots in the bark bend like an old face trying to remember your name, and the roots have pushed ancient bones gently aside instead of breaking them. Something about the tree suggests it has watched heroes climb, carve, pray, and fall, and it has learned to expect disappointment."
     };
 
     vector<vector<string>> eventChoices = {
@@ -646,13 +647,13 @@ private:
     vector<int> eventChances = {25, 20, 15, 15, 10, 10, 5};
     vector<string> eventNames = {"Sun-Buried Road", "Obsidian Caravan", "Mirage Court", "Dune Maw Sign", "Buried Saint", "Storm of Singing Sand", "Black Pyramid Far Away"};
     vector<string> eventFlavorText = {
-        "A road of half-buried white stones cuts through the dunes. Every stone is engraved with the same warning: DO NOT TRUST SHADE.",
-        "A caravan of black wagons rolls without horses. Its wheels turn over sand without leaving tracks, and the merchants wave like they expected you.",
-        "A palace of heat and blue silk trembles in the distance. Inside its open gates, your own reflection sits on a throne of water.",
-        "The dune ahead rises and falls like something asleep beneath a blanket. Broken shields circle it like teeth around a mouth.",
-        "A stone hand reaches from the sand, still clutching a sun-shaped ring. The rest of the saint is buried below centuries of thirst.",
-        "The wind begins to sing with hundreds of dry voices. Some are begging. Some are laughing. One is yours.",
-        "For one moment the horizon clears, revealing a black pyramid where no map says anything should stand. Then the heat closes again."
+        "A road of half-buried white stones cuts through the dunes, appearing and disappearing wherever the wind chooses to uncover it. Every stone is engraved with the same warning: DO NOT TRUST SHADE. The letters are not chipped by age, which means either someone maintains them, or the warning is recent enough to still be bleeding meaning.",
+        "A caravan of black wagons rolls without horses, moving smoothly over the dunes as if pulled by an agreement rather than reins. Its wheels leave no tracks, and the merchants wave with the bored patience of people who expected you hours ago. Their faces are hidden behind blue veils, but their shadows are clearly counting your pockets.",
+        "A palace of heat and blue silk trembles in the distance, beautiful enough to make thirst feel like devotion. Its open gates reveal your own reflection sitting on a throne of water, wearing a crown made from everything you have ever wanted. The mirage does not flicker when you approach; instead, the real world does.",
+        "The dune ahead rises and falls like something asleep beneath a blanket of gold. Broken shields circle it in a wide ring, their splintered edges arranged like teeth around a mouth too patient to open yet. The sand near your boots trembles in time with a buried heartbeat, and the desert becomes very interested in whether you step lightly.",
+        "A stone hand reaches from the sand, still clutching a sun-shaped ring that has not dulled under centuries of heat. The rest of the saint lies buried below, body, story, and miracle all packed beneath a weight of thirst. Small beetles crawl in prayerful circles around the fingers, as if even insects remember this person better than the living do.",
+        "The wind begins to sing with hundreds of dry voices, each grain of sand carrying a syllable stolen from a dead mouth. Some voices beg for water, some laugh at kingdoms, and one unmistakably belongs to you. The song moves in circles around your skull, trying to teach your feet a dance that ends beneath the dunes.",
+        "For one moment the horizon clears, revealing a black pyramid where no map admits anything should stand. Its sides drink the sunlight instead of reflecting it, and a single red door burns at the base like an eye held open. Then the heat closes again, but the shape remains behind your eyelids, waiting to be believed."
     };
     vector<vector<string>> eventChoices = {
         {"Follow the Road", "Dig Under a Milestone", "Hide in the Shade", "Turn Back"},
@@ -829,13 +830,13 @@ private:
     vector<int> eventChances = {20, 18, 17, 15, 12, 10, 8};
     vector<string> eventNames = {"Mouth of the Earth", "Blind River", "Fossil Gate", "Crystal Choir", "Deep Nest", "Old Lift", "Underforge"};
     vector<string> eventFlavorText = {
-        "The cave entrance exhales mineral-cold air. It smells like coins, rain, and something that has never seen the sun.",
-        "A black river moves without reflecting anything. Small pale fish swim upstream with human teeth.",
-        "The tunnel ends at a gate made from the ribcage of a creature large enough to make mountains feel young.",
-        "Crystals hang from the ceiling in perfect rows. When you breathe, they answer in harmony.",
-        "Webbing thick as rope knots the walls. You can hear many legs stopping whenever you stop.",
-        "A wooden lift hangs over a vertical shaft. Its rope is newer than the cave around it, which is not comforting.",
-        "An ancient forge glows under the stone, still hot without coal. Hammers strike somewhere below, but no hands are visible."
+        "The cave entrance exhales mineral-cold air over your face, steady as the breath of a sleeping giant. It smells like coins, rain, and something pale that has never seen the sun yet knows how to hate it. Pebbles roll inward without being touched, as if the earth is swallowing slowly and politely.",
+        "A black river moves through the tunnel without reflecting your torch, your face, or the ceiling above it. Small pale fish swim upstream with human teeth, snapping at bubbles and whispering through their gills. The current looks shallow near the bank and bottomless in the middle, which feels less like geography and more like a trap with manners.",
+        "The tunnel ends at a gate made from the ribcage of a creature large enough to make mountains feel young. Each bone is carved with tiny scenes of miners, kings, and nameless things crawling up from below. The gate does not block the path so much as ask whether you understand what kind of body you are entering.",
+        "Crystals hang from the ceiling in perfect rows, clear as frozen bells and sharp enough to split a careless thought. When you breathe, they answer in harmony, each note returning a slightly altered version of your heartbeat. The cave listens through them, and the music suggests there are rooms below that open only for the correctly wounded.",
+        "Webbing thick as rope knots the walls, tying stalactites to skulls and abandoned tools to one another. You can hear many legs stopping whenever you stop, then beginning again a heartbeat after you move. The silence between those movements is worse than the skittering, because it proves the nest is thinking.",
+        "A wooden lift hangs over a vertical shaft, swaying gently though no wind reaches this far underground. Its rope is newer than the cave around it, which is not comforting; someone has been using this path recently, and they did not bother leaving a warning. From below comes the faint scrape of machinery, or claws learning to imitate it.",
+        "An ancient forge glows under the stone, still hot without coal, bellows, or any mercy from time. Hammers strike somewhere below in a rhythm too perfect for living hands, shaping metal you cannot see into laws you may have to obey. The walls are black with soot, but beneath it are royal crests from kingdoms that never reached the surface."
     };
     vector<vector<string>> eventChoices = {
         {"Light a Torch", "Enter Quietly", "Call Into the Dark", "Take a Wall Marking"},
@@ -1003,13 +1004,13 @@ private:
     vector<int> eventChances = {22, 18, 16, 14, 12, 10, 8};
     vector<string> eventNames = {"High Canopy", "Bark Tribunal", "Amber Rain", "War-Scar Grove", "Nursery of Small Ents", "Hanging Bells", "The Red Root"};
     vector<string> eventFlavorText = {
-        "The redwoods rise so high that the sky feels like a rumor told by leaves.",
-        "Three trees lean inward, their bark twisted into faces. They do not speak, but the roots around your feet tighten like a courtroom.",
-        "Golden amber drips from wounds in the branches. Inside each drop, something tiny is preserved mid-scream.",
-        "A circle of redwoods bears axe scars wider than doors. The forest remembers the war and has not forgiven the metal that made it.",
-        "Young ents no taller than you pretend to be ordinary saplings. They are terrible actors.",
-        "Thousands of wooden bells hang from threads of moss. None move, but all of them ring inside your chest.",
-        "A single red root crosses the path, pulsing like a vein from one end of the forest to the other."
+        "The redwoods rise so high that the sky feels like a rumor told by leaves to creatures too small to verify it. Their trunks are wider than houses and scarred by fires that must have burned before your bloodline had a name. Every footstep sinks into centuries of needles, and the forest absorbs the sound as if adding you to its archive.",
+        "Three trees lean inward, their bark twisted into faces that seem carved by patience rather than tools. They do not speak, but the roots around your feet tighten like a courtroom drawing its doors shut. Sap gathers in the grooves of their eyes, amber and slow, as if verdicts in this place are measured by seasons.",
+        "Golden amber drips from wounds in the branches, falling in bright beads that never quite strike the ground. Inside each drop, something tiny is preserved mid-scream: insects, teeth, little scraps of banner cloth, perhaps a thought that escaped too late. The whole grove smells sweet and funereal, like a memory being sealed before it can defend itself.",
+        "A circle of redwoods bears axe scars wider than doors, each cut healed over in thick ridges like clenched muscle. The forest remembers the war and has not forgiven the metal that made it, nor the hands that praised the metal for being useful. Moss grows in the wounds in the shape of old battle maps, all of them ending badly for men with crowns.",
+        "Young ents no taller than you pretend to be ordinary saplings, freezing whenever you look directly at them. They are terrible actors; one still has a squirrel in its branch-hair, and another keeps slowly inching away from your shadow. Their playfulness is almost comforting until you remember that even children in this forest can learn anger from the roots.",
+        "Thousands of wooden bells hang from threads of moss, each one carved from a different tree and marked with a name. None move in the still air, but all of them ring inside your chest, soft blows against the ribs from the inside. The sound is not loud; it is intimate, like the forest testing whether grief can be used as a compass.",
+        "A single red root crosses the path, pulsing like a vein from one end of the forest to the other. It disappears beneath trunks, stones, and old graves, binding the grove together with something warmer than sap. Standing near it, you feel the Old Redwoods breathe as one body, and you understand that cutting one tree may wound them all."
     };
     vector<vector<string>> eventChoices = {
         {"Climb Toward the Sky", "Search the Hollow", "Sleep Between Roots", "Cut a Vine Bridge"},
@@ -1176,13 +1177,13 @@ private:
     vector<int> eventChances = {22, 18, 16, 14, 12, 10, 8};
     vector<string> eventNames = {"Rotwater Ferry", "Mosquito Chapel", "Witchlights", "Silt Hydra Pool", "Drowned Battlefield", "Black Lotus", "Listening Bog"};
     vector<string> eventFlavorText = {
-        "A ferry waits in brown water with no ferryman. The pole moves by itself, tapping impatiently against the mud.",
-        "A chapel sinks at an angle into the swamp. Mosquitoes gather around its steeple like worshippers.",
-        "Blue lights bob between the trees. They move like lanterns carried by people who do not want to be seen.",
-        "A still pool bubbles once. Then twice. Then in a rhythm too much like breathing.",
-        "Rusty helmets and broken banners poke from the mud. The battle here never ended; it merely became wetter.",
-        "A black lotus blooms in water so dark it reflects your face older than it is.",
-        "The mud repeats your footsteps after you stop moving. Something below is learning you."
+        "A ferry waits in brown water with no ferryman, its boards slick with moss and old handprints. The pole moves by itself, tapping impatiently against the mud like a finger on a table. Across the water, fog gathers into the rough outline of a shore that may not have been there a moment ago.",
+        "A chapel sinks at an angle into the swamp, its stained glass half-submerged and still glowing in dull colors beneath the waterline. Mosquitoes gather around its steeple like worshippers, humming a hymn made entirely of hunger. The cross at the roof has been replaced by a bundle of reeds tied in the shape of a warning.",
+        "Blue lights bob between the trees, vanishing whenever they pass behind trunks too thin to hide them. They move like lanterns carried by people who do not want to be seen, or by things pretending to understand how people carry lanterns. Their glow turns every puddle into an eye, and every eye seems pleased you noticed.",
+        "A still pool bubbles once, then twice, then in a rhythm too much like breathing to dismiss as rot. The mud around it is stamped flat by many heavy bodies, though no trail leads away. Something below the surface shifts with the slow confidence of a creature that has mistaken the whole swamp for its throat.",
+        "Rusty helmets and broken banners poke from the mud, each one slowly sinking and rising with the swamp's breath. The battle here never ended; it merely became wetter, quieter, and more patient. Some helmets turn slightly as you pass, as if the soldiers inside are still waiting for a command no living officer remembers.",
+        "A black lotus blooms in water so dark it reflects your face older than it is. Its petals open and close with the rhythm of a sleeping mouth, releasing a perfume that tastes like regret on the back of your tongue. Around it, dead frogs float belly-up in a perfect circle, honored or sacrificed.",
+        "The mud repeats your footsteps after you stop moving, soft presses in the muck arriving one by one behind you. Something below is learning you: your weight, your rhythm, the pauses you make when afraid. The reeds lean closer, not because of wind, but because secrets in the swamp are communal property."
     };
     vector<vector<string>> eventChoices = {
         {"Board the Ferry", "Push it Away", "Pay with a Soul", "Swim Across"},
@@ -1341,13 +1342,13 @@ private:
     vector<int> eventChances = {22, 18, 16, 14, 12, 10, 8};
     vector<string> eventNames = {"Lower Gate", "Empty Barracks", "Hall of Petitions", "Prison of Names", "Furnace Chapel", "Gargoyle Eaves", "Royal Armory"};
     vector<string> eventFlavorText = {
-        "The Citadel gate is raised just enough for one person to crawl beneath it. That feels less like welcome and more like digestion.",
-        "Rows of bunks wait in perfect order. Every pillow has a sword laid on it, like the soldiers left during the same dream.",
-        "A marble hall stretches forward, lined with statues of citizens begging a king whose face has been chiseled away.",
-        "Iron cells contain no prisoners, only names carved into the walls. Some names are still breathing.",
-        "A chapel furnace glows beneath a cracked altar. Here, faith and metal were apparently the same craft.",
-        "Stone gargoyles crouch above the walkway, all facing inward toward the throne instead of outward toward enemies.",
-        "Weapon racks cover the room, but most blades are fused to the stone by royal decree. One rack still trembles."
+        "The Citadel gate is raised just enough for one person to crawl beneath it, forcing any visitor to enter bowed and dirt-streaked. That feels less like welcome and more like digestion, as if the fortress prefers to swallow the humble first. Above you, murder holes stare down in neat rows, patient as bureaucrats.",
+        "Rows of bunks wait in perfect order, untouched by dust except for the prints of boots no one is wearing. Every pillow has a sword laid on it, like the soldiers left during the same dream and expected to return before waking. The room smells faintly of oil, iron, and discipline that outlived the people it was meant to protect.",
+        "A marble hall stretches forward, lined with statues of citizens begging a king whose face has been chiseled away. Their stone hands reach with such careful desperation that you can almost hear the petitions they died repeating. At the far end, the empty royal seat is covered in claw marks, suggesting the last appeal was answered by something larger than law.",
+        "Iron cells contain no prisoners, only names carved into the walls in thousands of different hands. Some names are still breathing, the letters swelling and shrinking like lungs trapped in stone. The Citadel apparently learned that a body can escape more easily than a sentence.",
+        "A chapel furnace glows beneath a cracked altar, bathing the pews in red light instead of holiness. Here, faith and metal were apparently the same craft; prayers were hammered, quenched, sharpened, and sent to war. The ash in the offering bowls is full of tiny melted crowns.",
+        "Stone gargoyles crouch above the walkway, their claws dug deep into the masonry and their mouths open in silent alarm. They all face inward toward the throne instead of outward toward enemies, which says something terrible about what the Citadel feared most. When you pass beneath them, grit falls from their eyes like old tears or fresh attention.",
+        "Weapon racks cover the room, but most blades are fused to the stone by royal decree, punished for being drawn by the wrong hands. One rack still trembles, metal shivering against metal as if some sword inside it dreams of disobedience. The air tastes like old commands, and your own weapon feels heavier in response."
     };
     vector<vector<string>> eventChoices = {
         {"Crawl Under", "Lift the Gate", "Knock Politely", "Look for a Side Door"},
@@ -1505,13 +1506,13 @@ private:
     vector<int> eventChances = {24, 18, 16, 14, 12, 10, 6};
     vector<string> eventNames = {"Tide Pools", "Shipwreck Ribcage", "Pearl Graves", "Moonlit Surf", "Salt Shrine", "Glass Crab March", "Old Lighthouse"};
     vector<string> eventFlavorText = {
-        "The tide pools hold small trapped worlds. In one, a tiny storm rages over a tiny sea.",
-        "A shipwreck lies cracked open like a whale skeleton. Its mast points inland, accusing the mountains.",
-        "Pearls are arranged in rows beneath driftwood markers. Someone buried their dead with the ocean's teeth.",
-        "The surf glows under moonlight even though it is day. Waves arrive out of order, some younger than others.",
-        "A shrine of salt blocks stands where the waves cannot quite reach. Offerings dissolve before your eyes.",
-        "Glass-shelled crabs march in a military line, each carrying a stolen button, coin, or bone chip.",
-        "A lighthouse leans over the shore, its lamp still turning. It illuminates things the sun politely ignores."
+        "The tide pools hold small trapped worlds, each one clear enough to show a different version of the sky. In one, a tiny storm rages over a tiny sea; in another, a moon rises where no moon should fit. Crabs and minnows move through these worlds like citizens of kingdoms that will vanish when the tide remembers them.",
+        "A shipwreck lies cracked open like a whale skeleton, ribs of timber jutting from the sand and black kelp hanging like torn sailcloth. Its mast points inland, accusing the mountains as though stone, not storm, dragged it here. The name on the hull has been scratched away, but the scratches are fresh enough to sting.",
+        "Pearls are arranged in rows beneath driftwood markers, each one polished by waves until it looks like a small sleeping eye. Someone buried their dead with the ocean's teeth, and the tide keeps returning to check the graves. There are no bodies visible, only offerings, which makes the shore feel less empty and more restrained.",
+        "The surf glows under moonlight even though it is day, silver lines crawling across the water beneath a sun that pretends not to notice. Waves arrive out of order, some young and foaming, some old and heavy with memories from storms not yet born. Standing at the edge, you feel time pulling at your ankles like undertow.",
+        "A shrine of salt blocks stands where the waves cannot quite reach, though every gust carries enough spray to keep it glittering. Offerings dissolve before your eyes: coins, flowers, prayers written on thin paper, all reduced to taste and absence. The shrine seems less dedicated to a god than to the certainty that everything returns to water.",
+        "Glass-shelled crabs march in a military line, each carrying a stolen button, coin, or bone chip beneath its transparent armor. Their formation is too precise to be instinct and too absurd to be truly disciplined. At their center, one crab carries a tiny rusted crown and keeps stopping to make sure the others bow.",
+        "A lighthouse leans over the shore, its stones cracked by salt and stubbornness, yet its lamp still turns. The beam illuminates things the sun politely ignores: footprints walking backward into the water, shadows without owners, a door painted on the side of a wave. Every revolution of the light makes the world feel briefly more honest and therefore more dangerous."
     };
     vector<vector<string>> eventChoices = {
         {"Reach Into a Pool", "Study the Tiny Storm", "Drink the Pool", "Step Around Them"},
@@ -1659,13 +1660,13 @@ private:
     vector<int> eventChances = {23, 18, 16, 14, 12, 10, 7};
     vector<string> eventNames = {"Knife Pass", "Avalanche Bowl", "Hermit's Smoke", "Sky Altar", "Dragon Bones", "Frozen Watchtower", "Thin Air"};
     vector<string> eventFlavorText = {
-        "The path narrows until the mountain seems to be deciding which side of you to keep.",
-        "Snow fills a wide stone bowl. Every sound you make comes back larger and more dangerous.",
-        "A thread of smoke rises from a hut wedged between impossible rocks. Someone lives here by argument with gravity.",
-        "An altar of blue stone stands above the clouds. Birds avoid flying over it.",
-        "A dragon skeleton coils around the ridge. Its skull is large enough to hold a chapel inside the jaw.",
-        "A watchtower stands frozen shut. The guards inside are still at their posts, or something shaped like guards is.",
-        "The air grows thin enough that each breath feels borrowed. The mountain waits to see what you will spend it on."
+        "The path narrows until the mountain seems to be deciding which side of you to keep. One wall rises sheer and ice-dark beside you, while the other drops into clouds that hide the bottom out of either mercy or pride. Each step knocks loose a few pebbles, and their long fall counts the cost of carelessness for you.",
+        "Snow fills a wide stone bowl surrounded by cliffs bright enough to hurt your eyes. Every sound you make comes back larger and more dangerous, returned by the slopes as an accusation. Beneath the snow, old boulders shift in their sleep, waiting for one loud mistake to become permission.",
+        "A thread of smoke rises from a hut wedged between impossible rocks, curling upward in a line too straight for weather. Someone lives here by argument with gravity, stubbornness, and perhaps a treaty with the storm. The door is small, the footprints are large, and the cooking smell is either soup or spellwork.",
+        "An altar of blue stone stands above the clouds, its surface polished smooth by snow, knees, and sacrifice. Birds avoid flying over it, bending around the place as if the sky itself has declared a boundary. Old runes around the edge name winds, kings, dragons, and one word that has been chiseled out with deliberate fear.",
+        "A dragon skeleton coils around the ridge, ribs rising from the snow like the ruins of a cathedral built by hunger. Its skull is large enough to hold a chapel inside the jaw, and someone has actually placed candles between the teeth. The bones are dead, but the air around them is warm, as if the mountain has not finished digesting the fire.",
+        "A watchtower stands frozen shut, windows filmed with ice thick enough to blur whatever moves behind them. The guards inside are still at their posts, or something shaped like guards is, standing too straight for corpses and too still for the living. A banner above the door cracks in the wind, showing the Citadel crest burned through by dragonfire.",
+        "The air grows thin enough that each breath feels borrowed from something that expects repayment. Your vision sharpens at the edges and softens in the center, turning the world into a blade wrapped in fog. The mountain waits to see what you will spend your borrowed breath on: caution, prayer, or one more step upward."
     };
     vector<vector<string>> eventChoices = {
         {"Edge Along", "Jump the Gap", "Kick Loose Stones", "Turn Around"},
@@ -1835,7 +1836,7 @@ class SandPit : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"Sand Pit"};
-    vector<string> eventFlavorText = {"The sand here pours downward forever, not into a hole, but into a decision. Every grain whispers the same word: descend."};
+    vector<string> eventFlavorText = {"The sand here pours downward forever, not into a hole, but into a decision that the desert has been postponing for ages. Every grain whispers the same word: descend, and the whisper becomes louder the longer you resist. Shields, bones, and broken ropes circle the pit, proof that many people heard the invitation and mistook it for destiny."};
     vector<vector<string>> eventChoices = {{"Descend", "Throw Scrap First", "Meditate at the Edge", "Leave"}};
     string ChoiceName;
     int REI = -1;
@@ -1848,7 +1849,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("Sand Pit - Unfinished Descent", "The pit refuses to offer meditation, trade, or retreat a second time. Only the thing below remains.");
+        ArmagestaBiomeTools::printEventHeader("Sand Pit - Unfinished Descent", "The pit refuses to offer meditation, trade, or retreat a second time. The softer paths have collapsed into the sand behind you, leaving only the old hunger below. Every grain now falls faster, as if the Dune Maw has learned your name and grown impatient with ceremony.");
         vector<string> loreChoices = {"Descend"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -1903,7 +1904,7 @@ class CrystalGeode : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"Crystal Geode"};
-    vector<string> eventFlavorText = {"The cave opens into a perfect crystal heart. Light grows here like moss, and every shard reflects a version of you that survived something different."};
+    vector<string> eventFlavorText = {"The cave opens into a perfect crystal heart, vast and faceted, beating without flesh at the center of the stone. Light grows here like moss, spreading over every surface in quiet colors that seem to have memories attached. Each shard reflects a version of you that survived something different, and some of those versions look disappointed that you made it this far."};
     vector<vector<string>> eventChoices = {{"Touch the Heart Crystal", "Break a Reflection", "Kneel in the Light", "Leave Carefully"}};
     string ChoiceName;
     int REI = -1;
@@ -1916,7 +1917,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("Crystal Geode - Broken Reflection", "The harmless light no longer answers you. The only reflection left is the one that wants to climb out.");
+        ArmagestaBiomeTools::printEventHeader("Crystal Geode - Broken Reflection", "The harmless light no longer answers you. The kinder reflections have gone dark, and only the shard with teeth still shines. The Crystal Matriarch waits behind your face, tapping from the other side as if the mirror were an eggshell.");
         vector<string> loreChoices = {"Break a Reflection"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -1966,7 +1967,7 @@ class OldestRedwood : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"Oldest Redwood"};
-    vector<string> eventFlavorText = {"This redwood is not a tree so much as a vertical country. Its bark contains closed doors, old faces, and one heartbeat too slow for human fear."};
+    vector<string> eventFlavorText = {"This redwood is not a tree so much as a vertical country, with ridges like roads and hollows large enough to shelter forgotten villages. Its bark contains closed doors, old faces, and one heartbeat too slow for human fear. The roots spread beneath the forest like a sleeping council, and every lesser tree seems to lean toward this one for orders."};
     vector<vector<string>> eventChoices = {{"Speak the Old Oath", "Climb Inside the Bark", "Challenge the Elder", "Sleep at its Roots"}};
     string ChoiceName;
     int REI = -1;
@@ -1979,7 +1980,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("Oldest Redwood - Elder Challenge", "The roots close around every lesser path. The ancient tree offers only its oldest test.");
+        ArmagestaBiomeTools::printEventHeader("Oldest Redwood - Elder Challenge", "The roots close around every lesser path, sealing off fruit, conversation, and mercy with a slow wooden groan. The ancient tree offers only its oldest test now. Somewhere high above, leaves turn their pale undersides toward you like thousands of watching eyes.");
         vector<string> loreChoices = {"Challenge the Elder"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -2027,7 +2028,7 @@ class WitchsHut : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"Witch's Hut"};
-    vector<string> eventFlavorText = {"The hut stands on stilts made of bird bones and bad decisions. Smoke leaks from the chimney in the shape of question marks."};
+    vector<string> eventFlavorText = {"The hut stands on stilts made of bird bones and bad decisions, rocking gently above the swamp without touching the mud. Smoke leaks from the chimney in the shape of question marks, then hooks itself into the clouds as if fishing for answers. Charms made of teeth, spoons, and tiny masks clatter at the door, each one eager to warn you too late."};
     vector<vector<string>> eventChoices = {{"Knock Three Times", "Drink from the Cauldron", "Buy a Hex", "Steal the Broom"}};
     string ChoiceName;
     int REI = -1;
@@ -2040,7 +2041,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("Witch's Hut - Stolen Broom", "The cauldron goes cold and the shop shelves shut themselves. The only unfinished bargain is theft.");
+        ArmagestaBiomeTools::printEventHeader("Witch's Hut - Stolen Broom", "The cauldron goes cold and the shop shelves shut themselves, denying every small bargain you might have used to stall. The hut remembers what remains unfinished, and the floorboards creak in the direction of the broom. Outside, the swamp holds its breath for the moment theft becomes war.");
         vector<string> loreChoices = {"Steal the Broom"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -2090,7 +2091,7 @@ class TheThrone : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"The Throne"};
-    vector<string> eventFlavorText = {"The throne room has no roof. The sky itself looks down like a witness. The throne waits, empty and offended."};
+    vector<string> eventFlavorText = {"The throne room has no roof, only broken arches reaching up like fingers that failed to hold the heavens in place. The sky itself looks down like a witness, cold and unblinking, while ash gathers in the seams of the marble floor. The throne waits, empty and offended, as if abandonment were the greatest treason ever committed against it."};
     vector<vector<string>> eventChoices = {{"Sit on the Throne", "Break the Crown", "Read the Law", "Bow and Leave"}};
     string ChoiceName;
     int REI = -1;
@@ -2103,7 +2104,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("The Throne - Final Claim", "The lesser laws are silent now. The Dragon is dead, and the throne permits only the question of rulership.");
+        ArmagestaBiomeTools::printEventHeader("The Throne - Final Claim", "The lesser laws are silent now. The Dragon is dead, the old fear has lost its throne, and the room permits only the question of rulership. Every cracked pillar seems to lean inward, waiting to see whether you are a monarch, a mistake, or merely the next person to sit too soon.");
         vector<string> loreChoices = {"Sit on the Throne"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -2157,7 +2158,7 @@ class CoralReef : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"Coral Reef"};
-    vector<string> eventFlavorText = {"The reef glows beneath clear water like a city that chose to become an animal. Currents twist around it in careful, deliberate sentences."};
+    vector<string> eventFlavorText = {"The reef glows beneath clear water like a city that chose to become an animal and learned to breathe in color. Currents twist around it in careful, deliberate sentences, carrying flecks of pearl, bone, and blue light through streets of coral. From the deepest part comes a pulse that makes the surface tremble, as though the ocean has a heart and resents being discovered."};
     vector<vector<string>> eventChoices = {{"Dive to the Heart", "Take a Coral Crown", "Listen to the Current", "Surface"}};
     string ChoiceName;
     int REI = -1;
@@ -2170,7 +2171,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("Coral Reef - Heart Dive", "The current closes every shallow path. The reef has saved only its deepest answer for you.");
+        ArmagestaBiomeTools::printEventHeader("Coral Reef - Heart Dive", "The current closes every shallow path, sweeping aside shells, pearls, and every easy excuse to remain near the surface. The reef has saved only its deepest answer for you. Below, the Tide Leviathan turns once in the blue dark, and the whole ocean shifts around its patience.");
         vector<string> loreChoices = {"Dive to the Heart"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -2218,7 +2219,7 @@ class DragonsLair : public BiomeEventDatabase {
 private:
     vector<int> eventChances = {100};
     vector<string> eventNames = {"Dragon's Lair"};
-    vector<string> eventFlavorText = {"The lair is not inside the mountain. The mountain is inside the lair. Gold, bones, and old fire make a nest large enough for the end of a story."};
+    vector<string> eventFlavorText = {"The lair is not inside the mountain; the mountain is inside the lair, hollowed around an absence so hot it has become architecture. Gold, bones, and old fire make a nest large enough for the end of a story, and every treasure here looks less owned than consumed. Far above, the stone ceiling glows red in slow pulses, matching the breath of something that has mistaken the world for its inheritance."};
     vector<vector<string>> eventChoices = {{"Challenge the Dragon", "Steal an Ember", "Offer the Hoard", "Retreat"}};
     string ChoiceName;
     int REI = -1;
@@ -2231,7 +2232,7 @@ protected:
         ResolveChoice();
     }
     void doLoreOnlyEvent() {
-        ArmagestaBiomeTools::printEventHeader("Dragon's Lair - Cinder Reckoning", "The hoard will not bargain, the ember will not be stolen, and retreat has already had its chance. Only the Dragon remains.");
+        ArmagestaBiomeTools::printEventHeader("Dragon's Lair - Cinder Reckoning", "The hoard will not bargain, the ember will not be stolen, and retreat has already had its chance. The lair has stripped away every side path, leaving only heat, gold, and the shape of the Dragon in the smoke. This is no longer exploration; this is the mountain asking whether your story deserves an ending.");
         vector<string> loreChoices = {"Challenge the Dragon"};
         ChoiceName = loreChoices[ArmagestaBiomeTools::askChoice(loreChoices)];
         ResolveChoice();
@@ -2298,8 +2299,8 @@ private:
     vector<int> eventChances = {70, 30};
     vector<string> eventNames = {"EVENT 1", "EVENT 2"};
     vector<string> eventFlavorText = {
-        "EVENT 1 FLAVOR TEXT",
-        "EVENT 2 FLAVOR TEXT"
+        "Write two to four sentences here that establish the place, the mood, and why the choice matters. Include one concrete sensory detail, one strange or unsettling image, and one hint about the lore or danger connected to this event.",
+        "Write two to four sentences here that show how this event changes the player's understanding of the biome. The description should give the player a reason to care before the choices appear. Try to imply a mechanical risk or reward through the fiction instead of explaining the numbers directly."
     };
     vector<vector<string>> eventChoices = {
         {"CHOICE 1", "CHOICE 2"},
