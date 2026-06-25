@@ -136,6 +136,61 @@ private:
         });
     }
 
+    [[nodiscard]] static std::string stripAssetsPrefix(const std::string& filePath) {
+        const std::string prefix = "assets/music/";
+        if (filePath.rfind(prefix, 0) == 0) {
+            return filePath.substr(prefix.size());
+        }
+        return std::filesystem::path(filePath).filename().string();
+    }
+
+    [[nodiscard]] static std::vector<std::string> possibleMusicLocations(const std::string& filePath) {
+        const std::string fileName = stripAssetsPrefix(filePath);
+        std::vector<std::string> candidates;
+
+        // Normal CLion/CMake run location after assets are copied into cmake-build-debug.
+        candidates.push_back("assets/music/" + fileName);
+
+        // Useful when the game is run from cmake-build-debug but assets have not been copied yet.
+        candidates.push_back("../assets/music/" + fileName);
+
+        // Useful for alternate working directories.
+        candidates.push_back("../../assets/music/" + fileName);
+        candidates.push_back("music/" + fileName);
+        candidates.push_back(fileName);
+
+        // If the incoming path was already something custom, try it exactly too.
+        if (filePath != candidates.front()) {
+            candidates.push_back(filePath);
+        }
+
+        return candidates;
+    }
+
+    [[nodiscard]] std::string findExistingMusicFile(const std::string& askedForPath) const {
+        for (const std::string& candidate : possibleMusicLocations(askedForPath)) {
+            const std::string preferredCandidate = chooseBestMusicFile(candidate);
+            if (fileExists(preferredCandidate)) {
+                return preferredCandidate;
+            }
+            if (fileExists(candidate)) {
+                return candidate;
+            }
+        }
+
+        return chooseBestMusicFile(askedForPath);
+    }
+
+    static void printMissingMusicHelp(const std::string& askedForPath, const std::string& resolvedPath) {
+        std::cout << "Failed to load music file: " << resolvedPath << std::endl;
+        std::cout << "Expected this track in one of these places:" << std::endl;
+        for (const std::string& candidate : possibleMusicLocations(askedForPath)) {
+            std::cout << "  - " << candidate << std::endl;
+        }
+        std::cout << "Tip: put the .mp3 files in your source project's assets/music folder, then Reload CMake or rebuild."
+                  << std::endl;
+    }
+
     [[nodiscard]] std::string chooseBestMusicFile(const std::string& filePath) const {
         // SFML can play MP3s, but MP3 files often contain encoder padding/clicks that become
         // very obvious during ambience loops. When an .ogg or .wav copy exists beside the .mp3,
@@ -188,10 +243,10 @@ private:
     }
 
     bool loadAndStartTrack(const std::string& askedForPath, const bool loop, const float startingVolume) {
-        const std::string resolvedPath = chooseBestMusicFile(askedForPath);
+        const std::string resolvedPath = findExistingMusicFile(askedForPath);
 
         if (!music.openFromFile(resolvedPath)) {
-            std::cout << "Failed to load music file: " << resolvedPath << std::endl;
+            printMissingMusicHelp(askedForPath, resolvedPath);
             hasLoadedTrack = false;
             requestedTrack.clear();
             currentTrack.clear();
@@ -266,11 +321,11 @@ public:
             return true;
         }
 
-        const std::string resolvedPath = chooseBestMusicFile(filePath);
+        const std::string resolvedPath = findExistingMusicFile(filePath);
 
         cueMusic.stop();
         if (!cueMusic.openFromFile(resolvedPath)) {
-            std::cout << "Failed to load music cue: " << resolvedPath << std::endl;
+            printMissingMusicHelp(filePath, resolvedPath);
             hasLoadedCue = false;
             requestedCue.clear();
             currentCue.clear();

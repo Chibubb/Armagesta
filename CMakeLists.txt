@@ -33,4 +33,13 @@ target_link_libraries(Armagesta PRIVATE
         SFML::Audio
 )
 
-file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+# Copy assets every build so newly-added music files appear in cmake-build-debug/assets.
+# This matters in CLion because file(COPY ...) only runs when CMake configures.
+add_custom_target(copy_assets ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        ${CMAKE_BINARY_DIR}/assets
+        COMMENT "Copying Armagesta assets to build directory"
+)
+
+add_dependencies(Armagesta copy_assets)
