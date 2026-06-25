@@ -99,9 +99,9 @@ public:
         const string majorBiomeName = getBiomeNameFromType(majorBiomeType);
 
         cout << endl;
-        cout << "============================================================" << endl;
-        cout << "YOU HAVE ENTERED THE " << majorBiomeName << endl;
-        cout << "============================================================" << endl;
+        cout << ansiColor("============================================================", mapBiomeColorCode(majorBiomeType)) << endl;
+        cout << "YOU HAVE ENTERED THE " << ansiColor(majorBiomeName, mapBiomeColorCode(majorBiomeType)) << endl;
+        cout << ansiColor("============================================================", mapBiomeColorCode(majorBiomeType)) << endl;
 
         if (majorBiomeType == 'F') {
             cout << "The air turns green and watchful. Branches bend like witnesses as the Forest accepts your footsteps." << endl;
@@ -121,12 +121,12 @@ public:
             cout << "The ground climbs toward storm and old fire. The Mountains dare you to become heavy enough to matter." << endl;
         }
 
-        cout << "============================================================" << endl << endl;
+        cout << ansiColor("============================================================", mapBiomeColorCode(majorBiomeType)) << endl << endl;
     }
 
     void describeAlreadyExploredSpace() const {
-        cout << "You return to the " << getCurrentBiomeName() << "." << endl;
-        cout << "The land here has already given up its secret. You may pass through, "
+        cout << "You return to the " << ansiColor(getCurrentBiomeName(), mapBiomeColorCode(getCurrentBiomeType())) << "." << endl;
+        cout << "The land here has already given up its " << ansiColor("secret", "1;34") << ". You may pass through, "
              << "but there is nothing new to uncover at this coordinate." << endl;
     }
 
@@ -257,17 +257,21 @@ public:
     }
 
     void printDifficultyOptions() const {
-        cout << "1: Easy     - Longer Clash Window timing." << endl;
-        cout << "2: Normal   - Intended Clash Window timing." << endl;
-        cout << "3: Hard     - Shorter Clash Window timing." << endl;
-        cout << "4: Soulborn - Brutal Clash Window timing." << endl;
+        cout << ansiColor("1", "1;33") << ": " << coloredDifficultyName("Easy")
+             << "     - Longer Clash Window timing." << endl;
+        cout << ansiColor("2", "1;33") << ": " << coloredDifficultyName("Normal")
+             << "   - Intended Clash Window timing." << endl;
+        cout << ansiColor("3", "1;33") << ": " << coloredDifficultyName("Hard")
+             << "     - Shorter Clash Window timing." << endl;
+        cout << ansiColor("4", "1;33") << ": " << coloredDifficultyName("Soulborn")
+             << " - Brutal Clash Window timing." << endl;
     }
 
     void chooseDifficultyAtNewGame() {
         cout << endl;
-        cout << "===== CHOOSE DIFFICULTY =====" << endl;
-        cout << "Difficulty only changes how much time you get during combat QTEs." << endl;
-        cout << "You can change this later from the Settings Menu." << endl << endl;
+        cout << ansiColor("===== CHOOSE DIFFICULTY =====", "1;35") << endl;
+        cout << "Difficulty only changes how much " << ansiColor("time", "1;33") << " you get during combat QTEs." << endl;
+        cout << "You can change this later from the " << coloredActionName("Settings Menu") << "." << endl << endl;
 
         string choice;
         while (true) {
@@ -275,36 +279,36 @@ public:
             cout << "> ";
             getline(cin, choice);
             if (setQteDifficulty(choice)) {
-                cout << "Difficulty set to " << qteDifficulty << "." << endl << endl;
+                cout << "Difficulty set to " << coloredDifficultyName(qteDifficulty) << "." << endl << endl;
                 return;
             }
-            cout << "Choose 1, 2, 3, 4, or type Easy, Normal, Hard, or Soulborn." << endl << endl;
+            cout << ansiColor("Choose 1, 2, 3, 4, or type Easy, Normal, Hard, or Soulborn.", "1;31") << endl << endl;
         }
     }
 
     void settingsMenu() {
         cout << endl;
-        cout << "===== SETTINGS MENU =====" << endl;
-        cout << "Current QTE Difficulty: " << qteDifficulty << endl;
-        cout << "Only QTE timing changes. Enemy stats, rewards, and damage rules stay the same." << endl << endl;
-        cout << "Choose a difficulty, or type 5 to go back." << endl;
+        cout << ansiColor("===== SETTINGS MENU =====", "1;35") << endl;
+        cout << coloredStatLabel("Current QTE Difficulty") << ": " << coloredDifficultyName(qteDifficulty) << endl;
+        cout << "Only " << ansiColor("QTE timing", "1;33") << " changes. Enemy stats, rewards, and damage rules stay the same." << endl << endl;
+        cout << "Choose a difficulty, or type " << ansiColor("5", "1;33") << " to go back." << endl;
 
         string choice;
         while (true) {
             printDifficultyOptions();
-            cout << "5: Back" << endl;
+            cout << ansiColor("5", "1;33") << ": " << ansiColor("Back", "2;37") << endl;
             cout << "> ";
             getline(cin, choice);
             const string loweredChoice = lowerMenuInput(choice);
             if (loweredChoice == "5" || loweredChoice == "back" || loweredChoice == "b") {
-                cout << "Leaving Settings Menu." << endl;
+                cout << ansiColor("Leaving Settings Menu.", "2;37") << endl;
                 return;
             }
             if (setQteDifficulty(choice)) {
-                cout << "QTE Difficulty set to " << qteDifficulty << "." << endl;
+                cout << "QTE Difficulty set to " << coloredDifficultyName(qteDifficulty) << "." << endl;
                 return;
             }
-            cout << "Choose 1, 2, 3, 4, 5, or type the difficulty name." << endl << endl;
+            cout << ansiColor("Choose 1, 2, 3, 4, 5, or type the difficulty name.", "1;31") << endl << endl;
         }
     }
 
@@ -343,41 +347,47 @@ public:
     }
 
     void assess() const {
-        cout << "Health Remaining: " << health << " / " << maxHealth << endl;
-        cout << "Luck: " << critChance << endl;
-        cout << "Accuracy: " << accuracy << endl;
-        cout << "Souls: " << soul << " / " << maxSoul << endl;
-        cout << "Hardiness: " << hardiness << endl;
-        cout << "Strength: " << permanentDamageModifier << endl;
-        cout << "QTE Difficulty: " << qteDifficulty << endl;
-        cout << "Consumed Monster Souls: " << consumedMonsterSouls.size() << endl;
+        cout << endl << ansiColor("===== SELF ASSESSMENT =====", "1;35") << endl;
+        cout << coloredStatLabel("Health Remaining") << ": " << ansiColor(to_string(health) + " / " + to_string(maxHealth), "1;31") << endl;
+        cout << coloredStatLabel("Souls") << ": " << ansiColor(to_string(soul) + " / " + to_string(maxSoul), "1;34") << endl;
+        cout << coloredStatLabel("Luck") << ": " << ansiColor(to_string(critChance), "1;33") << endl;
+        cout << coloredStatLabel("Accuracy") << ": " << ansiColor(to_string(accuracy), "1;36") << endl;
+        cout << coloredStatLabel("Hardiness") << ": " << ansiColor(to_string(hardiness), "1;37") << endl;
+        cout << coloredStatLabel("Strength") << ": " << ansiColor(to_string(permanentDamageModifier), "38;5;208") << endl;
+        cout << coloredStatLabel("QTE Difficulty") << ": " << coloredDifficultyName(qteDifficulty) << endl;
+        cout << coloredStatLabel("Consumed Monster Souls") << ": " << ansiColor(to_string(consumedMonsterSouls.size()), "1;34") << endl;
     }
 
     void understandPowers() {
-        cout << "Combat Focus: most combat actions open a Clash Window after you choose them." << endl;
-        cout << "You may choose actions by typing either the action name or its number." << endl;
-        cout << "Current QTE Difficulty: " << qteDifficulty << " (change it from Settings Menu)." << endl << endl;
-        cout << "Each action style has its own quick event:" << endl;
-        cout << "ATTACK  = q/w/e weapon rhythm, then type a themed enemy body part." << endl;
-        cout << "DEFENSE = q/w/e guard sequence, one prompt at a time." << endl;
-        cout << "MAGIC   = q/w/e/r channeling sequence, one prompt at a time." << endl;
-        cout << "DODGE   = quickly type HIGH, LOW, RIGHT, or LEFT." << endl;
-        cout << "CHARGE  = quickly type a themed enemy body part to study it." << endl;
-        cout << "PARRY   = press Enter, wait the shown time, then press Enter again." << endl;
-        cout << "Elite and boss enemies may use capital reaction keys. Capital letters must be typed exactly." << endl;
-        cout << "Perfect and Good execution improve damage, defense, Momentum, and accuracy. Poor or failed execution can weaken the action, raise enemy Danger, cost Momentum, or hurt you." << endl << endl;
+        cout << endl << ansiColor("===== UNDERSTAND POWERS =====", "1;35") << endl;
+        cout << ansiColor("Combat Focus", "1;36") << ": most combat actions open a " << ansiColor("Clash Window", "1;33") << " after you choose them." << endl;
+        cout << "You may choose actions by typing either the action name or its " << ansiColor("number", "1;33") << "." << endl;
+        cout << coloredStatLabel("Current QTE Difficulty") << ": " << coloredDifficultyName(qteDifficulty) << " (change it from " << coloredActionName("Settings Menu") << ")." << endl << endl;
+        cout << ansiColor("Each action style has its own quick event:", "1;37") << endl;
+        cout << ansiColor("ATTACK", "1;31") << "  = q/w/e weapon rhythm, then type a themed enemy body part." << endl;
+        cout << ansiColor("DEFENSE", "1;37") << " = q/w/e guard sequence, one prompt at a time." << endl;
+        cout << ansiColor("MAGIC", "1;35") << "   = q/w/e/r channeling sequence, one prompt at a time." << endl;
+        cout << ansiColor("DODGE", "1;36") << "   = quickly type HIGH, LOW, RIGHT, or LEFT." << endl;
+        cout << ansiColor("CHARGE", "1;34") << "  = quickly type a themed enemy body part to study it." << endl;
+        cout << ansiColor("PARRY", "1;33") << "   = press Enter, wait the shown time, then press Enter again." << endl;
+        cout << "Elite and boss enemies may use " << ansiColor("capital reaction keys", "1;31") << ". Capital letters must be typed exactly." << endl;
+        cout << ansiColor("Perfect", "1;32") << " and " << ansiColor("Good", "1;32") << " execution improve damage, defense, Momentum, and accuracy. "
+             << ansiColor("Poor", "1;33") << " or " << ansiColor("failed", "1;31") << " execution can weaken the action, raise enemy Danger, cost Momentum, or hurt you." << endl << endl;
 
         for (int i = 0; i < combatActions.size(); i++) {
-            cout << i + 1 << ": " << combatActions[i] << endl;
-            cout << combatActionsDescriptions[i] << endl << endl;
+            cout << ansiColor(to_string(i + 1), "1;33") << ": " << coloredCombatActionName(combatActions[i]) << endl;
+            cout << ansiColor(combatActionsDescriptions[i], "2;37") << endl << endl;
         }
     }
 
     string getAChosenDirection() {
         string chosenDirection;
         while (true) {
-            cout << "Which Direction?" << endl;
-            cout << "1: North  2: South  3: West  4: East" << endl;
+            cout << ansiColor("Which Direction?", "1;36") << endl;
+            cout << ansiColor("1", "1;33") << ": " << ansiColor("North", "1;37") << "  "
+                 << ansiColor("2", "1;33") << ": " << ansiColor("South", "1;32") << "  "
+                 << ansiColor("3", "1;33") << ": " << ansiColor("West", "1;35") << "  "
+                 << ansiColor("4", "1;33") << ": " << ansiColor("East", "1;36") << endl;
             cout << "> ";
             getline(cin, chosenDirection);
             const string choice = lowerMenuInput(chosenDirection);
@@ -387,14 +397,14 @@ public:
             if (choice == "3" || choice == "west" || choice == "w") return "West";
             if (choice == "4" || choice == "east" || choice == "e") return "East";
 
-            cout << "Not A Possible Direction... Type 1, 2, 3, 4, or the direction name." << endl << endl;
+            cout << ansiColor("Not A Possible Direction... Type 1, 2, 3, 4, or the direction name.", "1;31") << endl << endl;
         }
     }
 
     void printActions() const {
-        cout << "Possible Actions:" << endl;
+        cout << ansiColor("Possible Actions:", "1;36") << endl;
         for (int i = 0; i < actions.size(); i++) {
-            cout << i + 1 << ": " << actions[i] << "  ";
+            cout << ansiColor(to_string(i + 1), "1;33") << ": " << coloredActionName(actions[i]) << "  ";
         }
         cout << endl << endl;
     }
@@ -413,19 +423,19 @@ public:
                 }
             }
 
-            cout << "Not A Possible Action... Type the action name or its number." << endl;
+            cout << ansiColor("Not A Possible Action... Type the action name or its number.", "1;31") << endl;
         }
     }
 
     string getCombatAction() const {
         string chosenAction;
         while (true) {
-            cout << "Possible Combat Actions:" << endl;
+            cout << ansiColor("Possible Combat Actions:", "1;36") << endl;
             for (int i = 0; i < combatActions.size(); i++) {
-                cout << i + 1 << ": " << combatActions[i] << "  ";
+                cout << ansiColor(to_string(i + 1), "1;33") << ": " << coloredCombatActionName(combatActions[i]) << "  ";
             }
             cout << endl;
-            cout << "Type an action name or number." << endl;
+            cout << "Type an action name or " << ansiColor("number", "1;33") << "." << endl;
             cout << "> ";
 
             getline(cin, chosenAction);
@@ -437,12 +447,61 @@ public:
                 }
             }
 
-            cout << "Not A Possible Action... Type the action name or its number." << endl;
+            cout << ansiColor("Not A Possible Action... Type the action name or its number.", "1;31") << endl;
         }
     }
 
     string ansiColor(const string& text, const string& colorCode) const {
         return "\033[" + colorCode + "m" + text + "\033[0m";
+    }
+
+    string difficultyColorCode(const string& difficultyName) const {
+        if (difficultyName == "Easy") return "1;32";
+        if (difficultyName == "Normal") return "1;36";
+        if (difficultyName == "Hard") return "1;33";
+        if (difficultyName == "Soulborn") return "1;31";
+        return "1;37";
+    }
+
+    string coloredDifficultyName(const string& difficultyName) const {
+        return ansiColor(difficultyName, difficultyColorCode(difficultyName));
+    }
+
+    string coloredStatLabel(const string& label) const {
+        const string loweredLabel = lowerMenuInput(label);
+        if (loweredLabel.find("health") != string::npos) return ansiColor(label, "1;31");
+        if (loweredLabel.find("soul") != string::npos) return ansiColor(label, "1;34");
+        if (loweredLabel.find("luck") != string::npos) return ansiColor(label, "1;33");
+        if (loweredLabel.find("accuracy") != string::npos) return ansiColor(label, "1;36");
+        if (loweredLabel.find("hardiness") != string::npos) return ansiColor(label, "1;37");
+        if (loweredLabel.find("strength") != string::npos) return ansiColor(label, "38;5;208");
+        if (loweredLabel.find("momentum") != string::npos) return ansiColor(label, "1;33");
+        if (loweredLabel.find("difficulty") != string::npos) return ansiColor(label, "1;35");
+        return ansiColor(label, "1;37");
+    }
+
+    string coloredActionName(const string& actionName) const {
+        if (actionName == "Move") return ansiColor(actionName, "1;32");
+        if (actionName == "Self Assess") return ansiColor(actionName, "1;36");
+        if (actionName == "Understand Powers") return ansiColor(actionName, "1;34");
+        if (actionName == "Map") return ansiColor(actionName, "1;33");
+        if (actionName == "Quest Log") return ansiColor(actionName, "1;35");
+        if (actionName == "Consumed Souls") return ansiColor(actionName, "1;34");
+        if (actionName == "Settings Menu") return ansiColor(actionName, "1;37");
+        if (actionName == "Save Game" || actionName == "Load Game") return ansiColor(actionName, "2;37");
+        return ansiColor(actionName, "1;37");
+    }
+
+    string coloredCombatActionName(const string& actionName) const {
+        if (actionName == "Slash" || actionName == "Eviscerate" || actionName == "Gravebreaker" || actionName == "Severing Rhythm") {
+            return ansiColor(actionName, "1;31");
+        }
+        if (actionName == "Roll" || actionName == "Sandstep") return ansiColor(actionName, "1;36");
+        if (actionName == "Brace" || actionName == "Stonebound Stance") return ansiColor(actionName, "1;37");
+        if (actionName == "Think" || actionName == "Foresight") return ansiColor(actionName, "1;34");
+        if (actionName == "Riposte") return ansiColor(actionName, "1;33");
+        if (actionName == "Soul Burst" || actionName == "Tidecall" || actionName == "Wick Drain") return ansiColor(actionName, "1;35");
+        return ansiColor(actionName, "1;37");
     }
 
     string mapBiomeColorCode(const char biomeType) const {
@@ -478,7 +537,7 @@ public:
     }
 
     void printMap() const {
-        cout << "Map:" << endl;
+        cout << ansiColor("Map:", "1;35") << endl;
         printMapLegend();
 
         for (int i = 0; i < map.size(); i++) {
@@ -1039,39 +1098,40 @@ bool currentExploredSpaceShouldRunLoreOnlyEvent() const {
 }
 
 void describeLoreOnlyRevisit() const {
-    cout << "You return to the " << getCurrentBiomeName() << "." << endl;
-    cout << "This place has already given up its smaller secrets, so only the unfinished lore remains." << endl;
+    cout << "You return to the " << ansiColor(getCurrentBiomeName(), mapBiomeColorCode(getCurrentBiomeType())) << "." << endl;
+    cout << "This place has already given up its smaller secrets, so only the " << ansiColor("unfinished lore", "1;34") << " remains." << endl;
     cout << "You may face that path now, or leave and come back later without taking any side reward again." << endl;
-    cout << "Unfinished lore path: " << getImportantLoreGoalName(getCurrentBiomeType()) << "." << endl << endl;
+    cout << ansiColor("Unfinished lore path", "1;35") << ": " << ansiColor(getImportantLoreGoalName(getCurrentBiomeType()), "1;31") << "." << endl << endl;
 }
 
 void printQuestLog() const {
-    cout << endl << "===== QUEST LOG =====" << endl;
+    cout << endl << ansiColor("===== QUEST LOG =====", "1;35") << endl;
 
     if (activeQuests.empty()) {
-        cout << "No active objectives." << endl;
+        cout << ansiColor("No active objectives.", "2;37") << endl;
     } else {
-        cout << "Active Objectives:" << endl;
+        cout << ansiColor("Active Objectives:", "1;33") << endl;
         for (int i = 0; i < activeQuests.size(); i++) {
-            cout << "  " << i + 1 << ". " << activeQuests[i] << endl;
+            cout << "  " << ansiColor(to_string(i + 1), "1;33") << ". " << ansiColor(activeQuests[i], "1;37") << endl;
         }
     }
 
-    cout << endl << "Completed Objectives:" << endl;
+    cout << endl << ansiColor("Completed Objectives:", "1;32") << endl;
     if (completedQuests.empty()) {
-        cout << "  None yet." << endl;
+        cout << "  " << ansiColor("None yet.", "2;37") << endl;
     } else {
         for (const auto& quest : completedQuests) {
-            cout << "  - " << quest << endl;
+            cout << "  " << ansiColor("-", "1;32") << " " << ansiColor(quest, "2;37") << endl;
         }
     }
 
-    cout << endl << "Discovered Major Places: " << discoveredLandmarks.size() << " / 7" << endl;
+    cout << endl << ansiColor("Discovered Major Places", "1;36") << ": "
+         << ansiColor(to_string(discoveredLandmarks.size()) + " / 7", "1;36") << endl;
     if (discoveredLandmarks.empty()) {
-        cout << "  None yet." << endl;
+        cout << "  " << ansiColor("None yet.", "2;37") << endl;
     } else {
         for (const auto& landmark : discoveredLandmarks) {
-            cout << "  - " << landmark << endl;
+            cout << "  " << ansiColor("-", "1;36") << " " << ansiColor(landmark, "1;35") << endl;
         }
     }
 

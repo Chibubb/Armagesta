@@ -56,6 +56,130 @@ namespace ArmagestaBiomeTools {
         return lowered(text).find(lowered(wantedText)) != string::npos;
     }
 
+    inline string ansiColor(const string& text, const string& ansiCode) {
+        return "\033[" + ansiCode + "m" + text + "\033[0m";
+    }
+
+    inline string storyKeywordColorCode(const string& keyword) {
+        const string word = lowered(keyword);
+
+        if (containsText(word, "health") || containsText(word, "blood") || containsText(word, "wound") ||
+            containsText(word, "damage") || containsText(word, "death") || containsText(word, "dead") ||
+            containsText(word, "teeth") || containsText(word, "curse")) {
+            return "1;31"; // Body danger - red
+        }
+
+        if (containsText(word, "soul") || containsText(word, "prayer") || containsText(word, "spirit") ||
+            containsText(word, "holy") || containsText(word, "blessed") || containsText(word, "judged") ||
+            containsText(word, "memory") || containsText(word, "lore")) {
+            return "1;34"; // Soul/lore - blue
+        }
+
+        if (containsText(word, "scrap") || containsText(word, "metal") || containsText(word, "ore") ||
+            containsText(word, "blade") || containsText(word, "weapon") || containsText(word, "shield") ||
+            containsText(word, "coin")) {
+            return "1;37"; // Gear/resources - white
+        }
+
+        if (containsText(word, "forest") || containsText(word, "leaf") || containsText(word, "leaves") ||
+            containsText(word, "root") || containsText(word, "branch") || containsText(word, "moss")) {
+            return "1;32"; // Forest - green
+        }
+
+        if (containsText(word, "desert") || containsText(word, "sand") || containsText(word, "dune") ||
+            containsText(word, "sun") || containsText(word, "heat")) {
+            return "1;33"; // Desert - yellow
+        }
+
+        if (containsText(word, "cave") || containsText(word, "stone") || containsText(word, "mineral") ||
+            containsText(word, "darkness") || containsText(word, "echo")) {
+            return "38;5;244"; // Caves - gray
+        }
+
+        if (containsText(word, "redwood") || containsText(word, "tree") || containsText(word, "wood") ||
+            containsText(word, "bark")) {
+            return "38;5;130"; // Redwoods - brown
+        }
+
+        if (containsText(word, "swamp") || containsText(word, "mud") || containsText(word, "fog") ||
+            containsText(word, "black water")) {
+            return "38;5;64"; // Swamp - murky green
+        }
+
+        if (containsText(word, "citadel") || containsText(word, "throne") || containsText(word, "king") ||
+            containsText(word, "law") || containsText(word, "kingdom")) {
+            return "1;35"; // Citadel/royalty - violet
+        }
+
+        if (containsText(word, "beach") || containsText(word, "tide") || containsText(word, "salt") ||
+            containsText(word, "shore") || containsText(word, "reef") || containsText(word, "water")) {
+            return "1;36"; // Water/coast - cyan
+        }
+
+        if (containsText(word, "mountain") || containsText(word, "storm") || containsText(word, "dragon") ||
+            containsText(word, "fire") || containsText(word, "flame")) {
+            return "38;5;208"; // Mountain/fire/dragon - orange
+        }
+
+        return "1;36"; // General importance - cyan
+    }
+
+    inline string colorizeFirstStoryKeyword(const string& sentence) {
+        const vector<string> keywords = {
+            "Cinder Dragon", "Dragon's Lair", "The Throne", "Oldest Redwood", "Crystal Geode", "Sand Pit",
+            "Max Health", "Max Soul", "Scrap Metal", "permanent Momentum", "Momentum", "Hardiness", "Strength",
+            "Health", "Souls", "soul", "blood", "wound", "damage", "curse", "prayer", "memory",
+            "Forest", "leaves", "root", "branch", "moss",
+            "Desert", "sand", "dune", "sun", "heat",
+            "Caves", "stone", "mineral", "darkness", "echo",
+            "Redwoods", "tree", "wood", "bark",
+            "Swamp", "mud", "fog", "black water",
+            "Citadel", "throne", "kingdom", "law",
+            "Beach", "tide", "salt", "shore", "reef", "water",
+            "Mountains", "storm", "dragon", "fire", "flame",
+            "map", "objective", "landmark", "reward", "danger"
+        };
+
+        const string loweredSentence = lowered(sentence);
+        for (const string& keyword : keywords) {
+            const size_t foundAt = loweredSentence.find(lowered(keyword));
+            if (foundAt != string::npos) {
+                string coloredSentence = sentence;
+                const string originalPhrase = sentence.substr(foundAt, keyword.size());
+                coloredSentence.replace(foundAt, keyword.size(), ansiColor(originalPhrase, storyKeywordColorCode(keyword)));
+                return coloredSentence;
+            }
+        }
+
+        return sentence;
+    }
+
+    inline string colorizeChoicePreview(const string& preview) {
+        const size_t colonAt = preview.find(':');
+        if (colonAt == string::npos) {
+            return ansiColor(preview, "2;37");
+        }
+
+        const string label = preview.substr(0, colonAt);
+        const string details = preview.substr(colonAt);
+        string colorCode = "1;36";
+        const string loweredLabel = lowered(label);
+
+        if (containsText(loweredLabel, "danger") || containsText(loweredLabel, "aggressive") || containsText(loweredLabel, "body-risk")) {
+            colorCode = "1;31";
+        } else if (containsText(loweredLabel, "resource")) {
+            colorCode = "1;37";
+        } else if (containsText(loweredLabel, "recovery")) {
+            colorCode = "1;32";
+        } else if (containsText(loweredLabel, "spirit") || containsText(loweredLabel, "lore")) {
+            colorCode = "1;34";
+        } else if (containsText(loweredLabel, "cautious")) {
+            colorCode = "1;33";
+        }
+
+        return ansiColor(label, colorCode) + details;
+    }
+
     inline void printStoryText(const string& text) {
         string sentence;
 
@@ -66,7 +190,8 @@ namespace ArmagestaBiomeTools {
             }
 
             const size_t last = rawSentence.find_last_not_of(" \t\n\r");
-            cout << rawSentence.substr(first, last - first + 1) << endl;
+            const string trimmedSentence = rawSentence.substr(first, last - first + 1);
+            cout << colorizeFirstStoryKeyword(trimmedSentence) << endl;
         };
 
         for (size_t i = 0; i < text.size(); i++) {
@@ -178,16 +303,16 @@ namespace ArmagestaBiomeTools {
 
     inline int askChoice(const vector<string>& choices) {
         if (choices.size() == 1) {
-            cout << "Only path:" << endl;
-            cout << "1: " << choices[0] << endl;
-            cout << "     " << getChoiceMechanicalPreview(choices[0]) << endl << endl;
+            cout << ansiColor("Only path:", "1;36") << endl;
+            cout << ansiColor("1", "1;33") << ": " << ansiColor(choices[0], "1;37") << endl;
+            cout << "     " << colorizeChoicePreview(getChoiceMechanicalPreview(choices[0])) << endl << endl;
             return 0;
         }
 
-        cout << "Choose one:" << endl;
+        cout << ansiColor("Choose one:", "1;36") << endl;
         for (int i = 0; i < choices.size(); i++) {
-            cout << i + 1 << ": " << choices[i] << endl;
-            cout << "     " << getChoiceMechanicalPreview(choices[i]) << endl;
+            cout << ansiColor(to_string(i + 1), "1;33") << ": " << ansiColor(choices[i], "1;37") << endl;
+            cout << "     " << colorizeChoicePreview(getChoiceMechanicalPreview(choices[i])) << endl;
         }
         cout << endl;
 
@@ -201,7 +326,7 @@ namespace ArmagestaBiomeTools {
                     return i;
                 }
             }
-            cout << "Invalid input, try again..." << endl;
+            cout << ansiColor("Invalid input, try again...", "1;31") << endl;
         }
     }
 
@@ -231,16 +356,20 @@ namespace ArmagestaBiomeTools {
     }
 
     inline void printEventHeader(const string& eventName, const string& eventFlavorText) {
-        cout << endl << "===== " << eventName << " =====" << endl;
+        cout << endl << ansiColor("===== " + eventName + " =====", "1;35") << endl;
         printStoryText(eventFlavorText);
         cout << endl;
+    }
+
+    inline void printSpecialEventHeader(const string& eventName) {
+        cout << endl << ansiColor("===== " + eventName + " =====", "1;35") << endl;
     }
 }
 
 namespace ArmagestaNonCombatEvents {
     inline void desertWaystone(Player& playerIP) {
         playerIP.addStoryFlag("Desert Waystone");
-        cout << endl << "===== Desert Waystone =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Desert Waystone");
         ArmagestaBiomeTools::printStoryText("A sunken waystone rises from the sand. Its map is carved in shadows instead of lines.");
         vector<string> choices = {"Read the Shadow Map", "Press Your Palm to the Stone", "Leave It Alone"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
@@ -261,7 +390,7 @@ namespace ArmagestaNonCombatEvents {
 
     inline void caveResonance(Player& playerIP) {
         playerIP.addStoryFlag("Cave Resonance Door");
-        cout << endl << "===== Resonance Door =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Resonance Door");
         ArmagestaBiomeTools::printStoryText("A sealed stone door hums when you breathe. It is not locked by metal, but by memory.");
         vector<string> choices = {"Hum With It", "Carve a Mark", "Step Away"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
@@ -283,7 +412,7 @@ namespace ArmagestaNonCombatEvents {
 
     inline void redwoodMemory(Player& playerIP) {
         playerIP.addStoryFlag("Redwood Memory Knot");
-        cout << endl << "===== Memory Knot =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Memory Knot");
         ArmagestaBiomeTools::printStoryText("A redwood root has grown around an old helmet. The wood has not crushed it. It has preserved it.");
         vector<string> choices = {"Listen to the Helmet", "Pull It Free", "Bury It Deeper"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
@@ -304,7 +433,7 @@ namespace ArmagestaNonCombatEvents {
 
     inline void swampFerry(Player& playerIP) {
         playerIP.addStoryFlag("Swamp Ferry Contract");
-        cout << endl << "===== Empty Ferry =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Empty Ferry");
         ArmagestaBiomeTools::printStoryText("A ferry bumps against the bank with no ferryman. A contract lies on the seat, already signed in pondwater.");
         vector<string> choices = {"Pay One Soul", "Sign in Blood", "Shove the Ferry Away"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
@@ -331,7 +460,7 @@ namespace ArmagestaNonCombatEvents {
 
     inline void citadelArmory(Player& playerIP) {
         playerIP.addStoryFlag("Citadel Silent Armory");
-        cout << endl << "===== Silent Armory =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Silent Armory");
         ArmagestaBiomeTools::printStoryText("You find an armory where every weapon is chained to the wall. The chains are ceremonial, not practical.");
         vector<string> choices = {"Sharpen Your Blade", "Study the Shields", "Read the Oath on the Wall"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
@@ -351,7 +480,7 @@ namespace ArmagestaNonCombatEvents {
 
     inline void beachTideCalendar(Player& playerIP) {
         playerIP.addStoryFlag("Beach Tide Calendar");
-        cout << endl << "===== Tide Calendar =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Tide Calendar");
         ArmagestaBiomeTools::printStoryText("Flat stones line the shore in a circle. The tide touches them in an order that looks intentional.");
         vector<string> choices = {"Count the Tide", "Sleep in the Circle", "Kick the Stones Apart"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
@@ -374,7 +503,7 @@ namespace ArmagestaNonCombatEvents {
 
     inline void mountainBell(Player& playerIP) {
         playerIP.addStoryFlag("Mountain Pilgrim Bell");
-        cout << endl << "===== Pilgrim Bell =====" << endl;
+        ArmagestaBiomeTools::printSpecialEventHeader("Pilgrim Bell");
         ArmagestaBiomeTools::printStoryText("A bronze bell hangs from a frozen arch. Its clapper is a dragon tooth, worn smooth by desperate hands.");
         vector<string> choices = {"Ring It Once", "Pray Beneath It", "Break the Tooth Free"};
         int choice = ArmagestaBiomeTools::askChoice(choices);
