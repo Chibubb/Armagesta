@@ -60,68 +60,71 @@ namespace ArmagestaBiomeTools {
         return "\033[" + ansiCode + "m" + text + "\033[0m";
     }
 
+    inline string eventTitleText(const string& title) {
+        return ansiColor(title, "1;35");
+    }
+
     inline string storyKeywordColorCode(const string& keyword) {
         const string word = lowered(keyword);
 
         if (containsText(word, "health") || containsText(word, "blood") || containsText(word, "wound") ||
             containsText(word, "damage") || containsText(word, "death") || containsText(word, "dead") ||
             containsText(word, "teeth") || containsText(word, "curse")) {
-            return "1;31"; // Body danger - red
+            return "1;31";
         }
 
         if (containsText(word, "soul") || containsText(word, "prayer") || containsText(word, "spirit") ||
-            containsText(word, "holy") || containsText(word, "blessed") || containsText(word, "judged") ||
-            containsText(word, "memory") || containsText(word, "lore")) {
-            return "1;34"; // Soul/lore - blue
+            containsText(word, "holy") || containsText(word, "blessed") || containsText(word, "memory") ||
+            containsText(word, "lore")) {
+            return "1;34";
         }
 
         if (containsText(word, "scrap") || containsText(word, "metal") || containsText(word, "ore") ||
-            containsText(word, "blade") || containsText(word, "weapon") || containsText(word, "shield") ||
-            containsText(word, "coin")) {
-            return "1;37"; // Gear/resources - white
+            containsText(word, "blade") || containsText(word, "weapon") || containsText(word, "shield")) {
+            return "1;37";
         }
 
         if (containsText(word, "forest") || containsText(word, "leaf") || containsText(word, "leaves") ||
             containsText(word, "root") || containsText(word, "branch") || containsText(word, "moss")) {
-            return "1;32"; // Forest - green
+            return "1;32";
         }
 
         if (containsText(word, "desert") || containsText(word, "sand") || containsText(word, "dune") ||
             containsText(word, "sun") || containsText(word, "heat")) {
-            return "1;33"; // Desert - yellow
+            return "1;33";
         }
 
         if (containsText(word, "cave") || containsText(word, "stone") || containsText(word, "mineral") ||
             containsText(word, "darkness") || containsText(word, "echo")) {
-            return "38;5;244"; // Caves - gray
+            return "38;5;244";
         }
 
         if (containsText(word, "redwood") || containsText(word, "tree") || containsText(word, "wood") ||
             containsText(word, "bark")) {
-            return "38;5;130"; // Redwoods - brown
+            return "38;5;130";
         }
 
         if (containsText(word, "swamp") || containsText(word, "mud") || containsText(word, "fog") ||
             containsText(word, "black water")) {
-            return "38;5;64"; // Swamp - murky green
+            return "38;5;64";
         }
 
         if (containsText(word, "citadel") || containsText(word, "throne") || containsText(word, "king") ||
             containsText(word, "law") || containsText(word, "kingdom")) {
-            return "1;35"; // Citadel/royalty - violet
+            return "1;35";
         }
 
         if (containsText(word, "beach") || containsText(word, "tide") || containsText(word, "salt") ||
             containsText(word, "shore") || containsText(word, "reef") || containsText(word, "water")) {
-            return "1;36"; // Water/coast - cyan
+            return "1;36";
         }
 
         if (containsText(word, "mountain") || containsText(word, "storm") || containsText(word, "dragon") ||
             containsText(word, "fire") || containsText(word, "flame")) {
-            return "38;5;208"; // Mountain/fire/dragon - orange
+            return "38;5;208";
         }
 
-        return "1;36"; // General importance - cyan
+        return "1;36";
     }
 
     inline string colorizeFirstStoryKeyword(const string& sentence) {
@@ -152,32 +155,6 @@ namespace ArmagestaBiomeTools {
         }
 
         return sentence;
-    }
-
-    inline string colorizeChoicePreview(const string& preview) {
-        const size_t colonAt = preview.find(':');
-        if (colonAt == string::npos) {
-            return ansiColor(preview, "2;37");
-        }
-
-        const string label = preview.substr(0, colonAt);
-        const string details = preview.substr(colonAt);
-        string colorCode = "1;36";
-        const string loweredLabel = lowered(label);
-
-        if (containsText(loweredLabel, "danger") || containsText(loweredLabel, "aggressive") || containsText(loweredLabel, "body-risk")) {
-            colorCode = "1;31";
-        } else if (containsText(loweredLabel, "resource")) {
-            colorCode = "1;37";
-        } else if (containsText(loweredLabel, "recovery")) {
-            colorCode = "1;32";
-        } else if (containsText(loweredLabel, "spirit") || containsText(loweredLabel, "lore")) {
-            colorCode = "1;34";
-        } else if (containsText(loweredLabel, "cautious")) {
-            colorCode = "1;33";
-        }
-
-        return ansiColor(label, colorCode) + details;
     }
 
     inline void printStoryText(const string& text) {
@@ -303,16 +280,16 @@ namespace ArmagestaBiomeTools {
 
     inline int askChoice(const vector<string>& choices) {
         if (choices.size() == 1) {
-            cout << ansiColor("Only path:", "1;36") << endl;
-            cout << ansiColor("1", "1;33") << ": " << ansiColor(choices[0], "1;37") << endl;
-            cout << "     " << colorizeChoicePreview(getChoiceMechanicalPreview(choices[0])) << endl << endl;
+            cout << "Only path:" << endl;
+            cout << "1: " << choices[0] << endl;
+            cout << "     " << getChoiceMechanicalPreview(choices[0]) << endl << endl;
             return 0;
         }
 
-        cout << ansiColor("Choose one:", "1;36") << endl;
+        cout << "Choose one:" << endl;
         for (int i = 0; i < choices.size(); i++) {
-            cout << ansiColor(to_string(i + 1), "1;33") << ": " << ansiColor(choices[i], "1;37") << endl;
-            cout << "     " << colorizeChoicePreview(getChoiceMechanicalPreview(choices[i])) << endl;
+            cout << i + 1 << ": " << choices[i] << endl;
+            cout << "     " << getChoiceMechanicalPreview(choices[i]) << endl;
         }
         cout << endl;
 
@@ -326,7 +303,7 @@ namespace ArmagestaBiomeTools {
                     return i;
                 }
             }
-            cout << ansiColor("Invalid input, try again...", "1;31") << endl;
+            cout << "Invalid input, try again..." << endl;
         }
     }
 
@@ -356,13 +333,13 @@ namespace ArmagestaBiomeTools {
     }
 
     inline void printEventHeader(const string& eventName, const string& eventFlavorText) {
-        cout << endl << ansiColor("===== " + eventName + " =====", "1;35") << endl;
+        cout << endl << eventTitleText("===== " + eventName + " =====") << endl;
         printStoryText(eventFlavorText);
         cout << endl;
     }
 
     inline void printSpecialEventHeader(const string& eventName) {
-        cout << endl << ansiColor("===== " + eventName + " =====", "1;35") << endl;
+        cout << endl << eventTitleText("===== " + eventName + " =====") << endl;
     }
 }
 

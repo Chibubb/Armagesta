@@ -83,7 +83,7 @@ int main() {
 
     auto player = make_unique<Player>();
 
-    cout << endl << player->ansiColor("Welcome to Armagesta!", "1;35") << endl << endl;
+    cout << endl << "Welcome to Armagesta!" << endl << endl;
     player->chooseDifficultyAtNewGame();
     bool gameEnds = false;
 
@@ -93,7 +93,7 @@ int main() {
         string chosenAction = player->getAction();
 
         if (chosenAction == "Move") {
-            cout << endl << player->ansiColor("Explored map so far:", "1;35") << endl;
+            cout << endl << "Explored map so far:" << endl;
             player->printMap();
 
             const char previousBiomeType = player->getCurrentBiomeType();
@@ -144,13 +144,13 @@ int main() {
         cout << endl;
 
         if (player->gameWon) {
-            cout << player->ansiColor("You have completed the first version of Armagesta.", "1;35") << endl;
-            cout << "The map still " << player->ansiColor("breathes", "1;32") << ", but it no longer does so without a " << player->ansiColor("ruler", "1;35") << "." << endl;
+            cout << "You have completed the first version of Armagesta." << endl;
+            cout << "The map still breathes, but it no longer does so without a ruler." << endl;
             gameEnds = true;
         }
 
         if (player->health <= 0) {
-            cout << player->ansiColor("You fall to the floor, breathless. You have died.", "1;31") << endl;
+            cout << "You fall to the floor, breathless. You have died." << endl;
             gameEnds = true;
         }
     }
