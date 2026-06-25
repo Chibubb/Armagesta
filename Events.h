@@ -43,6 +43,15 @@ namespace ArmagestaBiomeTools {
         return value;
     }
 
+    inline string trimChoiceInput(const string& input) {
+        const size_t first = input.find_first_not_of(" \t\n\r");
+        if (first == string::npos) {
+            return "";
+        }
+        const size_t last = input.find_last_not_of(" \t\n\r");
+        return input.substr(first, last - first + 1);
+    }
+
     inline bool containsText(const string& text, const string& wantedText) {
         return lowered(text).find(lowered(wantedText)) != string::npos;
     }
@@ -185,8 +194,10 @@ namespace ArmagestaBiomeTools {
         string triedChoice;
         while (true) {
             getline(cin >> ws, triedChoice);
+            const string trimmedChoice = trimChoiceInput(triedChoice);
+            const string loweredChoice = lowered(trimmedChoice);
             for (int i = 0; i < choices.size(); i++) {
-                if (triedChoice == choices[i] || triedChoice == to_string(i + 1)) {
+                if (trimmedChoice == to_string(i + 1) || loweredChoice == lowered(choices[i])) {
                     return i;
                 }
             }
