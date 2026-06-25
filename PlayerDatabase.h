@@ -170,13 +170,13 @@ public:
 
     vector<string> actions = {"Move", "Self Assess", "Understand Powers", "Map"};
     vector<string> combatActions = {"Slash", "Eviscerate", "Roll", "Brace", "Think", "Riposte", "Soul Burst"};
-    vector<string> combatActionsDescriptions = {"Use your sword on the enemy, like you have done so many times before"
-        , "Make the enemy's innards outards, requires a large amount of Momentum"
-        , "Try to dodge your enemy's attack by rolling, requires miniscule Momentum"
-        , "Block incoming damage using known battle stances"
-        , "Take a moment of respite, and assess the situation around you, gains you Momentum"
-        , "Parry an enemy who is choosing to attack you, dealing damage, acquiring defense, and gaining Momentum"
-        , "Unleash the power of stolen souls on the currently living enemy in front of you, dealing a large amount of damage, requires a decent amount of souls"};
+    vector<string> combatActionsDescriptions = {"Use your sword on the enemy. A strong Clash Window can sharpen the hit, while bad timing can turn the opening against you."
+        , "Make the enemy's innards outards. Requires a large amount of Momentum, and its Clash Window is risky but extremely rewarding."
+        , "Try to dodge by rolling. Requires miniscule Momentum. The Clash Window now determines whether the roll fully avoids, partially avoids, or badly misreads the attack."
+        , "Block incoming damage using known battle stances. Reading the Clash Window correctly gives much stronger defense."
+        , "Take a moment of respite and assess the situation. A calm Clash Window grants extra Momentum; panic can waste the turn."
+        , "Parry an enemy who is attacking you. Riposte now demands a clean Clash Window before the counter can land."
+        , "Unleash stolen souls on the living enemy in front of you. Combat Focus can empower the burst, but poor channeling can lash back."};
 
     Player() {
         if (exploredMap.empty()) {
@@ -253,6 +253,9 @@ public:
     }
 
     void understandPowers() {
+        cout << "Combat Focus: Most combat actions now open a timed Clash Window after you choose them." << endl;
+        cout << "Type the shown response quickly and exactly. Perfect and Good timing improve damage, defense, Momentum, and flow streaks." << endl;
+        cout << "Poor or failed timing can weaken the action, raise enemy Danger, cost Momentum, or even hurt you on risky moves." << endl << endl;
         for (int i = 0; i < combatActions.size(); i++) {
             cout << i + 1 << ": " << combatActions[i] << endl;
             cout << combatActionsDescriptions[i] << endl << endl;
