@@ -1870,9 +1870,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Descend";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Descend", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }
@@ -1932,9 +1939,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Break a Reflection";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Break a Reflection", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }
@@ -1989,9 +2003,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Challenge the Elder";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Challenge the Elder", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }
@@ -2044,9 +2065,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Steal the Broom";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Steal the Broom", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }
@@ -2101,9 +2129,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Sit on the Throne";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Sit on the Throne", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }
@@ -2157,9 +2192,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Dive to the Heart";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Dive to the Heart", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }
@@ -2212,9 +2254,16 @@ protected:
         ArmagestaBiomeTools::printEventHeader(eventNames[REI], eventFlavorText[REI]);
 
         if (loreOnlyRevisit) {
-            ChoiceName = "Challenge the Dragon";
-            cout << "Only one unfinished lore path remains: " << ChoiceName << "." << endl;
-            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl << endl;
+            vector<string> revisitChoices = {"Challenge the Dragon", "Leave and Come Back Later"};
+            ChoiceName = revisitChoices[ArmagestaBiomeTools::askChoice(revisitChoices)];
+
+            if (ChoiceName == "Leave and Come Back Later") {
+                ArmagestaBiomeTools::printStoryText("You step back from the unfinished heart of this place. The lesser rewards remain spent, but the greater choice waits for your return.");
+                return;
+            }
+
+            cout << "The smaller secrets of this place have already been spent, so no side reward can be taken again." << endl;
+            cout << "Only the unfinished lore path can change the world now." << endl << endl;
             ResolveChoice();
             return;
         }

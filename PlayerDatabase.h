@@ -877,6 +877,7 @@ bool currentExploredSpaceShouldRunLoreOnlyEvent() const {
 void describeLoreOnlyRevisit() const {
     cout << "You return to the " << getCurrentBiomeName() << "." << endl;
     cout << "This place has already given up its smaller secrets, so only the unfinished lore remains." << endl;
+    cout << "You may face that path now, or leave and come back later without taking any side reward again." << endl;
     cout << "Unfinished lore path: " << getImportantLoreGoalName(getCurrentBiomeType()) << "." << endl << endl;
 }
 
