@@ -11,6 +11,7 @@
 #include <cctype>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -104,14 +105,20 @@ namespace ArmagestaMusic {
 
 class BackgroundMusicManager {
 private:
-    sf::Music music;
-    sf::Music cueMusic;
+    // sf::Music streams from disk. On some systems that can create a tiny periodic
+    // buffer click, which is what you were hearing as a metronome. Armagesta now
+    // loads only the currently-needed track into memory and plays it with sf::Sound.
+    sf::SoundBuffer musicBuffer;
+    sf::SoundBuffer cueBuffer;
+    std::optional<sf::Sound> musicSound;
+    std::optional<sf::Sound> cueSound;
 
     std::string requestedTrack;
     std::string currentTrack;
     std::string requestedCue;
     std::string currentCue;
     float maxVolume = 35.0f;
+    float cueVolumeMultiplier = 1.0f;
     bool hasLoadedTrack = false;
     bool hasLoadedCue = false;
 
@@ -187,14 +194,13 @@ private:
         for (const std::string& candidate : possibleMusicLocations(askedForPath)) {
             std::cout << "  - " << candidate << std::endl;
         }
-        std::cout << "Tip: put the .mp3 files in your source project's assets/music folder, then Reload CMake or rebuild."
+        std::cout << "Tip: put the music files in your source project's assets/music folder, then Reload CMake or rebuild."
                   << std::endl;
     }
 
     [[nodiscard]] std::string chooseBestMusicFile(const std::string& filePath) const {
-        // SFML can play MP3s, but MP3 files often contain encoder padding/clicks that become
-        // very obvious during ambience loops. When an .ogg or .wav copy exists beside the .mp3,
-        // Armagesta will automatically use that cleaner version instead.
+        // If an .ogg or .wav copy exists beside an .mp3, prefer it. This is still useful
+        // for clean loop files, but playback is no longer streamed with sf::Music.
         if (pathEndsWith(filePath, ".mp3")) {
             const std::vector<std::string> cleanerAlternatives = {
                 pathWithExtension(filePath, ".ogg"),
@@ -211,9 +217,25 @@ private:
         return filePath;
     }
 
+    void setMainVolume(const float newVolume) {
+        if (musicSound.has_value()) {
+            musicSound->setVolume(std::clamp(newVolume, 0.0f, 100.0f));
+        }
+    }
+
+    void setCueVolume(const float newVolume) {
+        if (cueSound.has_value()) {
+            cueSound->setVolume(std::clamp(newVolume, 0.0f, 100.0f));
+        }
+    }
+
     void fadeVolume(float startVolume, float endVolume, float seconds) {
+        if (!musicSound.has_value()) {
+            return;
+        }
+
         if (seconds <= 0.0f) {
-            music.setVolume(endVolume);
+            setMainVolume(endVolume);
             return;
         }
 
@@ -232,7 +254,7 @@ private:
             // Smoothstep keeps the volume from jumping sharply at the start/end of a fade.
             const float smoothedT = t * t * (3.0f - 2.0f * t);
             const float currentVolume = startVolume + (endVolume - startVolume) * smoothedT;
-            music.setVolume(currentVolume);
+            setMainVolume(currentVolume);
 
             if (t >= 1.0f) {
                 break;
@@ -245,7 +267,12 @@ private:
     bool loadAndStartTrack(const std::string& askedForPath, const bool loop, const float startingVolume) {
         const std::string resolvedPath = findExistingMusicFile(askedForPath);
 
-        if (!music.openFromFile(resolvedPath)) {
+        if (musicSound.has_value()) {
+            musicSound->stop();
+            musicSound.reset();
+        }
+
+        if (!musicBuffer.loadFromFile(resolvedPath)) {
             printMissingMusicHelp(askedForPath, resolvedPath);
             hasLoadedTrack = false;
             requestedTrack.clear();
@@ -257,29 +284,28 @@ private:
         currentTrack = resolvedPath;
         hasLoadedTrack = true;
 
-        music.setLooping(loop);
-        music.setVolume(0.0f);
-        music.play();
-
-        // A tiny silent pre-roll hides the click some decoders make right as a stream starts.
-        std::this_thread::sleep_for(std::chrono::milliseconds(70));
-        music.setVolume(startingVolume);
+        musicSound.emplace(musicBuffer);
+        musicSound->setLooping(loop);
+        musicSound->setVolume(std::clamp(startingVolume, 0.0f, 100.0f));
+        musicSound->play();
 
         return true;
     }
 
 public:
-    // Looping is back on by default. The manager still avoids restarting the same track,
+    // Looping is on by default. The manager still avoids restarting the same track,
     // which prevents extra start-clicks while wandering through the same ambience region.
     bool playMusicImmediately(const std::string& filePath, bool loop = true) {
-        if (hasLoadedTrack && requestedTrack == filePath) {
-            music.setLooping(loop);
-            music.setVolume(maxVolume);
+        if (hasLoadedTrack && requestedTrack == filePath && musicSound.has_value()) {
+            musicSound->setLooping(loop);
+            setMainVolume(maxVolume);
             return true;
         }
 
-        music.setVolume(0.0f);
-        music.stop();
+        if (musicSound.has_value()) {
+            musicSound->stop();
+            musicSound.reset();
+        }
         return loadAndStartTrack(filePath, loop, maxVolume);
     }
 
@@ -289,14 +315,15 @@ public:
         float fadeOutSeconds = 0.45f,
         float fadeInSeconds = 0.45f
     ) {
-        if (hasLoadedTrack && requestedTrack == filePath) {
-            music.setLooping(loop);
+        if (hasLoadedTrack && requestedTrack == filePath && musicSound.has_value()) {
+            musicSound->setLooping(loop);
             return true;
         }
 
-        if (hasLoadedTrack) {
+        if (hasLoadedTrack && musicSound.has_value()) {
             fadeVolume(maxVolume, 0.0f, fadeOutSeconds);
-            music.stop();
+            musicSound->stop();
+            musicSound.reset();
             std::this_thread::sleep_for(std::chrono::milliseconds(70));
         }
 
@@ -317,14 +344,18 @@ public:
     }
 
     bool playCueImmediately(const std::string& filePath, const float volumeMultiplier = 1.0f, const bool restartIfSameCue = true) {
-        if (!restartIfSameCue && hasLoadedCue && requestedCue == filePath) {
+        if (!restartIfSameCue && hasLoadedCue && requestedCue == filePath && cueSound.has_value()) {
             return true;
         }
 
         const std::string resolvedPath = findExistingMusicFile(filePath);
 
-        cueMusic.stop();
-        if (!cueMusic.openFromFile(resolvedPath)) {
+        if (cueSound.has_value()) {
+            cueSound->stop();
+            cueSound.reset();
+        }
+
+        if (!cueBuffer.loadFromFile(resolvedPath)) {
             printMissingMusicHelp(filePath, resolvedPath);
             hasLoadedCue = false;
             requestedCue.clear();
@@ -334,50 +365,61 @@ public:
 
         requestedCue = filePath;
         currentCue = resolvedPath;
+        cueVolumeMultiplier = volumeMultiplier;
         hasLoadedCue = true;
 
-        cueMusic.setLooping(false);
-        cueMusic.setVolume(std::clamp(maxVolume * volumeMultiplier, 0.0f, 100.0f));
-        cueMusic.play();
+        cueSound.emplace(cueBuffer);
+        cueSound->setLooping(false);
+        cueSound->setVolume(std::clamp(maxVolume * cueVolumeMultiplier, 0.0f, 100.0f));
+        cueSound->play();
         return true;
     }
 
     void stopMusicWithFade(float fadeOutSeconds = 0.45f) {
-        if (!hasLoadedTrack) {
+        if (!hasLoadedTrack || !musicSound.has_value()) {
             return;
         }
 
         fadeVolume(maxVolume, 0.0f, fadeOutSeconds);
-        music.stop();
+        musicSound->stop();
+        musicSound.reset();
         hasLoadedTrack = false;
         requestedTrack.clear();
         currentTrack.clear();
     }
 
     void stopCue() {
-        cueMusic.stop();
+        if (cueSound.has_value()) {
+            cueSound->stop();
+            cueSound.reset();
+        }
         hasLoadedCue = false;
         requestedCue.clear();
         currentCue.clear();
     }
 
     void pauseMusic() {
-        music.pause();
-        cueMusic.pause();
+        if (musicSound.has_value()) {
+            musicSound->pause();
+        }
+        if (cueSound.has_value()) {
+            cueSound->pause();
+        }
     }
 
     void resumeMusic() {
-        if (hasLoadedTrack) {
-            music.play();
+        if (hasLoadedTrack && musicSound.has_value()) {
+            musicSound->play();
         }
-        if (hasLoadedCue) {
-            cueMusic.play();
+        if (hasLoadedCue && cueSound.has_value()) {
+            cueSound->play();
         }
     }
 
     void setVolume(float newVolume) {
         maxVolume = std::clamp(newVolume, 0.0f, 100.0f);
-        music.setVolume(maxVolume);
+        setMainVolume(maxVolume);
+        setCueVolume(maxVolume * cueVolumeMultiplier);
     }
 
     [[nodiscard]] float getVolume() const {
@@ -400,5 +442,4 @@ public:
         return requestedCue;
     }
 };
-
 #endif // ARMAGESTA_BACKGROUNDMUSICMANAGER_H
